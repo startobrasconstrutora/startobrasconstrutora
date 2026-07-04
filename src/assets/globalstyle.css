@@ -1,0 +1,50 @@
+:root {
+  /*---------cores globais------------*/
+
+    --principal: rgb(145, 145, 145);
+    --principallight: color-mix(
+    in srgb,
+    var(--principal) 50%,  /*-------*/
+    rgb(255, 255, 255));
+    --principaldark: color-mix(
+    in srgb,npx depcheck
+    var(--principal) 90%,  /*-------*/
+    black);
+    --principaldarker: color-mix(
+    in srgb,
+    var(--principal) 60%,  /*-------*/
+    black);
+    --bg: rgb(218, 217, 217);
+    --font: rgb(49, 49, 49);
+    --font2: rgb(199, 199, 199);
+}
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+    background: var(--bg);
+    padding: 0px;
+    margin: 0px;
+    top: 0px;
+    color: var(--font);
+    overflow-x: hidden;
+}
+
+.Subpagina {
+  min-height: 100vh;
+  height: auto;
+
+  width: 100%;
+}
+
+h1, p, span {
+  color: var(--font);
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+
