@@ -2,7 +2,7 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
-import * as S from './SwiperObras.styles1.jsx'
+import * as S from './SwiperObras.styles.jsx'
 
 function SwiperObras({ obras }) {
   return (
