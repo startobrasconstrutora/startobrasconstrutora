@@ -8,6 +8,7 @@ import slide1 from "../assets/img/slide1.png"
 import banner1 from "../assets/img/banner_conjunto1.png"
 import banner2 from "../assets/img/banner_conjunto2.png"
 import banner3 from "../assets/img/banner_conjunto3.png"
+import banner4 from "../assets/img/banner_conjunto4.png"
 import texto_imagem from "../assets/img/capacete.png"
 import texto_imagem2 from "../assets/img/reforma.jpg"
 import { Content } from '../components/DivComum.styles.jsx'
@@ -100,12 +101,7 @@ function Home() {
                 { src: banner1, titulo: 'Casa Jardim Marambá' },
                 { src: banner2, titulo: 'Salão Comercial Centro' },
                 { src: banner3, titulo: 'Casa Centro de Piratininga' },
-                { src: banner3, titulo: 'Galpão Jardim Estoril' },
-                { src: banner3, titulo: 'Casa Av. Duque de Caxias' },
-                { src: banner3, titulo: 'Apartamento Reformado Camélias' },
-                        { src: banner3, titulo: 'Apartamento Reformado Camélias' },
-                                { src: banner3, titulo: 'Apartamento Reformado Camélias' },
-                                        { src: banner3, titulo: 'Apartamento Reformado Camélias' },
+                { src: banner4, titulo: 'Galpão Jardim Estoril' },
               ]}
             />
           </S.ObrasSection>

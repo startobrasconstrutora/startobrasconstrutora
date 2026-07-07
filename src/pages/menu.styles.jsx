@@ -9,7 +9,7 @@ export const Container = styled.div`
   margin: 0px;
   width: 100%;
   height: 90px;
-  background: ${({ $scrolled }) => ($scrolled ? '#e1e1e1' : '#dfdfdf')};
+  background: ${({ $scrolled }) => ($scrolled ? '#e1e1e1' : '#ffffffd1')};
   position: fixed;
   z-index: 100;
   overflow: hidden;
