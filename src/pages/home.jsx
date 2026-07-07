@@ -13,6 +13,7 @@ import texto_imagem2 from "../assets/img/reforma.jpg"
 import { Content } from '../components/DivComum.styles.jsx'
 import { Link } from 'react-router-dom'
 import { Faixa } from '../components/faixa.jsx'
+import { Reveal } from '../components/Reveal.jsx'
 
 function Home() {
   return (
@@ -37,6 +38,7 @@ function Home() {
         <S.Container>
 
           <S.DivCentro>
+            <Reveal>
             <S.CardsRow>
               <S.Card>
                 <S.CardImg>
@@ -58,7 +60,7 @@ function Home() {
                   <img src={texto_imagem2} alt="Obra em andamento" />
                 </S.CardImg>
                 <S.CardTexto>
-                  <h2>Título da segunda informação</h2>
+                  <h2>segunda informação</h2>
                   <ul>
                     <li>Item 1</li>
                     <li>Item 2</li>
@@ -68,25 +70,29 @@ function Home() {
                 </S.CardTexto>
               </S.Card>
             </S.CardsRow>
+            </Reveal>
           </S.DivCentro>
 
+<Reveal delay={0.1}>
           <S.StatsBar>
             <S.StatItem>
-              <strong>15+</strong>
-              <span>Anos de experiência</span>
+              <strong>25</strong>
+              <span>funcionarios por exemplo</span>
             </S.StatItem>
             <S.StatItem>
-              <strong>120+</strong>
+              <strong>20</strong>
               <span>Obras entregues</span>
             </S.StatItem>
             <S.StatItem>
-              <strong>100%</strong>
-              <span>Bauru e região</span>
+              <strong>100</strong>
+              <span>Clientes atendidos por exemplo</span>
             </S.StatItem>
           </S.StatsBar>
+          </Reveal>
 
           <br />
 
+<Reveal delay={0.2}>
           <S.ObrasSection>
             <h2>Obras prontas</h2>
             <SwiperObras
@@ -103,7 +109,7 @@ function Home() {
               ]}
             />
           </S.ObrasSection>
-
+</Reveal>
         </S.Container>
       </div>
     </>
