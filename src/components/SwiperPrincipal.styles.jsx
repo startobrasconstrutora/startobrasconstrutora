@@ -49,13 +49,39 @@ export const Container = styled.div`
 `;
 
 export const SlideBox = styled.div`
-    width: 100%;
-    aspect-ratio: 2 / 1;
-    background: #444;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 40px;
     overflow: hidden;
+      position: relative; 
+  width: 100%;
+  height: 100%;
+`;
+
+
+export const TextoOverlay = styled.div`
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+  position: absolute;
+  width: 100%;
+  padding: 16px;
+  color: #fff;
+  box-sizing: border-box;
+  background: #ffffff7c;
+`;
+
+export const Titulo = styled.h3`
+  margin: 0 0 4px 0;
+  font-size: 1.9rem;
+`;
+
+export const Descricao = styled.p`
+  margin: 0;
+  font-size: 9rem;
+   color: #000000;
+   font-weight: 900;
 `;

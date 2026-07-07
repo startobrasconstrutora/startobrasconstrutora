@@ -5,7 +5,7 @@ import MenuPrincipal from './pages/menu.jsx'
 import Footer from './pages/footer.jsx'
 import Subpagina from './pages/subpagina.jsx'
 import ScrollToTop from "./components/ScrollToTop.jsx"
-import SocialBar from "./components/SocialBar.jsx"  // ← importe aqui
+import SocialBar from "./components/SocialBar.jsx"
 
 function App() {
   return (

@@ -1,11 +1,11 @@
-import * as S from './styles.jsx' // seu arquivo de estilos
+import * as S from './styles.jsx'
 
 function SocialBar() {
   return (
     <S.SocialBar>
       <S.SocialLink
         className="facebook"
-        href="https://facebook.com/quitandaseuze"
+        href="https://facebook.com/"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -14,7 +14,7 @@ function SocialBar() {
 
       <S.SocialLink
         className="instagram"
-        href="https://instagram.com/quitandaseuze"
+        href="https://instagram.com/"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -23,7 +23,7 @@ function SocialBar() {
 
       <S.SocialLink
         className="whatsapp"
-        href="https://wa.me/5514999999999"
+        href="https://wa.me/5514997749710"
         target="_blank"
         rel="noopener noreferrer"
       >

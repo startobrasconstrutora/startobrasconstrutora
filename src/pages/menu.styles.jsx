@@ -1,43 +1,45 @@
 import styled from 'styled-components'
 
+const BREAKPOINT_MOBILE = '1200px'
 
 export const Container = styled.div`
-display: flex;
-align-items: center;
+  display: flex;
+  align-items: center;
   padding: 0px;
   margin: 0px;
   width: 100%;
-  height: 100px;
-  background: var(--principal);
+  height: 90px;
+  background: ${({ $scrolled }) => ($scrolled ? '#e1e1e1' : '#dfdfdf')};
   position: fixed;
   z-index: 100;
+  overflow: hidden;
 
- @media (max-width: 900px) {
+  @media (max-width: ${BREAKPOINT_MOBILE}) {
     height: 70px;
     justify-content: space-between;
   }
 `
+
 export const DivLogo = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  width: 140px;
-  margin-left: 50px;
+  width: 100px;
+  height: 50px;
+  margin-left: 10%;
+  padding-right: 5%;
 
   img {
-    width: 100%;
-    height: 100%;
+    height: 70px;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: ${BREAKPOINT_MOBILE}) {
     min-width: 120px;
     width: 150px;
-      margin-left: 20px;
-   
+    margin-left: 20px;
 
     img {
-      height: 70px;
+      height: 50px;
       width: 100%;
     }
   }
@@ -45,16 +47,16 @@ export const DivLogo = styled.div`
 
 export const UlMenu = styled.ul`
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  width: 100%;
-  padding: 0;
+  padding: 20px;
+  width: auto;
   margin: 0;
   height: 100%;
   list-style: none;
-  overflow: hidden;
+  gap: 1.5%;
 
-  @media (max-width: 900px) {
+  @media (max-width: ${BREAKPOINT_MOBILE}) {
     display: none;
   }
 `
@@ -62,8 +64,8 @@ export const UlMenu = styled.ul`
 export const Linha = styled.span`
   width: 100%;
   height: 3px;
-  background: #616161;
-  border-radius: 3px;
+  background: black;
+  border-radius: 2px;
 `
 
 export const LiMenu = styled.li`
@@ -72,98 +74,87 @@ export const LiMenu = styled.li`
   align-items: center;
   flex: 1;
   height: 100%;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 500;
+  padding: 0 18px;
   transition: 0.3s;
-  
-  a{
+  white-space: nowrap;
+  color: #171717;
+
+  a {
     text-decoration: none;
-    color: inherit;
+    color: #171717;
   }
 
- &:hover {
-  transform: scale(1.1);
-}
+  &:hover {
+    transform: scale(1.1);
+  }
 `
-  export const LinhaVer = styled.span`
-  width: 3px;
-  height: 70%;
-  background: #616161;
-  border-radius: 10px;
 
+export const LinhaVer = styled.span`
+  width: 2px;
+  height: 40%;
+  background: #bcbcbc;
+  border-radius: 10px;
 `
 
 export const SubMenu = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: auto;
   height: auto;
-  color: #000000b0;
-  background: var(--principaldark);
+  padding: 10px 0;
+  padding-right: 50px;
+  color: #303030;
+  background: ${({ $scrolled }) => ($scrolled ? '#ffa52ff3' : '#ffa52ff3')};
   z-index: 50;
   position: fixed;
-  top: 100px;
+  top: 92px;
+  left: ${({ $left }) => $left}px;
   cursor: pointer;
+  border-radius: 10px;
 
-  @media (max-width: 900px) {
-    top: 70px;
-    justify-content: flex-start;
-    overflow-x: auto;
-    scrollbar-width: none; 
-    &::-webkit-scrollbar { display: none; }
-        display: none;
+  opacity: ${({ $aberto }) => ($aberto ? '1' : '0')};
+  transform: translate(-50%, ${({ $aberto }) => ($aberto ? '0' : '-15px')});
+  pointer-events: ${({ $aberto }) => ($aberto ? 'auto' : 'none')};
+  transition: opacity 0.3s ease, transform 0.3s ease;
 
+  @media (max-width: ${BREAKPOINT_MOBILE}) {
+    display: none;
   }
-
-
 `
 
 export const ListaSubMenu = styled.ul`
   display: flex;
+  flex-direction: column;
   list-style: none;
-  align-items: center;
-  justify-content: space-evenly;
-  width: 100%;
-  margin: 0px;
-  padding: 0px 50px;
-
-  @media (max-width: 1200px) {
-    padding: 0px 20px;
-    gap: 10px;
-  }
-
-  @media (max-width: 900px) {
-    justify-content: flex-start;
-    padding: 0px 14px;
-    gap: 24px;
-    width: max-content; 
-  }
+  align-items: flex-start;
+  justify-content: center;
+  width: auto;
+  height: 100%;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
 `
 
 export const ListaSubMenuLi = styled.li`
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 10px 0px;
-  margin: 0px;
-  font-size: 24px;
+  justify-content: flex-start;
+  width: 100%;
+  font-size: 16px;
   font-weight: 500;
-  transition: 0.5s;
+  transition: 0.3s;
   white-space: nowrap;
+  padding: 6px 20px;
+  margin: 0;
 
   &:hover {
-    transform: scale(1.05);
-  }
-
-  @media (max-width: 1200px) {
-    padding: 10px 10px;
-    font-size: 16px;
-  }
-
-  @media (max-width: 900px) {
-    font-size: 16px;
-    padding: 8px 10px;
+    text-decoration: underline;
+    text-underline-offset: 8px;
+    text-decoration-thickness: 2px;
+    color: black;
   }
 `
 
@@ -176,15 +167,16 @@ export const Hamburger = styled.div`
   height: 20px;
   cursor: pointer;
 
-  @media (min-width: 900px) {
+  @media (min-width: calc(${BREAKPOINT_MOBILE} + 1px)) {
     display: none;
   }
 `
+
 export const EspacadorMobile = styled.div`
   width: 100%;
   display: none;
 
-  @media (max-width: 900px) {
+  @media (max-width: ${BREAKPOINT_MOBILE}) {
     display: block;
   }
 `
@@ -193,7 +185,7 @@ export const MenuMobile = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: var(--principallight);
+  background: #ffa52ff3;
   width: 100%;
   z-index: 99;
   position: fixed;
@@ -202,7 +194,7 @@ export const MenuMobile = styled.div`
   max-height: calc(100vh - 70px);
   overflow-y: auto;
 
-  @media (min-width: 900px) {
+  @media (min-width: calc(${BREAKPOINT_MOBILE} + 1px)) {
     display: none;
   }
 `
@@ -213,7 +205,7 @@ export const Overlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 97; 
+  z-index: 97;
   cursor: pointer;
 `
 
@@ -227,25 +219,22 @@ export const LiMenuMobile = styled.li`
   padding: 8px;
   transition: 0.3s;
 
-
   a {
     text-decoration: none;
-    color: inherit;
+    color: #000000;
   }
 
- &:hover {
-  transform: scale(1.1);
-}
+  &:hover {
+    transform: scale(1.02);
+  }
 `
 
-
-  export const LinhaHor = styled.span`
+export const LinhaHor = styled.span`
   width: 70%;
   height: 2px;
   background: #616161;
   border-radius: 3px;
-
-`;
+`
 
 export const SubMobile = styled.div`
   display: flex;
@@ -253,7 +242,7 @@ export const SubMobile = styled.div`
   align-items: center;
   width: 100%;
   overflow: hidden;
-  max-height: ${({ $aberto }) => $aberto ? '400px' : '0'};  /* ← animação suave */
+  max-height: ${({ $aberto }) => ($aberto ? '400px' : '0')}; 
   transition: max-height 0.3s ease;
 `
 
@@ -266,10 +255,10 @@ export const LiSubMobile = styled.li`
   font-size: 1.1rem;
   font-weight: 400;
   transition: 0.3s;
-  color: inherit;
+  color: white;
 
   &:hover {
-    transform: scale(1.05);
+    transform: scale(1.02);
   }
 `
 
@@ -278,5 +267,5 @@ export const SetaIcon = styled.span`
   font-size: 0.8rem;
   transition: 0.3s;
   display: inline-block;
-  transform: ${({ $aberto }) => $aberto ? 'rotate(180deg)' : 'rotate(0deg)'};
-  `
+  transform: ${({ $aberto }) => ($aberto ? 'rotate(180deg)' : 'rotate(0deg)')};
+`

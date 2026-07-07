@@ -1,14 +1,18 @@
 import * as S from './menu.styles.jsx'
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import logo from "../assets/img/logo.png"
+import logo from "../assets/img/logob.png"
+
 
 
 function MenuPrincipal() {
   const [aberto, setAberto] = useState(false)
-  const [subMenu, setSubMenu] = useState(false)
+  const [subMenuAtivo, setSubMenuAtivo] = useState(null) // 'servicos' | 'obras' | null
+  const [subMenuLeft, setSubMenuLeft] = useState(0)
   const [subMenuMobile, setSubMenuMobile] = useState(false)
   const timeoutRef = useRef(null)
+  const servicosRef = useRef(null)
+  const obrasRef = useRef(null)
 
 useEffect(() => {
   if (aberto) {
@@ -24,13 +28,32 @@ useEffect(() => {
   }
 }, [aberto])
 
-function abrirSub() {
+function abrirSub(tipo, ref) {
   clearTimeout(timeoutRef.current)
-  setSubMenu(true)
+  const rect = ref.current.getBoundingClientRect()
+  setSubMenuLeft(rect.left + rect.width / 2)
+  setSubMenuAtivo(tipo)
 }
 
+const [scrolled, setScrolled] = useState(false);
+
+useEffect(() => {
+  const handleScroll = () => {
+    if (window.scrollY > 80) {
+      setScrolled(true);
+    } else {
+      setScrolled(false);
+    }
+  };
+
+  window.addEventListener("scroll", handleScroll);
+
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
+
+
 function fecharSub() {
-  timeoutRef.current = setTimeout(() => setSubMenu(false), 200)
+  timeoutRef.current = setTimeout(() => setSubMenuAtivo(null), 200)
 }
 
 function fecharMenu() {
@@ -40,25 +63,32 @@ function fecharMenu() {
 
   return (
     <>
-      <S.Container>
+      <S.Container $scrolled={scrolled}>
         <S.DivLogo><Link to="/"><img src={logo} /></Link></S.DivLogo>
         <S.UlMenu>
-          <S.LiMenu><Link to="/" onClick={() => setSubMenu(false)}>Home</Link></S.LiMenu>
+          <S.LiMenu><Link to="/" onClick={() => setSubMenuAtivo(null)}>Home</Link></S.LiMenu>
           <S.LinhaVer />
-
           <S.LiMenu
-            onMouseEnter={abrirSub}
+            ref={servicosRef}
+            onMouseEnter={() => abrirSub('servicos', servicosRef)}
             onMouseLeave={fecharSub}
           >
-            SubMenu
+            Serviços ▾
           </S.LiMenu>
-
           <S.LinhaVer />
-          <S.LiMenu><Link to="/Subpagina" onClick={() => setSubMenu(false)}>Item</Link></S.LiMenu>
+          <S.LiMenu
+            ref={obrasRef}
+            onMouseEnter={() => abrirSub('obras', obrasRef)}
+            onMouseLeave={fecharSub}
+          >
+            Obras ▾
+          </S.LiMenu>
           <S.LinhaVer />
-          <S.LiMenu><Link to="/Subpagina" onClick={() => setSubMenu(false)}>Item</Link></S.LiMenu>
+          <S.LiMenu><Link to="/Subpagina" onClick={() => setSubMenuAtivo(null)}>Quem Somos</Link></S.LiMenu>
           <S.LinhaVer />
-          <S.LiMenu><Link to="/Subpagina" onClick={() => setSubMenu(false)}>Item</Link></S.LiMenu>
+          <S.LiMenu><Link to="/Subpagina" onClick={() => setSubMenuAtivo(null)}>Trabalhe Conosco</Link></S.LiMenu>
+          <S.LinhaVer />
+          <S.LiMenu><Link to="/Subpagina" onClick={() => setSubMenuAtivo(null)}>Contato</Link></S.LiMenu>
         </S.UlMenu>
 
         <S.Hamburger onClick={() => setAberto(!aberto)}>
@@ -68,22 +98,28 @@ function fecharMenu() {
         </S.Hamburger>
       </S.Container>
 
-      {subMenu && (
-        <S.SubMenu
-          onMouseEnter={abrirSub}
-          onMouseLeave={fecharSub}
-        >
-          <S.ListaSubMenu>
-            <S.ListaSubMenuLi>SubItem 1</S.ListaSubMenuLi>
-            <S.ListaSubMenuLi>SubItem 2</S.ListaSubMenuLi>
-            <S.ListaSubMenuLi>SubItem 3</S.ListaSubMenuLi>
-            <S.ListaSubMenuLi>SubItem 4</S.ListaSubMenuLi>
-            <S.ListaSubMenuLi>SubItem 5</S.ListaSubMenuLi>
-            <S.ListaSubMenuLi>SubItem 6</S.ListaSubMenuLi>
-            <S.ListaSubMenuLi>SubItem 7</S.ListaSubMenuLi>
-          </S.ListaSubMenu>
-        </S.SubMenu>
-      )}
+      <S.SubMenu $scrolled={scrolled} $aberto={subMenuAtivo === 'servicos'} $left={subMenuLeft}
+        onMouseEnter={() => abrirSub('servicos', servicosRef)}
+        onMouseLeave={fecharSub}
+      >
+        <S.ListaSubMenu>
+          <S.ListaSubMenuLi>Construção</S.ListaSubMenuLi>
+          <S.ListaSubMenuLi>Reformas</S.ListaSubMenuLi>
+          <S.ListaSubMenuLi>Regularização</S.ListaSubMenuLi>
+        </S.ListaSubMenu>
+      </S.SubMenu>
+
+      <S.SubMenu $scrolled={scrolled} $aberto={subMenuAtivo === 'obras'} $left={subMenuLeft}
+        onMouseEnter={() => abrirSub('obras', obrasRef)}
+        onMouseLeave={fecharSub}
+      >
+        <S.ListaSubMenu>
+          <S.ListaSubMenuLi>Obras em Andamento</S.ListaSubMenuLi>
+          <S.ListaSubMenuLi>Obras Concluídas</S.ListaSubMenuLi>
+            <S.ListaSubMenuLi>Terrenos à Venda</S.ListaSubMenuLi>
+          <S.ListaSubMenuLi>Casas à venda</S.ListaSubMenuLi>
+        </S.ListaSubMenu>
+      </S.SubMenu>
 
       {aberto && (
       <>
