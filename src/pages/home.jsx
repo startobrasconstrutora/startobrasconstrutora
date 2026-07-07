@@ -3,7 +3,7 @@ import DivComum from '../components/DivComum.jsx'
 import SwiperMod from '../components/SwiperPrincipal.jsx'
 import BannerFull from '../components/BannerFull.jsx'
 import BannerImagemFull from '../components/BannerImagemFull.jsx'
-import SwiperObras from '../components/SwiperObras.jsx'
+import SwiperObras from '../components/SwiperObras1.jsx'
 import slide1 from "../assets/img/slide1.png"
 import banner1 from "../assets/img/banner_conjunto1.png"
 import banner2 from "../assets/img/banner_conjunto2.png"
