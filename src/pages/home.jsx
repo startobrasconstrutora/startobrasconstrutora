@@ -9,6 +9,7 @@ import banner1 from "../assets/img/banner_conjunto1.png"
 import banner2 from "../assets/img/banner_conjunto2.png"
 import banner3 from "../assets/img/banner_conjunto3.png"
 import texto_imagem from "../assets/img/capacete.png"
+import texto_imagem2 from "../assets/img/reforma.jpg"
 import { Content } from '../components/DivComum.styles.jsx'
 import { Link } from 'react-router-dom'
 import { Faixa } from '../components/faixa.jsx'
@@ -54,7 +55,7 @@ function Home() {
 
               <S.Card>
                 <S.CardImg>
-                  <img src={texto_imagem} alt="Obra em andamento" />
+                  <img src={texto_imagem2} alt="Obra em andamento" />
                 </S.CardImg>
                 <S.CardTexto>
                   <h2>Título da segunda informação</h2>
