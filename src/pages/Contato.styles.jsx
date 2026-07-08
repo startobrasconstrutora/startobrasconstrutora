@@ -32,7 +32,7 @@ export const HeroImage = styled.div`
     object-fit: cover;
     display: block;
 filter: grayscale(100%);
-    opacity: 0.5;
+    opacity: 0.8;
     mix-blend-mode: multiply;
   }
 `;
