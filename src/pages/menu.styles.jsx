@@ -3,58 +3,65 @@ import styled from 'styled-components'
 const BREAKPOINT_MOBILE = '1200px'
 
 export const Container = styled.div`
+  position: fixed;
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: 0px;
   margin: 0px;
   width: 100%;
   height: 90px;
   background: ${({ $scrolled }) => ($scrolled ? '#e1e1e1' : '#ffffffd1')};
-  position: fixed;
   z-index: 100;
   overflow: hidden;
 
   @media (max-width: ${BREAKPOINT_MOBILE}) {
     height: 70px;
-    justify-content: space-between;
   }
 `
 
-export const DivLogo = styled.div`
+export const MenuInner = styled.div`
+  width: min(1200px, 92%);
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100px;
-  height: 50px;
-  margin-left: 10%;
-  padding-right: 5%;
+`
+
+export const DivLogo = styled.div`
+  position: absolute;
+  left: calc((100% - min(1200px, 92%)) / 4);
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 
   img {
     height: 70px;
+    width: auto;
   }
 
   @media (max-width: ${BREAKPOINT_MOBILE}) {
-    min-width: 120px;
-    width: 150px;
-    margin-left: 20px;
+    left: 20px;
 
     img {
       height: 50px;
-      width: 100%;
+      width: auto;
     }
   }
 `
 
 export const UlMenu = styled.ul`
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   padding: 20px;
   width: auto;
   margin: 0;
   height: 100%;
   list-style: none;
-  gap: 1.5%;
+  gap: 20px;
 
   @media (max-width: ${BREAKPOINT_MOBILE}) {
     display: none;
@@ -72,7 +79,7 @@ export const LiMenu = styled.li`
   display: flex;
   justify-content: center;
   align-items: center;
-  flex: 1;
+  flex: none;
   height: 100%;
   font-size: 1.2rem;
   font-weight: 500;

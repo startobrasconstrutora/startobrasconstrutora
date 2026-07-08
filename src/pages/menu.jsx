@@ -7,7 +7,7 @@ import logo from "../assets/img/logob.png"
 
 function MenuPrincipal() {
   const [aberto, setAberto] = useState(false)
-  const [subMenuAtivo, setSubMenuAtivo] = useState(null) // 'servicos' | 'obras' | null
+  const [subMenuAtivo, setSubMenuAtivo] = useState(null)
   const [subMenuLeft, setSubMenuLeft] = useState(0)
   const [subMenuMobile, setSubMenuMobile] = useState(false)
   const timeoutRef = useRef(null)
@@ -63,40 +63,43 @@ function fecharMenu() {
 
   return (
     <>
-      <S.Container $scrolled={scrolled}>
-        <S.DivLogo><Link to="/"><img src={logo} /></Link></S.DivLogo>
-        <S.UlMenu>
-          <S.LiMenu><Link to="/" onClick={() => setSubMenuAtivo(null)}>Home</Link></S.LiMenu>
-          <S.LinhaVer />
-          <S.LiMenu
-            ref={servicosRef}
-            onMouseEnter={() => abrirSub('servicos', servicosRef)}
-            onMouseLeave={fecharSub}
-          >
-            Serviços ▾
-          </S.LiMenu>
-          <S.LinhaVer />
-          <S.LiMenu
-            ref={obrasRef}
-            onMouseEnter={() => abrirSub('obras', obrasRef)}
-            onMouseLeave={fecharSub}
-          >
-            Obras ▾
-          </S.LiMenu>
-          <S.LinhaVer />
-          <S.LiMenu><Link to="/Subpagina" onClick={() => setSubMenuAtivo(null)}>Quem Somos</Link></S.LiMenu>
-          <S.LinhaVer />
-          <S.LiMenu><Link to="/Subpagina" onClick={() => setSubMenuAtivo(null)}>Trabalhe Conosco</Link></S.LiMenu>
-          <S.LinhaVer />
-          <S.LiMenu><Link to="/Subpagina" onClick={() => setSubMenuAtivo(null)}>Contato</Link></S.LiMenu>
-        </S.UlMenu>
+ <S.Container $scrolled={scrolled}>
+  <S.DivLogo><Link to="/"><img src={logo} /></Link></S.DivLogo>
 
-        <S.Hamburger onClick={() => setAberto(!aberto)}>
-          <S.Linha />
-          <S.Linha />
-          <S.Linha />
-        </S.Hamburger>
-      </S.Container>
+  <S.MenuInner>
+    <S.UlMenu>
+      <S.LiMenu><Link to="/" onClick={() => setSubMenuAtivo(null)}>Home</Link></S.LiMenu>
+      <S.LinhaVer />
+      <S.LiMenu
+        ref={servicosRef}
+        onMouseEnter={() => abrirSub('servicos', servicosRef)}
+        onMouseLeave={fecharSub}
+      >
+        Serviços ▾
+      </S.LiMenu>
+      <S.LinhaVer />
+      <S.LiMenu
+        ref={obrasRef}
+        onMouseEnter={() => abrirSub('obras', obrasRef)}
+        onMouseLeave={fecharSub}
+      >
+        Obras ▾
+      </S.LiMenu>
+      <S.LinhaVer />
+      <S.LiMenu><Link to="/Quemsomos" onClick={() => setSubMenuAtivo(null)}>Quem Somos</Link></S.LiMenu>
+      <S.LinhaVer />
+      <S.LiMenu><Link to="/Subpagina" onClick={() => setSubMenuAtivo(null)}>Trabalhe Conosco</Link></S.LiMenu>
+      <S.LinhaVer />
+      <S.LiMenu><Link to="/Contato" onClick={() => setSubMenuAtivo(null)}>Contato</Link></S.LiMenu>
+    </S.UlMenu>
+
+    <S.Hamburger onClick={() => setAberto(!aberto)}>
+      <S.Linha />
+      <S.Linha />
+      <S.Linha />
+    </S.Hamburger>
+  </S.MenuInner>
+</S.Container>
 
       <S.SubMenu $scrolled={scrolled} $aberto={subMenuAtivo === 'servicos'} $left={subMenuLeft}
         onMouseEnter={() => abrirSub('servicos', servicosRef)}
