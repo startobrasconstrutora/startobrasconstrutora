@@ -5,12 +5,13 @@ import BannerFull from '../components/BannerFull.jsx'
 import BannerImagemFull from '../components/BannerImagemFull.jsx'
 import SwiperObras from '../components/SwiperObras.jsx'
 import slide1 from "../assets/img/slide1.png"
+import slide2 from "../assets/img/slide2.png"
 import banner1 from "../assets/img/banner_conjunto1.png"
 import banner2 from "../assets/img/banner_conjunto2.png"
 import banner3 from "../assets/img/banner_conjunto3.png"
 import banner4 from "../assets/img/banner_conjunto4.png"
 import texto_imagem from "../assets/img/capacete.png"
-import texto_imagem2 from "../assets/img/reforma.jpg"
+import texto_imagem2 from "../assets/img/caixa.png"
 import { Content } from '../components/DivComum.styles.jsx'
 import { Link } from 'react-router-dom'
 import { Faixa } from '../components/faixa.jsx'
@@ -23,6 +24,7 @@ function Home() {
         <SwiperMod
           slides={[
             { src: slide1, titulo: '', descricao: '' },
+             { src: slide2, titulo: '', descricao: '' },
           ]}
         />
 
@@ -61,12 +63,11 @@ function Home() {
                   <img src={texto_imagem2} alt="Obra em andamento" />
                 </S.CardImg>
                 <S.CardTexto>
-                  <h2>segunda informação</h2>
+                  <h2>Do terreno às chaves da sua casa</h2>
                   <ul>
-                    <li>Item 1</li>
-                    <li>Item 2</li>
-                    <li>Item 3</li>
-                    <li>Item 4</li>
+                    Escolha seu terreno e Cuidamos da documentação, do financiamento habitacional <br/>
+                    e da construção para você.
+                    <strong> Financiamento pela Caixa econômica Federal</strong>
                   </ul>
                 </S.CardTexto>
               </S.Card>
