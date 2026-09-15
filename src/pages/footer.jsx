@@ -62,7 +62,7 @@ const Footer = ({ onFiltrar }) => {
 
             <S.FooterMenu>
               <li>
-                <Link to="/login" title="Acessar painel administrativo">
+                <Link to="/Add" title="Acessar painel administrativo">
                   PAINEL ADM
                 </Link>
               </li>

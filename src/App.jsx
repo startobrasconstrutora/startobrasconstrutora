@@ -5,6 +5,7 @@ import MenuPrincipal from './pages/menu.jsx'
 import Footer from './pages/footer.jsx'
 import Subpagina from './pages/subpagina.jsx'
 import Quemsomos from './pages/Quemsomos.jsx'
+import Add from './pages/Add.jsx'
 import Contato from './pages/Contato.jsx'
 import ScrollToTop from "./components/ScrollToTop.jsx"
 import SocialBar from "./components/SocialBar.jsx"
@@ -21,6 +22,7 @@ function App() {
           <Route path="/subpagina" element={<Subpagina />} />
           <Route path="/Quemsomos" element={<Quemsomos />} />
           <Route path="/Contato" element={<Contato />} />
+          <Route path="/Add" element={<Add />} />
         </Routes>
         <Footer />
       </div>
