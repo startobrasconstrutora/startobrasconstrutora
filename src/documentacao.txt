@@ -17,3 +17,7 @@ vercel
 
 startobrasconstrutora.vercel.app
 githublogin
+
+supabase
+login gitgub startobras..
+database pass @startandreia20

@@ -88,9 +88,12 @@ function fecharMenu() {
       <S.LinhaVer />
       <S.LiMenu><Link to="/Quemsomos" onClick={() => setSubMenuAtivo(null)}>Quem Somos</Link></S.LiMenu>
       <S.LinhaVer />
-      <S.LiMenu><Link to="/Subpagina" onClick={() => setSubMenuAtivo(null)}>Trabalhe Conosco</Link></S.LiMenu>
-      <S.LinhaVer />
       <S.LiMenu><Link to="/Contato" onClick={() => setSubMenuAtivo(null)}>Contato</Link></S.LiMenu>
+      <S.LinhaVer />
+      <S.LiMenu><Link to="/trabalheconosco" onClick={() => setSubMenuAtivo(null)}>Trabalhe Conosco</Link></S.LiMenu>
+      <S.LinhaVer />
+      
+         <S.LiMenu><Link to="/consultaobra" onClick={() => setSubMenuAtivo(null)}>Consulte sua Obra</Link></S.LiMenu>
     </S.UlMenu>
 
     <S.Hamburger onClick={() => setAberto(!aberto)}>
@@ -149,7 +152,7 @@ function fecharMenu() {
             <S.LiSubMobile onClick={fecharMenu}>SubItem 7</S.LiSubMobile>
           </S.SubMobile>
           <S.LinhaHor />
-          <S.LiMenuMobile><Link to="/Subpagina" onClick={fecharMenu}>Item</Link></S.LiMenuMobile>
+          <S.LiMenuMobile><Link to="/consultaobra" onClick={fecharMenu}>Consulte sua Obra</Link></S.LiMenuMobile>
           <S.LinhaHor />
           <S.LiMenuMobile><Link to="/Subpagina" onClick={fecharMenu}>Item</Link></S.LiMenuMobile>
           <S.LinhaHor />

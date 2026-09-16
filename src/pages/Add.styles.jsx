@@ -7,10 +7,10 @@ display: flex;
 flex-direction: column;
 padding-top: 50px;
 justify-content: center;
-items-align: center;
+align-items: center;
   width: 100%;
   background: #ffffff;
-   color: #1e1e1e;
+    color: #1e1e1e;
   font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 `;
 
@@ -59,7 +59,7 @@ export const HeroBadge = styled.div`
 `;
 
 // =============================================================
-//  INTRO / TEXTO
+//   INTRO / TEXTO
 // =============================================================
 
 export const IntroSection = styled.section`
@@ -81,10 +81,45 @@ export const IntroContent = styled.div`
   }
 `;
 
+// =============================================================
+//   ALTERNADOR DE TELA (Adicionar / Gerenciar)
+// =============================================================
+
+export const ToggleWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0 1.5rem clamp(1.5rem, 3vw, 2.5rem);
+`;
+
+export const ToggleButton = styled.button`
+  border: 2px solid #ffb83c;
+  background: ${(props) => (props.$ativo ? "#ffb83c" : "transparent")};
+  color: #1e1e1e;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-size: clamp(0.8rem, 1vw, 0.9rem);
+  padding: 0.65rem 1.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    background: #ffb83c;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+`;
+
 export const DevSection = styled.div`
   width: 100%;
   display: flex;
-  items-align: center;
+  align-items: center;
   justify-content: center;
   padding-bottom: 40px;
 `;

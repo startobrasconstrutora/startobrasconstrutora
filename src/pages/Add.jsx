@@ -1,17 +1,20 @@
 import * as S from './Add.styles.jsx'
+import { useState } from 'react'
 
 import heroImg from "../assets/img/capacete.png"
 import AddObras from './Addobras.jsx'
-
+import AdmObras from './admobras.jsx'
 
 function Add() {
+  const [tela, setTela] = useState('gerenciar') // 'adicionar' | 'gerenciar'
+
   return (
     <S.Page>
       <S.HeroWrapper>
         <S.HeroImage>
           <img src={heroImg} alt="Obra Start Obras" />
         </S.HeroImage>
-        <S.HeroBadge>ADICIONAR OBRA</S.HeroBadge>
+        <S.HeroBadge>PAINEL ADM</S.HeroBadge>
       </S.HeroWrapper>
 
       <S.IntroSection>
@@ -24,11 +27,30 @@ function Add() {
         </S.IntroContent>
       </S.IntroSection>
 
-<S.DevSection>
-<AddObras />
-<br />
-<br />
-</S.DevSection>
+      <S.ToggleWrapper>
+        <S.ToggleButton
+          type="button"
+          $ativo={tela === 'adicionar'}
+          disabled={tela === 'adicionar'}
+          onClick={() => setTela('adicionar')}
+        >
+          ➕ ADICIONAR OBRA
+        </S.ToggleButton>
+        <S.ToggleButton
+          type="button"
+          $ativo={tela === 'gerenciar'}
+          disabled={tela === 'gerenciar'}
+          onClick={() => setTela('gerenciar')}
+        >
+          🛠️ GERENCIAR OBRAS
+        </S.ToggleButton>
+      </S.ToggleWrapper>
+
+      <S.DevSection>
+        {tela === 'adicionar' ? <AddObras /> : <AdmObras />}
+        <br />
+        <br />
+      </S.DevSection>
     </S.Page>
   )
 }

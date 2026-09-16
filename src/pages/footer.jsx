@@ -65,6 +65,7 @@ const Footer = ({ onFiltrar }) => {
                 <Link to="/Add" title="Acessar painel administrativo">
                   PAINEL ADM
                 </Link>
+             
               </li>
             </S.FooterMenu>
           </S.Mapasite>

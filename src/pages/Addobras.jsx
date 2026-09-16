@@ -1,26 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as S from './Addobras.styles.jsx';
+import { supabase } from '../supabaseClient';
+import { mascaraCPF, mascaraTelefone } from './mascaras';
 
-// Formata como CPF: 222.222.222-22
-function mascaraCPF(valor) {
-  const somenteNumeros = valor.replace(/\D/g, '').slice(0, 11);
-  return somenteNumeros
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+const ETAPAS_PADRAO = [
+  'Fundação',
+  'Estrutura',
+  'Alvenaria',
+  'Cobertura',
+  'Instalações Elétricas e Hidráulicas',
+  'Reboco / Acabamento',
+  'Pintura',
+  'Limpeza Final / Entrega',
+].map((nome, index) => ({ id: `etapa-${index}`, nome, concluida: false }));
+
+function hojeISO() {
+  return new Date().toISOString().slice(0, 10); 
 }
 
-// Formata como telefone: (99) 99999-9999 ou (99) 9999-9999
-function mascaraTelefone(valor) {
-  const somenteNumeros = valor.replace(/\D/g, '').slice(0, 11);
-  if (somenteNumeros.length <= 10) {
-    return somenteNumeros
-      .replace(/(\d{2})(\d)/, '($1) $2')
-      .replace(/(\d{4})(\d{1,4})$/, '$1-$2');
-  }
-  return somenteNumeros
-    .replace(/(\d{2})(\d)/, '($1) $2')
-    .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+function novaAtualizacaoVazia() {
+  return {
+    id: crypto.randomUUID(),
+    fotos: [], 
+    descricao: '',
+    data: hojeISO(),
+  };
+}
+
+function formatarCodigoObra(id) {
+  return `#${String(id).padStart(4, '0')}`;
 }
 
 export default function PainelProdutos({
@@ -41,20 +49,112 @@ export default function PainelProdutos({
   const [bairro, setBairro] = useState('');
   const [cidade, setCidade] = useState('');
 
-  const [descricao, setDescricao] = useState('');
-  const [imagens, setImagens] = useState([null, null, null, null, null]);
-  const [selecionados, setSelecionados] = useState([]);
+  const [tamanhoTerreno, setTamanhoTerreno] = useState('');
+  const [areaConstruida, setAreaConstruida] = useState('');
+  const [previsaoEntrega, setPrevisaoEntrega] = useState('');
 
-  function validarTamanhoImagem(index, file) {
+  const [etapas, setEtapas] = useState(ETAPAS_PADRAO);
+
+  const [descricao, setDescricao] = useState('');
+
+
+  const [atualizacoes, setAtualizacoes] = useState([novaAtualizacaoVazia()]);
+
+  const [selecionados, setSelecionados] = useState([]);
+  const [cadastrando, setCadastrando] = useState(false);
+
+
+  const [notificacao, setNotificacao] = useState(null); 
+  const notificacaoTimeoutRef = useRef(null);
+
+
+  const [proximoCodigo, setProximoCodigo] = useState('carregando...');
+
+  async function buscarProximoCodigo() {
+    const { data, error } = await supabase
+      .from('obras')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error('Erro ao buscar próximo código da obra:', error);
+      setProximoCodigo('----');
+      return;
+    }
+
+    const ultimoId = data?.[0]?.id || 0;
+    setProximoCodigo(formatarCodigoObra(ultimoId + 1));
+  }
+
+  useEffect(() => {
+    buscarProximoCodigo();
+  }, []);
+
+  useEffect(() => {
+    return () => window.clearTimeout(notificacaoTimeoutRef.current);
+  }, []);
+
+  const etapasConcluidas = etapas.filter((e) => e.concluida).length;
+  const percentualConcluido = Math.round((etapasConcluidas / etapas.length) * 100);
+
+  function toggleEtapa(id) {
+    setEtapas((prev) =>
+      prev.map((etapa) =>
+        etapa.id === id ? { ...etapa, concluida: !etapa.concluida } : etapa
+      )
+    );
+  }
+
+
+  function adicionarAtualizacao() {
+    setAtualizacoes((prev) => [...prev, novaAtualizacaoVazia()]);
+  }
+
+  function removerAtualizacao(id) {
+    setAtualizacoes((prev) => {
+      const item = prev.find((i) => i.id === id);
+      item?.fotos.forEach((foto) => URL.revokeObjectURL(foto.previewUrl));
+      return prev.filter((i) => i.id !== id);
+    });
+  }
+
+  function atualizarCampoAtualizacao(id, campo, valor) {
+    setAtualizacoes((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [campo]: valor } : item))
+    );
+  }
+
+  function adicionarFotoAtualizacao(id, file) {
     if (!file) return;
     const LIMITE_MB = 5;
     if (file.size / (1024 * 1024) > LIMITE_MB) {
       alert(`A imagem deve ter no máximo ${LIMITE_MB}MB.`);
       return;
     }
-    const novasImagens = [...imagens];
-    novasImagens[index] = file;
-    setImagens(novasImagens);
+
+    const novaFoto = {
+      id: crypto.randomUUID(),
+      arquivo: file,
+      previewUrl: URL.createObjectURL(file),
+    };
+
+    setAtualizacoes((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, fotos: [...item.fotos, novaFoto] } : item
+      )
+    );
+  }
+
+  function removerFotoAtualizacao(idAtualizacao, idFoto) {
+    setAtualizacoes((prev) =>
+      prev.map((item) => {
+        if (item.id !== idAtualizacao) return item;
+        const foto = item.fotos.find((f) => f.id === idFoto);
+        if (foto) URL.revokeObjectURL(foto.previewUrl);
+        return { ...item, fotos: item.fotos.filter((f) => f.id !== idFoto) };
+      })
+    );
   }
 
   function toggleSelecionado(id) {
@@ -63,23 +163,168 @@ export default function PainelProdutos({
     );
   }
 
-  function handleCadastrar() {
-    onCadastrar?.({
-      nomeObra,
-      tipoObra,
-      nomeProprietario,
-      cpfProprietario,
-      telefoneProprietario,
-      endereco,
-      bairro,
-      cidade,
-      descricao,
-      imagens,
-    });
+  async function handleCadastrar() {
+    if (!nomeObra.trim()) {
+      alert('Preencha o nome da obra.');
+      return;
+    }
+
+    const atualizacoesComFoto = atualizacoes.filter((item) => item.fotos.length > 0);
+    if (atualizacoesComFoto.length === 0) {
+      alert('Adicione pelo menos uma foto de atualização.');
+      return;
+    }
+    if (atualizacoesComFoto.some((item) => !item.descricao.trim())) {
+      alert('Toda atualização precisa de uma descrição contando o que foi feito.');
+      return;
+    }
+
+    setCadastrando(true);
+    try {
+
+      const atualizacoesFinal = [];
+
+      for (const item of atualizacoesComFoto) {
+        const urlsDaAtualizacao = [];
+
+        for (const foto of item.fotos) {
+          const extensao = foto.arquivo.name.split('.').pop();
+          const nomeArquivo = `${crypto.randomUUID()}.${extensao}`;
+          const caminho = `obrasandamento/${nomeArquivo}`;
+
+          const { error: erroUpload } = await supabase.storage
+            .from('obras')
+            .upload(caminho, foto.arquivo);
+
+          if (erroUpload) throw erroUpload;
+
+          const { data: urlData } = supabase.storage
+            .from('obras')
+            .getPublicUrl(caminho);
+
+          urlsDaAtualizacao.push(urlData.publicUrl);
+        }
+
+        atualizacoesFinal.push({
+          urls: urlsDaAtualizacao,
+          descricao: item.descricao.trim(),
+          data: item.data || hojeISO(),
+        });
+      }
+
+      const imagensResumo = atualizacoesFinal.flatMap((item) => item.urls);
+
+
+      const { data, error: erroInsert } = await supabase
+        .from('obras')
+        .insert({
+          nome_obra: nomeObra,
+          tipo_obra: tipoObra,
+          nome_proprietario: nomeProprietario,
+          cpf_proprietario: cpfProprietario,
+          telefone_proprietario: telefoneProprietario,
+          endereco,
+          bairro,
+          cidade,
+          descricao,
+          tamanho_terreno: tamanhoTerreno || null,
+          area_construida: areaConstruida || null,
+          previsao_entrega: previsaoEntrega || null,
+          etapas,
+          atualizacoes: atualizacoesFinal,
+          imagens: imagensResumo,
+          oculta_da_home: ocultarPrecos,
+        })
+        .select();
+
+      if (erroInsert) throw erroInsert;
+
+     
+      const obraCriada = data?.[0];
+      if (obraCriada) {
+        const codigo = formatarCodigoObra(obraCriada.id);
+        setNotificacao(codigo);
+        window.clearTimeout(notificacaoTimeoutRef.current);
+        notificacaoTimeoutRef.current = window.setTimeout(() => {
+          setNotificacao(null);
+        }, 6000);
+      }
+
+      onCadastrar?.(data);
+
+
+      buscarProximoCodigo();
+
+
+      setNomeObra('');
+      setTipoObra('construcao');
+      setNomeProprietario('');
+      setCpfProprietario('');
+      setTelefoneProprietario('');
+      setEndereco('');
+      setBairro('');
+      setCidade('');
+      setTamanhoTerreno('');
+      setAreaConstruida('');
+      setPrevisaoEntrega('');
+      setDescricao('');
+      setEtapas(ETAPAS_PADRAO.map((e) => ({ ...e })));
+      atualizacoes.forEach((item) => {
+        item.fotos.forEach((foto) => URL.revokeObjectURL(foto.previewUrl));
+      });
+      setAtualizacoes([novaAtualizacaoVazia()]);
+    } catch (erro) {
+      console.error('Erro ao cadastrar obra:', erro);
+      alert('Erro ao cadastrar obra. Veja o console para detalhes.');
+    } finally {
+      setCadastrando(false);
+    }
   }
 
   return (
     <S.Painel>
+      {notificacao && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 20,
+            right: 20,
+            zIndex: 1000,
+            background: '#1e1e1e',
+            color: '#fff',
+            padding: '16px 20px',
+            borderRadius: 10,
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            maxWidth: 340,
+          }}
+        >
+          <span style={{ fontSize: 20 }}>✅</span>
+          <div style={{ fontSize: 14, lineHeight: 1.4 }}>
+            <strong>Obra {notificacao} cadastrada!</strong>
+            <br />
+            Pode ser revisada na sessão de admin.
+          </div>
+          <button
+            type="button"
+            onClick={() => setNotificacao(null)}
+            style={{
+              marginLeft: 'auto',
+              background: 'transparent',
+              border: 'none',
+              color: '#fff',
+              fontSize: 16,
+              cursor: 'pointer',
+              lineHeight: 1,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <S.TopoAcoes>
         <S.BotaoAcao type="button" onClick={onAtualizarLista}>
           🔄 Atualizar Lista
@@ -107,6 +352,18 @@ export default function PainelProdutos({
         <S.Secao>
           <S.TituloSecao>Identificação</S.TituloSecao>
           <S.Info>
+            <S.Campo>
+              <S.Label htmlFor="codigoObra">Código da Obra</S.Label>
+              <S.Input
+                id="codigoObra"
+                type="text"
+                value={proximoCodigo}
+                disabled
+                readOnly
+                title="Gerado automaticamente. O código definitivo é confirmado ao salvar."
+              />
+            </S.Campo>
+
             <S.Camponomeobra>
               <S.Label htmlFor="nomeObra">Nome da Obra</S.Label>
               <S.Input
@@ -225,7 +482,104 @@ export default function PainelProdutos({
         </S.Secao>
 
         <S.Secao>
-          <S.TituloSecao>Descrição</S.TituloSecao>
+          <S.TituloSecao>Dados da Obra</S.TituloSecao>
+          <S.Info>
+            <S.Campo>
+              <S.Label htmlFor="tamanhoTerreno">Tamanho do Terreno (m²)</S.Label>
+              <S.Input
+                id="tamanhoTerreno"
+                type="number"
+                min="0"
+                placeholder="Ex: 360"
+                value={tamanhoTerreno}
+                onChange={(e) => setTamanhoTerreno(e.target.value)}
+              />
+            </S.Campo>
+
+            <S.Campo>
+              <S.Label htmlFor="areaConstruida">Área Construída (m²)</S.Label>
+              <S.Input
+                id="areaConstruida"
+                type="number"
+                min="0"
+                placeholder="Ex: 180"
+                value={areaConstruida}
+                onChange={(e) => setAreaConstruida(e.target.value)}
+              />
+            </S.Campo>
+
+            <S.Campo>
+              <S.Label htmlFor="previsaoEntrega">Previsão de Entrega</S.Label>
+              <S.Input
+                id="previsaoEntrega"
+                type="date"
+                value={previsaoEntrega}
+                onChange={(e) => setPrevisaoEntrega(e.target.value)}
+              />
+            </S.Campo>
+          </S.Info>
+        </S.Secao>
+
+        <S.Secao>
+          <S.TituloSecao>Etapas da Obra</S.TituloSecao>
+          <div style={{ marginBottom: 12 }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: 13,
+                fontWeight: 600,
+                marginBottom: 6,
+              }}
+            >
+              <span>Progresso</span>
+              <span>{percentualConcluido}%</span>
+            </div>
+            <div
+              style={{
+                width: '100%',
+                height: 10,
+                borderRadius: 6,
+                background: '#e6e3da',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  width: `${percentualConcluido}%`,
+                  height: '100%',
+                  background: '#ffb83c',
+                  transition: 'width 0.3s ease',
+                }}
+              />
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: 10,
+            }}
+          >
+            {etapas.map((etapa) => (
+              <label
+                key={etapa.id}
+                style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14 }}
+              >
+                <input
+                  type="checkbox"
+                  checked={etapa.concluida}
+                  onChange={() => toggleEtapa(etapa.id)}
+                />
+                {etapa.nome}
+              </label>
+            ))}
+          </div>
+        </S.Secao>
+
+        <S.Secao>
+          <S.TituloSecao>Descrição Geral</S.TituloSecao>
           <S.Campo>
             <S.ContadorTexto>{descricao.length}/2000</S.ContadorTexto>
             <S.TextArea
@@ -240,27 +594,202 @@ export default function PainelProdutos({
         </S.Secao>
 
         <S.Secao>
-          <S.TituloSecao>Imagens (máx. 5 — a primeira será a principal)</S.TituloSecao>
-          <S.DicaImagem>Proporção recomendada 1:1 (quadrado) min: 500px x 500px</S.DicaImagem>
-          <S.BlocoImagens>
-            {imagens.map((_, index) => (
-              <S.LinhaImagem key={index}>
-                <S.Label>
-                  📷 Imagem {index + 1}
-                  {index === 0 ? ' (principal)' : ''}
-                </S.Label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => validarTamanhoImagem(index, e.target.files[0])}
-                />
-              </S.LinhaImagem>
+          <S.TituloSecao>Atualizações da Obra</S.TituloSecao>
+          <S.DicaImagem>
+            Cada atualização pode ter uma ou mais fotos com uma descrição do que foi feito.
+            O cliente vê essas postagens em ordem cronológica, como um diário da obra.
+          </S.DicaImagem>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            {atualizacoes.map((item, index) => (
+              <div
+                key={item.id}
+                style={{
+                  border: '1px solid #e6e3da',
+                  borderRadius: 12,
+                  padding: 18,
+                  background: '#fbfaf8',
+                  boxShadow: '0 2px 8px rgba(30, 30, 30, 0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 14,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingBottom: 10,
+                    borderBottom: '1px solid #e6e3da',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 3,
+                        background: '#ffb83c',
+                        flexShrink: 0,
+                      }}
+                    />
+                    <strong style={{ fontSize: 14 }}>Atualização {index + 1}</strong>
+                  </div>
+                  {atualizacoes.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removerAtualizacao(item.id)}
+                      style={{
+                        border: 'none',
+                        background: 'transparent',
+                        color: '#b3453d',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        padding: '4px 8px',
+                      }}
+                    >
+                      ✕ Remover
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  <S.Label>Fotos</S.Label>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 10,
+                      marginTop: 6,
+                    }}
+                  >
+                    {item.fotos.map((foto) => (
+                      <div
+                        key={foto.id}
+                        style={{
+                          position: 'relative',
+                          width: 110,
+                          height: 110,
+                          borderRadius: 8,
+                          overflow: 'hidden',
+                          border: '1px solid #d9d6cf',
+                          background: `url(${foto.previewUrl}) center / cover no-repeat`,
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => removerFotoAtualizacao(item.id, foto.id)}
+                          title="Remover foto"
+                          style={{
+                            position: 'absolute',
+                            top: 4,
+                            right: 4,
+                            width: 22,
+                            height: 22,
+                            borderRadius: '50%',
+                            border: 'none',
+                            background: 'rgba(30, 30, 30, 0.7)',
+                            color: '#fff',
+                            fontSize: 12,
+                            lineHeight: 1,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+
+                    <label
+                      style={{
+                        width: 110,
+                        height: 110,
+                        borderRadius: 8,
+                        border: '1px dashed #d9d6cf',
+                        background: '#f3f1eb',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 4,
+                        cursor: 'pointer',
+                        color: '#6e7178',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        textAlign: 'center',
+                      }}
+                    >
+                      <span style={{ fontSize: 22 }}>＋</span>
+                      Adicionar Foto
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          adicionarFotoAtualizacao(item.id, e.target.files[0]);
+                          e.target.value = '';
+                        }}
+                        style={{
+                          position: 'absolute',
+                          width: 1,
+                          height: 1,
+                          overflow: 'hidden',
+                          opacity: 0,
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div style={{ width: 200 }}>
+                  <S.Label>Data da atualização</S.Label>
+                  <S.Input
+                    type="date"
+                    value={item.data}
+                    onChange={(e) =>
+                      atualizarCampoAtualizacao(item.id, 'data', e.target.value)
+                    }
+                  />
+                </div>
+
+                <div>
+                  <S.Label>O que foi feito?</S.Label>
+                  <S.TextArea
+                    rows={2}
+                    maxLength={500}
+                    placeholder="Ex: Concluída a fundação e iniciado o levantamento das paredes"
+                    value={item.descricao}
+                    onChange={(e) =>
+                      atualizarCampoAtualizacao(item.id, 'descricao', e.target.value)
+                    }
+                  />
+                </div>
+              </div>
             ))}
-          </S.BlocoImagens>
+
+            <button
+              type="button"
+              onClick={adicionarAtualizacao}
+              style={{
+                border: '2px dashed #ffb83c',
+                background: 'transparent',
+                color: '#1e1e1e',
+                fontWeight: 700,
+                fontSize: 14,
+                padding: '12px 20px',
+                borderRadius: 8,
+                cursor: 'pointer',
+                width: '100%',
+              }}
+            >
+              + Adicionar Atualização
+            </button>
+          </div>
         </S.Secao>
 
-        <S.BotaoEnviar type="button" onClick={handleCadastrar}>
-          Cadastrar Obra
+        <S.BotaoEnviar type="button" onClick={handleCadastrar} disabled={cadastrando}>
+          {cadastrando ? 'Cadastrando...' : 'Cadastrar Obra'}
         </S.BotaoEnviar>
       </S.Formulario>
 
