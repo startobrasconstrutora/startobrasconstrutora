@@ -81,7 +81,7 @@ export const LiMenu = styled.li`
   align-items: center;
   flex: none;
   height: 100%;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 500;
   padding: 0 18px;
   transition: 0.3s;
