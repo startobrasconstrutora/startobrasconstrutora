@@ -11,7 +11,10 @@ export const Container = styled.div`
   margin: 0px;
   width: 100%;
   height: 90px;
-  background: ${({ $scrolled }) => ($scrolled ? '#e1e1e1' : '#ffffffd1')};
+  background: ${({ $scrolled, $naHome }) => {
+    if (!$naHome) return '#fde7c2e8;'
+    return $scrolled ? '#e1e1e1' : '#ffffffd1'
+  }};
   z-index: 100;
   overflow: hidden;
 

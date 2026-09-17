@@ -1,11 +1,13 @@
 import * as S from './menu.styles.jsx'
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import logo from "../assets/img/logob.png"
 
 
 
 function MenuPrincipal() {
+  const location = useLocation()
+  const naHome = location.pathname === '/'
   const [aberto, setAberto] = useState(false)
   const [subMenuAtivo, setSubMenuAtivo] = useState(null)
   const [subMenuLeft, setSubMenuLeft] = useState(0)
@@ -63,7 +65,7 @@ function fecharMenu() {
 
   return (
     <>
- <S.Container $scrolled={scrolled}>
+ <S.Container $scrolled={scrolled} $naHome={naHome}>
   <S.DivLogo><Link to="/"><img src={logo} /></Link></S.DivLogo>
 
   <S.MenuInner>

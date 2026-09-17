@@ -1,17 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import heroImg from "../assets/img/capacete.png";
 import * as S from './Consultaobra.styles';
-
-function formatarCodigoObra(id) {
-  return `#${String(id).padStart(4, '0')}`;
-}
-
-function extrairIdDoCodigo(valor) {
-  const digitos = valor.replace(/\D/g, '');
-  if (!digitos) return null;
-  return parseInt(digitos, 10);
-}
+import {
+  formatarCodigoObra,
+  mascaraCodigoObra,
+  extrairComponentesDoCodigo,
+} from './mascaras';
 
 function mascaraCPF(valor) {
   return valor
@@ -30,19 +26,41 @@ function formatarData(dataISO) {
 }
 
 export default function ConsultaObra() {
-  const [codigo, setCodigo] = useState('');
+  // Quando a rota é /obra/:codigo, esse parâmetro vem preenchido
+  // (sempre só os dígitos, ex: "2606001"). Quando a rota é
+  // /consultaobra (busca "do zero"), vem undefined.
+  const { codigo: codigoDaUrl } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Se chegamos aqui logo depois de uma busca bem-sucedida (via navigate),
+  // a obra já vem pronta no state, evitando bater no banco de novo.
+  // Se a pessoa abriu o link direto (compartilhado), location.state é null
+  // e o CPF precisa ser digitado normalmente — o código sozinho na URL
+  // nunca é suficiente para ver os dados.
+  const obraViaNavegacao = location.state?.obra || null;
+
+  const modoLink = Boolean(codigoDaUrl);
+
+  const [codigo, setCodigo] = useState(modoLink ? mascaraCodigoObra(codigoDaUrl) : '');
   const [cpf, setCpf] = useState('');
   const [buscando, setBuscando] = useState(false);
   const [erro, setErro] = useState(null);
-  const [obra, setObra] = useState(null);
+  const [obra, setObra] = useState(obraViaNavegacao);
+  const [visualizacao, setVisualizacao] = useState(null); // { urls: string[], index: number }
 
   async function handleConsultar(e) {
     e.preventDefault();
     setErro(null);
 
-    const idObra = extrairIdDoCodigo(codigo);
-    if (!idObra) {
-      setErro('Informe o código da obra (ex: #0020).');
+    const valorDigitado = modoLink ? codigoDaUrl : codigo;
+    const componentes = extrairComponentesDoCodigo(valorDigitado);
+
+    if (!componentes) {
+      setErro('Código inválido. Confira o modelo (ex: #2020001).')
+    }
+    if (componentes.mes < 1 || componentes.mes > 12) {
+      setErro('Código inválido. Confira o modelo (ex: #2020001).')
       return;
     }
     if (cpf.replace(/\D/g, '').length !== 11) {
@@ -56,18 +74,31 @@ export default function ConsultaObra() {
       const { data, error } = await supabase
         .from('obras')
         .select('*')
-        .eq('id', idObra)
+        .eq('ano_obra', componentes.anoCompleto)
+        .eq('numero_obra', componentes.numero)
         .eq('cpf_proprietario', cpf)
         .maybeSingle();
 
       if (error) throw error;
 
-      if (!data) {
+      // Reconstrói o código a partir dos dados reais da obra encontrada
+      // e compara com o que foi digitado — isso pega, por exemplo,
+      // um mês errado digitado por engano (ex: #2601001 quando o
+      // certo era #2606001, mesmo ano e número).
+      const codigoConfere = data && formatarCodigoObra(data) === `#${componentes.digitos}`;
+
+      if (!data || !codigoConfere) {
         setErro('Não encontramos nenhuma obra com esse código e CPF. Confira os dados e tente novamente.');
         return;
       }
 
       setObra(data);
+
+      // Só atualiza a URL quando a busca partiu do formulário genérico
+      // (/consultaobra). Se já estávamos em /obra/:codigo, a URL já está certa.
+      if (!modoLink) {
+        navigate(`/obra/${componentes.digitos}`, { state: { obra: data } });
+      }
     } catch (err) {
       console.error('Erro ao consultar obra:', err);
       setErro('Não foi possível consultar a obra agora. Tente novamente em instantes.');
@@ -79,9 +110,45 @@ export default function ConsultaObra() {
   function novaConsulta() {
     setObra(null);
     setErro(null);
-    setCodigo('');
     setCpf('');
+    if (modoLink) {
+      // Sai do link direto e volta pro formulário "do zero"
+      navigate('/consultaobra');
+    } else {
+      setCodigo('');
+    }
   }
+
+  function fecharVisualizacao() {
+    setVisualizacao(null);
+  }
+
+  function fotoAnterior() {
+    setVisualizacao((prev) => {
+      if (!prev) return prev;
+      const novoIndex = (prev.index - 1 + prev.urls.length) % prev.urls.length;
+      return { ...prev, index: novoIndex };
+    });
+  }
+
+  function proximaFoto() {
+    setVisualizacao((prev) => {
+      if (!prev) return prev;
+      const novoIndex = (prev.index + 1) % prev.urls.length;
+      return { ...prev, index: novoIndex };
+    });
+  }
+
+  useEffect(() => {
+    if (!visualizacao) return;
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') fecharVisualizacao();
+      if (e.key === 'ArrowLeft') fotoAnterior();
+      if (e.key === 'ArrowRight') proximaFoto();
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [visualizacao]);
 
   const etapas = obra?.etapas || [];
   const etapasConcluidas = etapas.filter((e) => e.concluida).length;
@@ -106,20 +173,25 @@ export default function ConsultaObra() {
         {!obra ? (
           <>
             <S.Subtitulo>
-              Digite o código da obra e o CPF do proprietário para acompanhar o andamento.
+              {modoLink
+                ? `Confirme o CPF do proprietário para acompanhar a obra ${mascaraCodigoObra(codigoDaUrl)}.`
+                : 'Digite o código da obra e o CPF do proprietário para acompanhar o andamento.'}
             </S.Subtitulo>
 
             <S.Formulario onSubmit={handleConsultar}>
-              <div>
-                <S.Label htmlFor="codigoObra">Código da Obra</S.Label>
-                <S.Input
-                  id="codigoObra"
-                  type="text"
-                  placeholder="Ex: #0020"
-                  value={codigo}
-                  onChange={(e) => setCodigo(e.target.value)}
-                />
-              </div>
+              {!modoLink && (
+                <div>
+                  <S.Label htmlFor="codigoObra">Código da Obra</S.Label>
+            <S.Input
+  id="codigoObra"
+  type="text"
+  inputMode="numeric"
+  placeholder="Ex: #1010001"
+  value={codigo}
+  onChange={(e) => setCodigo(mascaraCodigoObra(e.target.value))}
+/>
+                </div>
+              )}
 
               <div>
                 <S.Label htmlFor="cpfConsulta">CPF do Proprietário</S.Label>
@@ -148,7 +220,7 @@ export default function ConsultaObra() {
             </S.BotaoVoltar>
 
             <S.CabecalhoObra>
-              <S.CodigoObra>{formatarCodigoObra(obra.id)}</S.CodigoObra>
+              <S.CodigoObra>{formatarCodigoObra(obra)}</S.CodigoObra>
               <S.Titulo>{obra.nome_obra || '(sem nome)'}</S.Titulo>
               <S.Subtitulo>
                 {[obra.bairro, obra.cidade].filter(Boolean).join(' - ')}
@@ -157,7 +229,12 @@ export default function ConsultaObra() {
             </S.CabecalhoObra>
 
             {obra.imagens?.[0] && (
-              <S.ImagemCapa src={obra.imagens[0]} alt={obra.nome_obra} />
+              <S.ImagemCapa
+                src={obra.imagens[0]}
+                alt={obra.nome_obra}
+                style={{ cursor: 'zoom-in' }}
+                onClick={() => setVisualizacao({ urls: [obra.imagens[0]], index: 0 })}
+              />
             )}
 
             <S.BlocoProgresso>
@@ -200,10 +277,11 @@ export default function ConsultaObra() {
                     <S.Paragrafo>{item.descricao}</S.Paragrafo>
                     {item.urls?.length > 0 && (
                       <S.GridFotos>
-                        {item.urls.map((url) => (
+                        {item.urls.map((url, indexFoto) => (
                           <S.FotoAtualizacao
                             key={url}
-                            style={{ backgroundImage: `url(${url})` }}
+                            style={{ backgroundImage: `url(${url})`, cursor: 'zoom-in' }}
+                            onClick={() => setVisualizacao({ urls: item.urls, index: indexFoto })}
                           />
                         ))}
                       </S.GridFotos>
@@ -215,6 +293,132 @@ export default function ConsultaObra() {
           </div>
         )}
       </S.Container>
+
+      {visualizacao && (
+        <div
+          onClick={fecharVisualizacao}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000,
+            cursor: 'zoom-out',
+            padding: 20,
+            boxSizing: 'border-box',
+          }}
+        >
+          <button
+            type="button"
+            onClick={fecharVisualizacao}
+            aria-label="Fechar"
+            style={{
+              position: 'fixed',
+              top: 20,
+              right: 24,
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: 'none',
+              background: 'rgba(255, 255, 255, 0.15)',
+              color: '#fff',
+              fontSize: 20,
+              lineHeight: 1,
+              cursor: 'pointer',
+            }}
+          >
+            ✕
+          </button>
+
+          {visualizacao.urls.length > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                fotoAnterior();
+              }}
+              aria-label="Foto anterior"
+              style={{
+                position: 'fixed',
+                left: 16,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                border: 'none',
+                background: 'rgba(255, 255, 255, 0.15)',
+                color: '#fff',
+                fontSize: 24,
+                lineHeight: 1,
+                cursor: 'pointer',
+              }}
+            >
+              ‹
+            </button>
+          )}
+
+          <img
+            src={visualizacao.urls[visualizacao.index]}
+            alt="Foto ampliada"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '90vh',
+              borderRadius: 8,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+            }}
+          />
+
+          {visualizacao.urls.length > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                proximaFoto();
+              }}
+              aria-label="Próxima foto"
+              style={{
+                position: 'fixed',
+                right: 16,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                border: 'none',
+                background: 'rgba(255, 255, 255, 0.15)',
+                color: '#fff',
+                fontSize: 24,
+                lineHeight: 1,
+                cursor: 'pointer',
+              }}
+            >
+              ›
+            </button>
+          )}
+
+          {visualizacao.urls.length > 1 && (
+            <div
+              style={{
+                position: 'fixed',
+                bottom: 24,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                color: '#fff',
+                fontSize: 13,
+                background: 'rgba(0, 0, 0, 0.4)',
+                padding: '4px 12px',
+                borderRadius: 12,
+              }}
+            >
+              {visualizacao.index + 1} / {visualizacao.urls.length}
+            </div>
+          )}
+        </div>
+      )}
     </S.Pagina>
   );
 }

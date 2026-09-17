@@ -282,16 +282,13 @@ export const ObrasSection = styled.div`
 
 export const StatsBar = styled.div`
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 60px;
   width: 100%;
-  padding: 50px 10%;
+  padding: 60px 10%;
   background: #F0A23A;
 
   @media (max-width: 768px) {
-    gap: 32px;
-    padding: 32px 8%;
+    padding: 40px 8%;
   }
 `
 
@@ -300,24 +297,43 @@ export const StatItem = styled.div`
   flex-direction: column;
   align-items: center;
   text-align: center;
-  min-width: 140px;
+  max-width: 700px;
 
   strong {
-    font-size: 2.6rem;
-    font-weight: 600;
+    font-size: 1.9rem;
+    font-weight: 700;
     color: #24231F;
-    line-height: 1;
+    line-height: 1.2;
+    position: relative;
+    padding-bottom: 18px;
+    margin-bottom: 18px;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: #24231F;
+      border-radius: 2px;
+    }
   }
 
   span {
-    margin-top: 8px;
-    font-size: 0.95rem;
-    color: #4a4738;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #3a3729;
   }
 
   @media (max-width: 768px) {
     strong {
-      font-size: 2rem;
+      font-size: 1.5rem;
+    }
+
+    span {
+      font-size: 0.9rem;
     }
   }
 `

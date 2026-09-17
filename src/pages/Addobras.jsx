@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import * as S from './Addobras.styles.jsx';
 import { supabase } from '../supabaseClient';
-import { mascaraCPF, mascaraTelefone } from './mascaras';
+import { mascaraCPF, mascaraTelefone, formatarCodigoObra } from './mascaras';
 
 const ETAPAS_PADRAO = [
   'Fundação',
@@ -25,10 +25,6 @@ function novaAtualizacaoVazia() {
     descricao: '',
     data: hojeISO(),
   };
-}
-
-function formatarCodigoObra(id) {
-  return `#${String(id).padStart(4, '0')}`;
 }
 
 export default function PainelProdutos({
@@ -68,24 +64,34 @@ export default function PainelProdutos({
   const notificacaoTimeoutRef = useRef(null);
 
 
+  // Prévia do próximo código. É só uma estimativa (mostrada antes de
+  // salvar) — o código definitivo vem do banco depois do cadastro,
+  // já que quem gera o número real é o Supabase (evita duplicar
+  // números se dois cadastros acontecerem ao mesmo tempo).
   const [proximoCodigo, setProximoCodigo] = useState('carregando...');
 
   async function buscarProximoCodigo() {
-    const { data, error } = await supabase
-      .from('obras')
-      .select('id')
-      .order('id', { ascending: false })
-      .limit(1);
+  const agora = new Date();
+  const anoAtual = agora.getFullYear();
 
-    if (error) {
-      console.error('Erro ao buscar próximo código da obra:', error);
-      setProximoCodigo('----');
-      return;
-    }
+  const { data, error } = await supabase.rpc('obras_previsualizar_proximo_numero', {
+    p_ano: anoAtual,
+  });
 
-    const ultimoId = data?.[0]?.id || 0;
-    setProximoCodigo(formatarCodigoObra(ultimoId + 1));
+  if (error) {
+    console.error('Erro ao buscar próximo código da obra:', error);
+    setProximoCodigo('----');
+    return;
   }
+
+  setProximoCodigo(
+    formatarCodigoObra({
+      ano_obra: anoAtual,
+      mes_obra: agora.getMonth() + 1,
+      numero_obra: data,
+    })
+  );
+}
 
   useEffect(() => {
     buscarProximoCodigo();
@@ -240,9 +246,11 @@ export default function PainelProdutos({
       if (erroInsert) throw erroInsert;
 
      
+      // O código real (ano_obra, mes_obra, numero_obra) foi gerado
+      // pelo Supabase (trigger) e já vem pronto na linha inserida.
       const obraCriada = data?.[0];
       if (obraCriada) {
-        const codigo = formatarCodigoObra(obraCriada.id);
+        const codigo = formatarCodigoObra(obraCriada);
         setNotificacao(codigo);
         window.clearTimeout(notificacaoTimeoutRef.current);
         notificacaoTimeoutRef.current = window.setTimeout(() => {

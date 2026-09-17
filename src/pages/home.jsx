@@ -16,6 +16,7 @@ import { Content } from '../components/DivComum.styles.jsx'
 import { Link } from 'react-router-dom'
 import { Faixa } from '../components/faixa.jsx'
 import { Reveal } from '../components/Reveal.jsx'
+import MateriasHome from '../components/MateriasHome.jsx'
 
 function Home() {
   return (
@@ -78,16 +79,9 @@ function Home() {
 <Reveal delay={0.1}>
           <S.StatsBar>
             <S.StatItem>
-              <strong>25</strong>
-              <span>funcionarios por exemplo</span>
-            </S.StatItem>
-            <S.StatItem>
-              <strong>20</strong>
-              <span>Obras entregues</span>
-            </S.StatItem>
-            <S.StatItem>
-              <strong>100</strong>
-              <span>Clientes atendidos por exemplo</span>
+              <strong>Confiança que se constrói</strong>
+              <span>Construir é um compromisso que não aceita atalhos. Nossa equipe própria acompanha sua obra do início ao fim, garantindo qualidade, 
+                segurança e o cuidado que sua família e seu investimento merecem.</span>
             </S.StatItem>
           </S.StatsBar>
           </Reveal>
@@ -107,6 +101,11 @@ function Home() {
             />
           </S.ObrasSection>
 </Reveal>
+
+<Reveal delay={0.3}>
+          <MateriasHome />
+</Reveal>
+
         </S.Container>
       </div>
     </>

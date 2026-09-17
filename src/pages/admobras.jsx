@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as S from './admobras.styles.jsx';
 import { supabase } from '../supabaseClient';
-import { mascaraCPF, mascaraTelefone, caminhoDoStorage } from './mascaras';
-
-// Formata o id numérico da obra (gerado automaticamente pelo Supabase) como código #0020
-function formatarCodigoObra(id) {
-  return `#${String(id).padStart(4, '0')}`;
-}
+import { mascaraCPF, mascaraTelefone, caminhoDoStorage, formatarCodigoObra } from './mascaras';
 
 const CAMPOS_VAZIOS = {
   nome_obra: '',
@@ -425,7 +420,7 @@ function CardObra({ obra, selecionado, onToggleSelecionado, onEditar, onExcluir 
       <S.CardCorpo>
         <S.NomeObra>
           <span style={{ opacity: 0.6, fontWeight: 600, marginRight: 6 }}>
-            {formatarCodigoObra(obra.id)}
+            {formatarCodigoObra(obra)}
           </span>
           {obra.nome_obra || '(sem nome)'}
         </S.NomeObra>
@@ -492,7 +487,7 @@ function FormularioEdicao({
   return (
     <S.PainelEdicao>
       <S.TituloLista style={{ fontSize: 18 }}>
-        {formatarCodigoObra(obra.id)} — Editando: {obra.nome_obra || '(sem nome)'}
+        {formatarCodigoObra(obra)} — Editando: {obra.nome_obra || '(sem nome)'}
       </S.TituloLista>
 
       <div>
@@ -518,7 +513,7 @@ function FormularioEdicao({
                 cursor: 'not-allowed',
               }}
               type="text"
-              value={formatarCodigoObra(obra.id)}
+              value={formatarCodigoObra(obra)}
               disabled
               readOnly
               title="O código é definido automaticamente e não pode ser alterado."

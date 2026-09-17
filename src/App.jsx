@@ -12,6 +12,7 @@ import Trabalhe from './pages/Trabalhe.jsx'
 import ConsultaObra from './pages/Consultaobra.jsx'
 import ScrollToTop from "./components/ScrollToTop.jsx"
 import SocialBar from "./components/SocialBar.jsx"
+import Materia from './pages/Materia.jsx'
 
 function App() {
   return (
@@ -29,6 +30,8 @@ function App() {
           <Route path="/Admobras" element={<Admobras />} />
           <Route path="/consultaobra" element={<ConsultaObra />} />
           <Route path="/trabalheconosco" element={<Trabalhe />} />
+          <Route path="/obra/:codigo" element={<ConsultaObra />} />
+          <Route path="/materia/:id" element={<Materia />} />
         </Routes>
         <Footer />
       </div>

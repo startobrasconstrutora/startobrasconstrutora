@@ -4,9 +4,27 @@ import { useState } from 'react'
 import heroImg from "../assets/img/capacete.png"
 import AddObras from './Addobras.jsx'
 import AdmObras from './admobras.jsx'
+import AddMateria from './AddMateria.jsx'
+import AdmMaterias from './AdmMaterias.jsx'
 
 function Add() {
-  const [tela, setTela] = useState('gerenciar') // 'adicionar' | 'gerenciar'
+  const [tela, setTela] = useState('gerenciar-obra')
+  // 'adicionar-obra' | 'gerenciar-obra' | 'adicionar-materia' | 'gerenciar-materia'
+
+  function renderTela() {
+    switch (tela) {
+      case 'adicionar-obra':
+        return <AddObras />
+      case 'gerenciar-obra':
+        return <AdmObras />
+      case 'adicionar-materia':
+        return <AddMateria />
+      case 'gerenciar-materia':
+        return <AdmMaterias />
+      default:
+        return null
+    }
+  }
 
   return (
     <S.Page>
@@ -20,9 +38,11 @@ function Add() {
       <S.IntroSection>
         <S.IntroContent>
           <p>
-            Adicione aqui as obras que você deseja exibir em nosso site. Preencha os campos necessários com informações precisas e relevantes sobre cada obra, 
-            incluindo imagens, descrições detalhadas e quaisquer outros detalhes importantes. Isso nos ajudará a manter nosso portfólio atualizado e a 
-            fornecer aos visitantes uma visão completa de nossos projetos.
+            Gerencie por aqui o conteúdo do site de forma prática e centralizada. 
+            Utilize as opções abaixo para cadastrar e atualizar o portfólio de obras 
+            com imagens e descrições detalhadas, ou para publicar e administrar as 
+            matérias e novidades. Isso garante que nosso canal esteja sempre atualizado 
+            e ofereça uma visão completa de nossos projetos e conteúdos aos visitantes.
           </p>
         </S.IntroContent>
       </S.IntroSection>
@@ -30,24 +50,40 @@ function Add() {
       <S.ToggleWrapper>
         <S.ToggleButton
           type="button"
-          $ativo={tela === 'adicionar'}
-          disabled={tela === 'adicionar'}
-          onClick={() => setTela('adicionar')}
+          $ativo={tela === 'adicionar-obra'}
+          disabled={tela === 'adicionar-obra'}
+          onClick={() => setTela('adicionar-obra')}
         >
           ➕ ADICIONAR OBRA
         </S.ToggleButton>
         <S.ToggleButton
           type="button"
-          $ativo={tela === 'gerenciar'}
-          disabled={tela === 'gerenciar'}
-          onClick={() => setTela('gerenciar')}
+          $ativo={tela === 'gerenciar-obra'}
+          disabled={tela === 'gerenciar-obra'}
+          onClick={() => setTela('gerenciar-obra')}
         >
           🛠️ GERENCIAR OBRAS
+        </S.ToggleButton>
+        <S.ToggleButton
+          type="button"
+          $ativo={tela === 'adicionar-materia'}
+          disabled={tela === 'adicionar-materia'}
+          onClick={() => setTela('adicionar-materia')}
+        >
+          📰 ADICIONAR MATÉRIA
+        </S.ToggleButton>
+        <S.ToggleButton
+          type="button"
+          $ativo={tela === 'gerenciar-materia'}
+          disabled={tela === 'gerenciar-materia'}
+          onClick={() => setTela('gerenciar-materia')}
+        >
+          🗂️ GERENCIAR MATÉRIAS
         </S.ToggleButton>
       </S.ToggleWrapper>
 
       <S.DevSection>
-        {tela === 'adicionar' ? <AddObras /> : <AdmObras />}
+        {renderTela()}
         <br />
         <br />
       </S.DevSection>
