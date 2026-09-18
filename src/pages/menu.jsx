@@ -122,7 +122,7 @@ function fecharMenu() {
         onMouseLeave={fecharSub}
       >
         <S.ListaSubMenu>
-          <S.ListaSubMenuLi>Obras em Andamento</S.ListaSubMenuLi>
+          <S.ListaSubMenuLi><Link to="/consultaobra" onClick={fecharMenu}>Consulte sua Obra</Link></S.ListaSubMenuLi>
           <S.ListaSubMenuLi>Obras Concluídas</S.ListaSubMenuLi>
             <S.ListaSubMenuLi>Terrenos à Venda</S.ListaSubMenuLi>
           <S.ListaSubMenuLi>Casas à venda</S.ListaSubMenuLi>

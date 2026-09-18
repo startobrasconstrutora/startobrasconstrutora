@@ -12,7 +12,7 @@ export const Container = styled.div`
   width: 100%;
   height: 90px;
   background: ${({ $scrolled, $naHome }) => {
-    if (!$naHome) return '#fde7c2e8;'
+    if (!$naHome) return '#c5c4c2bd;'
     return $scrolled ? '#e1e1e1' : '#ffffffd1'
   }};
   z-index: 100;
@@ -159,6 +159,11 @@ export const ListaSubMenuLi = styled.li`
   white-space: nowrap;
   padding: 6px 20px;
   margin: 0;
+
+   a {
+    text-decoration: none;
+    color: #000000;
+  }
 
   &:hover {
     text-decoration: underline;

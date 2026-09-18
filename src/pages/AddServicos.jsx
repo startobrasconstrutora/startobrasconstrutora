@@ -43,7 +43,7 @@ export default function AddServicos() {
       // Carregar obras
       const { data: obrasData, error: obrasError } = await supabase
         .from('obras')
-        .select('id, nome_obra')
+        .select('id, codigo_obra, nome_obra')
         .order('nome_obra', { ascending: true });
 
       if (obrasError) throw obrasError;
@@ -108,7 +108,7 @@ export default function AddServicos() {
         .from('servicos_colaborador')
         .insert({
           colaborador_id: colaboradorId,
-          obra_id: obraId,
+          codigo_obra: obraId,
           descricao_servico: descricaoServico,
           data_inicio: dataInicio,
           data_fim: dataFim,
@@ -250,8 +250,8 @@ export default function AddServicos() {
               >
                 <option value="">Selecione uma obra...</option>
                 {obras.map((obra) => (
-                  <option key={obra.id} value={obra.id}>
-                    {obra.nome_obra}
+                  <option key={obra.id} value={obra.codigo_obra}>
+                    {obra.codigo_obra} - {obra.nome_obra}
                   </option>
                 ))}
               </select>

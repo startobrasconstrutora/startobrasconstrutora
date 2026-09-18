@@ -27,27 +27,28 @@ export default function AdmServicos() {
       setCarregando(true);
 
       // Carregar serviços com dados relacionados
-      const { data: servicosData, error: servicosError } = await supabase
-        .from('servicos_colaborador')
-        .select(`
-          id,
-          descricao_servico,
-          data_inicio,
-          data_fim,
-          valor_diaria,
-          valor_total,
-          observacoes,
-          data_cadastro,
-          colaboradores (
-            id,
-            nome_completo
-          ),
-          obras (
-            id,
-            nome_obra
-          )
-        `)
-        .order('data_cadastro', { ascending: false });
+const { data: servicosData, error: servicosError } = await supabase
+  .from('servicos_colaborador')
+  .select(`
+    id,
+    descricao_servico,
+    data_inicio,
+    data_fim,
+    valor_diaria,
+    valor_total,
+    observacoes,
+    data_cadastro,
+    colaboradores (
+      id,
+      nome_completo
+    ),
+    obras (
+      id,
+      nome_obra,
+      codigo_obra
+    )
+  `)
+  .order('data_cadastro', { ascending: false });
 
       if (servicosError) throw servicosError;
 
@@ -62,7 +63,7 @@ export default function AdmServicos() {
       // Carregar obras
       const { data: obrasData, error: obrasError } = await supabase
         .from('obras')
-        .select('id, nome_obra')
+        .select('id, codigo_obra, nome_obra')
         .order('nome_obra', { ascending: true });
 
       if (obrasError) throw obrasError;
@@ -78,16 +79,16 @@ export default function AdmServicos() {
     }
   }
 
-  function filtrarServicos() {
-    if (filtro === 'todos') return servicos;
-    if (filtro === 'colaborador') {
-      return servicos.filter((s) => s.colaboradores.id === filtroValor);
-    }
-    if (filtro === 'obra') {
-      return servicos.filter((s) => s.obras.id === filtroValor);
-    }
-    return servicos;
+function filtrarServicos() {
+  if (filtro === 'todos') return servicos;
+  if (filtro === 'colaborador') {
+    return servicos.filter((s) => s.colaboradores?.id === filtroValor);
   }
+  if (filtro === 'obra') {
+    return servicos.filter((s) => s.obras?.codigo_obra === filtroValor);
+  }
+  return servicos;
+}
 
   function calcularDias(dataInicio, dataFim) {
     const inicio = new Date(dataInicio);
@@ -281,8 +282,8 @@ export default function AdmServicos() {
               >
                 <option value="">Selecione...</option>
                 {obras.map((obra) => (
-                  <option key={obra.id} value={obra.id}>
-                    {obra.nome_obra}
+                  <option key={obra.id} value={obra.codigo_obra}>
+                    {obra.codigo_obra} - {obra.nome_obra}
                   </option>
                 ))}
               </select>
@@ -326,7 +327,7 @@ export default function AdmServicos() {
                       <h4 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>
                         {servico.colaboradores.nome_completo}
                         <span style={{ fontSize: 13, fontWeight: 400, color: '#a7a49c', marginLeft: 8 }}>
-                          em {servico.obras.nome_obra}
+                          em {servico.obras.codigo_obra} - {servico.obras.nome_obra}
                         </span>
                       </h4>
 

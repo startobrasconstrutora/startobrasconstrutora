@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as S from './admobras.styles.jsx';
 import { supabase } from '../supabaseClient';
-import { mascaraCPF, mascaraTelefone, caminhoDoStorage, formatarCodigoObra } from './mascaras';
+import { mascaraCPF, mascaraTelefone, caminhoDoStorage } from './mascaras';
 
 const CAMPOS_VAZIOS = {
+  codigo_obra: '',
   nome_obra: '',
   tipo_obra: 'construcao',
   nome_proprietario: '',
@@ -30,11 +31,16 @@ export default function PainelGerenciarObras() {
   const [imagensParaRemover, setImagensParaRemover] = useState([]);
   const [novasImagens, setNovasImagens] = useState([]);
 
-  // NOVO: controle de edição das atualizações da obra (fotos+descrição+data)
-  const [atualizacoesParaRemover, setAtualizacoesParaRemover] = useState([]); // índices marcados p/ excluir a atualização inteira
-  const [fotosAtualizacaoParaRemover, setFotosAtualizacaoParaRemover] = useState([]); // { atualizacaoIndex, url }
+  const [atualizacoesParaRemover, setAtualizacoesParaRemover] = useState([]);
+  const [fotosAtualizacaoParaRemover, setFotosAtualizacaoParaRemover] = useState([]);
 
   const [salvando, setSalvando] = useState(false);
+
+  // Estado para controlar a mudança de código_obra
+  const [codigoObraAntigo, setCodigoObraAntigo] = useState('');
+  const [codigoObraEditando, setCodigoObraEditando] = useState('');
+  const [mostrarConfirmacaoCodigo, setMostrarConfirmacaoCodigo] = useState(false);
+  const [erroCodigoObra, setErroCodigoObra] = useState('');
 
   useEffect(() => {
     buscarObras();
@@ -63,16 +69,17 @@ export default function PainelGerenciarObras() {
     );
   }
 
-  // ---------- Edição ----------
-
-  function iniciarEdicao(obra) {
-    setEditandoId(obra.id);
-    setFormEdicao({ ...CAMPOS_VAZIOS, ...obra });
-    setImagensParaRemover([]);
-    setNovasImagens([]);
-    setAtualizacoesParaRemover([]);
-    setFotosAtualizacaoParaRemover([]);
-  }
+function iniciarEdicao(obra) {
+  setEditandoId(obra.id);
+  setFormEdicao({ ...CAMPOS_VAZIOS, ...obra });
+  setCodigoObraAntigo(obra.codigo_obra || '');
+  setCodigoObraEditando(obra.codigo_obra || '');   // ← garante string vazia se for null
+  setImagensParaRemover([]);
+  setNovasImagens([]);
+  setAtualizacoesParaRemover([]);
+  setFotosAtualizacaoParaRemover([]);
+  setErroCodigoObra('');
+}
 
   function cancelarEdicao() {
     setEditandoId(null);
@@ -81,10 +88,53 @@ export default function PainelGerenciarObras() {
     setNovasImagens([]);
     setAtualizacoesParaRemover([]);
     setFotosAtualizacaoParaRemover([]);
+    setMostrarConfirmacaoCodigo(false);
+    setErroCodigoObra('');
   }
 
   function atualizarCampo(campo, valor) {
     setFormEdicao((prev) => ({ ...prev, [campo]: valor }));
+  }
+
+function validarCodigoObra(codigo) {
+  const apenasNumeros = codigo.replace(/\D/g, '');
+  if (apenasNumeros.length < 4 || apenasNumeros.length > 10) {
+    setErroCodigoObra('O código deve conter entre 4 e 10 dígitos numéricos');
+    return false;
+  }
+  setErroCodigoObra('');
+  return true;
+}
+
+function handleCodigoObraChange(valor) {
+  let apenasNumeros = valor.replace(/\D/g, '');
+  if (apenasNumeros.length > 10) apenasNumeros = apenasNumeros.slice(0, 10);
+
+  setCodigoObraEditando(apenasNumeros);
+
+  if (apenasNumeros.length >= 4 && apenasNumeros.length <= 10) {
+    setErroCodigoObra('');
+  }
+}
+
+  function tentarAlterarCodigo() {
+    if (!validarCodigoObra(codigoObraEditando)) {
+      return;
+    }
+
+    if (codigoObraEditando !== codigoObraAntigo) {
+      setMostrarConfirmacaoCodigo(true);
+    }
+  }
+
+  function confirmarAlteracaoCodigo() {
+    atualizarCampo('codigo_obra', codigoObraEditando);
+    setMostrarConfirmacaoCodigo(false);
+  }
+
+  function cancelarAlteracaoCodigo() {
+    setCodigoObraEditando(codigoObraAntigo);
+    setMostrarConfirmacaoCodigo(false);
   }
 
   function alternarRemocaoImagem(url) {
@@ -93,8 +143,6 @@ export default function PainelGerenciarObras() {
     );
   }
 
-  // Reordena o array de imagens via arrastar e soltar.
-  // A posição 0 do array continua sendo a capa/imagem principal.
   function reordenarImagens(indiceOrigem, indiceDestino) {
     setFormEdicao((prev) => {
       const imagens = [...(prev.imagens || [])];
@@ -117,8 +165,6 @@ export default function PainelGerenciarObras() {
   function removerNovaImagem(index) {
     setNovasImagens((prev) => prev.filter((_, i) => i !== index));
   }
-
-  // ---------- Atualizações da obra (fotos + descrição + data) ----------
 
   function atualizarCampoAtualizacao(index, campo, valor) {
     setFormEdicao((prev) => {
@@ -155,7 +201,6 @@ export default function PainelGerenciarObras() {
   }
 
   async function salvarEdicao(id) {
-    // Validação: nenhuma atualização (que não vá ser excluída inteira) pode ficar sem foto nenhuma
     const atualizacoesInvalidas = (formEdicao.atualizacoes || []).some((item, index) => {
       if (atualizacoesParaRemover.includes(index)) return false;
       const urlsRestantes = (item.urls || []).filter(
@@ -172,7 +217,6 @@ export default function PainelGerenciarObras() {
 
     setSalvando(true);
     try {
-      // 1. Envia as imagens novas pro Storage
       const urlsNovas = [];
       for (const arquivo of novasImagens) {
         const extensao = arquivo.name.split('.').pop();
@@ -190,8 +234,6 @@ export default function PainelGerenciarObras() {
         urlsNovas.push(urlData.publicUrl);
       }
 
-      // 2. Junta todas as fotos que precisam sumir do Storage: imagens removidas +
-      // fotos de atualizações removidas individualmente + fotos de atualizações excluídas inteiras
       const urlsDeAtualizacoesExcluidas = (formEdicao.atualizacoes || [])
         .filter((_, index) => atualizacoesParaRemover.includes(index))
         .flatMap((item) => item.urls || []);
@@ -211,29 +253,26 @@ export default function PainelGerenciarObras() {
           .from('obras')
           .remove(caminhosParaApagar);
         if (erroRemocao) {
-          // Não interrompe o salvamento por causa disso, só avisa no console
           console.error('Erro ao remover imagens do Storage:', erroRemocao);
         }
       }
 
-      // 3. Monta o array final de imagens (mantidas, já na ordem escolhida + novas no fim)
       const imagensFinal = (formEdicao.imagens || [])
         .filter((url) => !imagensParaRemover.includes(url))
         .concat(urlsNovas);
 
-      // 4. Monta o array final de atualizações: remove as excluídas inteiras e,
-      // dentro das que ficam, remove as fotos marcadas individualmente
       const atualizacoesFinal = (formEdicao.atualizacoes || [])
-        .filter((_, index) => !atualizacoesParaRemover.includes(index))
-        .map((item, index) => ({
+        .map((item, index) => ({ item, index }))
+        .filter(({ index }) => !atualizacoesParaRemover.includes(index))
+        .map(({ item, index }) => ({
           ...item,
           urls: (item.urls || []).filter((url) => !fotoDaAtualizacaoMarcada(index, url)),
         }));
 
-      // 5. Atualiza a linha na tabela
       const { error: erroUpdate } = await supabase
         .from('obras')
         .update({
+          codigo_obra: formEdicao.codigo_obra,
           nome_obra: formEdicao.nome_obra,
           tipo_obra: formEdicao.tipo_obra,
           nome_proprietario: formEdicao.nome_proprietario,
@@ -259,8 +298,6 @@ export default function PainelGerenciarObras() {
       setSalvando(false);
     }
   }
-
-  // ---------- Exclusão ----------
 
   async function excluirObra(obra) {
     const confirmar = window.confirm(
@@ -331,8 +368,6 @@ export default function PainelGerenciarObras() {
     }
   }
 
-  // ---------- Render ----------
-
   return (
     <S.Wrapper>
       <S.CabecalhoLista>
@@ -382,6 +417,14 @@ export default function PainelGerenciarObras() {
               salvando={salvando}
               onSalvar={() => salvarEdicao(obra.id)}
               onCancelar={cancelarEdicao}
+              codigoObraEditando={codigoObraEditando}
+              handleCodigoObraChange={handleCodigoObraChange}
+              tentarAlterarCodigo={tentarAlterarCodigo}
+              mostrarConfirmacaoCodigo={mostrarConfirmacaoCodigo}
+              confirmarAlteracaoCodigo={confirmarAlteracaoCodigo}
+              cancelarAlteracaoCodigo={cancelarAlteracaoCodigo}
+              codigoObraAntigo={codigoObraAntigo}
+              erroCodigoObra={erroCodigoObra}
             />
           ) : (
             <CardObra
@@ -420,7 +463,7 @@ function CardObra({ obra, selecionado, onToggleSelecionado, onEditar, onExcluir 
       <S.CardCorpo>
         <S.NomeObra>
           <span style={{ opacity: 0.6, fontWeight: 600, marginRight: 6 }}>
-            {formatarCodigoObra(obra)}
+            {obra.codigo_obra || 'N/A'}
           </span>
           {obra.nome_obra || '(sem nome)'}
         </S.NomeObra>
@@ -457,8 +500,15 @@ function FormularioEdicao({
   salvando,
   onSalvar,
   onCancelar,
+  codigoObraEditando,
+  handleCodigoObraChange,
+  tentarAlterarCodigo,
+  mostrarConfirmacaoCodigo,
+  confirmarAlteracaoCodigo,
+  cancelarAlteracaoCodigo,
+  codigoObraAntigo,
+  erroCodigoObra,
 }) {
-  // Estado local só do drag-and-drop das miniaturas de imagens
   const [indiceArrastando, setIndiceArrastando] = useState(null);
   const [indiceSobre, setIndiceSobre] = useState(null);
 
@@ -467,7 +517,7 @@ function FormularioEdicao({
   }
 
   function handleDragOver(e, index) {
-    e.preventDefault(); // necessário pra permitir o drop
+    e.preventDefault();
     if (index !== indiceSobre) setIndiceSobre(index);
   }
 
@@ -486,8 +536,76 @@ function FormularioEdicao({
 
   return (
     <S.PainelEdicao>
+      {mostrarConfirmacaoCodigo && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000,
+          }}
+        >
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 12,
+              padding: 24,
+              maxWidth: 400,
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <h3 style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 600 }}>
+              Confirmar alteração do código
+            </h3>
+            <p style={{ margin: '0 0 16px', fontSize: 14, color: '#6e7178', lineHeight: 1.5 }}>
+              Tem certeza que deseja alterar o código da obra de{' '}
+              <strong>{codigoObraAntigo}</strong> para <strong>{codigoObraEditando}</strong>?
+            </p>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={cancelarAlteracaoCodigo}
+                style={{
+                  padding: '10px 16px',
+                  border: '1px solid #d9d6cf',
+                  background: '#fbfaf8',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  fontWeight: 500,
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmarAlteracaoCodigo}
+                style={{
+                  padding: '10px 16px',
+                  border: 'none',
+                  background: '#ffb83c',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#fff',
+                }}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <S.TituloLista style={{ fontSize: 18 }}>
-        {formatarCodigoObra(obra)} — Editando: {obra.nome_obra || '(sem nome)'}
+        {obra.codigo_obra} — Editando: {obra.nome_obra || '(sem nome)'}
       </S.TituloLista>
 
       <div>
@@ -503,21 +621,51 @@ function FormularioEdicao({
         >
           <div>
             <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-              Código da Obra
+              Código da Obra (10 dígitos)
             </label>
-            <input
-              style={{
-                ...inputStyle,
-                background: '#eeece5',
-                color: '#6e7178',
-                cursor: 'not-allowed',
-              }}
-              type="text"
-              value={formatarCodigoObra(obra)}
-              disabled
-              readOnly
-              title="O código é definido automaticamente e não pode ser alterado."
-            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+              <div style={{ flex: 1 }}>
+                <input
+                  style={{
+                    ...inputStyle,
+                    borderColor: erroCodigoObra ? '#b3453d' : 'inherit',
+                  }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength="10"
+                  value={codigoObraEditando}
+                  onChange={(e) => handleCodigoObraChange(e.target.value)}
+                  placeholder="1234567890"
+                />
+                {erroCodigoObra && (
+                  <div style={{ color: '#b3453d', fontSize: 12, marginTop: 4 }}>
+                    {erroCodigoObra}
+                  </div>
+                )}
+                <div style={{ fontSize: 12, color: '#6e7178', marginTop: 4 }}>
+                  {codigoObraEditando.length}/10 dígitos
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={tentarAlterarCodigo}
+                disabled={salvando}
+                style={{
+                  padding: '10px 16px',
+                  background: codigoObraEditando !== codigoObraAntigo ? '#ffb83c' : '#e6e3da',
+                  border: 'none',
+                  borderRadius: 6,
+                  cursor: codigoObraEditando !== codigoObraAntigo ? 'pointer' : 'default',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: codigoObraEditando !== codigoObraAntigo ? '#fff' : '#a7a49c',
+                  alignSelf: 'flex-start',
+                  marginTop: 6,
+                }}
+              >
+                Alterar
+              </button>
+            </div>
           </div>
 
           <div>

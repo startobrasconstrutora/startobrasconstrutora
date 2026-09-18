@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import * as S from './Addobras.styles.jsx';
 import { supabase } from '../supabaseClient';
-import { mascaraCPF, mascaraTelefone, formatarCodigoObra } from './mascaras';
+import { mascaraCPF, mascaraTelefone } from './mascaras';
 
 const ETAPAS_PADRAO = [
   'Fundação',
@@ -36,6 +36,9 @@ export default function PainelProdutos({
 }) {
   const [ocultarPrecos, setOcultarPrecos] = useState(false);
 
+  const [codigoObraPersonalizado, setCodigoObraPersonalizado] = useState('');
+  const [erroCodigoObra, setErroCodigoObra] = useState('');
+
   const [nomeObra, setNomeObra] = useState('');
   const [tipoObra, setTipoObra] = useState('construcao');
   const [nomeProprietario, setNomeProprietario] = useState('');
@@ -53,49 +56,13 @@ export default function PainelProdutos({
 
   const [descricao, setDescricao] = useState('');
 
-
   const [atualizacoes, setAtualizacoes] = useState([novaAtualizacaoVazia()]);
 
   const [selecionados, setSelecionados] = useState([]);
   const [cadastrando, setCadastrando] = useState(false);
 
-
   const [notificacao, setNotificacao] = useState(null); 
   const notificacaoTimeoutRef = useRef(null);
-
-
-  // Prévia do próximo código. É só uma estimativa (mostrada antes de
-  // salvar) — o código definitivo vem do banco depois do cadastro,
-  // já que quem gera o número real é o Supabase (evita duplicar
-  // números se dois cadastros acontecerem ao mesmo tempo).
-  const [proximoCodigo, setProximoCodigo] = useState('carregando...');
-
-  async function buscarProximoCodigo() {
-  const agora = new Date();
-  const anoAtual = agora.getFullYear();
-
-  const { data, error } = await supabase.rpc('obras_previsualizar_proximo_numero', {
-    p_ano: anoAtual,
-  });
-
-  if (error) {
-    console.error('Erro ao buscar próximo código da obra:', error);
-    setProximoCodigo('----');
-    return;
-  }
-
-  setProximoCodigo(
-    formatarCodigoObra({
-      ano_obra: anoAtual,
-      mes_obra: agora.getMonth() + 1,
-      numero_obra: data,
-    })
-  );
-}
-
-  useEffect(() => {
-    buscarProximoCodigo();
-  }, []);
 
   useEffect(() => {
     return () => window.clearTimeout(notificacaoTimeoutRef.current);
@@ -104,6 +71,27 @@ export default function PainelProdutos({
   const etapasConcluidas = etapas.filter((e) => e.concluida).length;
   const percentualConcluido = Math.round((etapasConcluidas / etapas.length) * 100);
 
+  // Validar código de obra (apenas números, exatamente 10 dígitos)
+function validarCodigoObra(codigo) {
+  const apenasNumeros = codigo.replace(/\D/g, '');
+  if (apenasNumeros.length < 4 || apenasNumeros.length > 10) {
+    setErroCodigoObra('O código deve conter entre 4 e 10 dígitos numéricos');
+    return false;
+  }
+  setErroCodigoObra('');
+  return true;
+}
+
+function handleCodigoObraChange(e) {
+  let valor = e.target.value.replace(/\D/g, '');
+  if (valor.length > 10) valor = valor.slice(0, 10);
+  setCodigoObraPersonalizado(valor);
+
+  if (valor.length >= 4 && valor.length <= 10) {
+    setErroCodigoObra('');
+  }
+}
+
   function toggleEtapa(id) {
     setEtapas((prev) =>
       prev.map((etapa) =>
@@ -111,7 +99,6 @@ export default function PainelProdutos({
       )
     );
   }
-
 
   function adicionarAtualizacao() {
     setAtualizacoes((prev) => [...prev, novaAtualizacaoVazia()]);
@@ -170,6 +157,17 @@ export default function PainelProdutos({
   }
 
   async function handleCadastrar() {
+    // Validar código de obra
+if (!codigoObraPersonalizado.trim()) {
+  alert('Preencha o código da obra (4 a 10 dígitos).');
+  return;
+}
+
+if (!validarCodigoObra(codigoObraPersonalizado)) {
+  alert('O código deve conter entre 4 e 10 dígitos numéricos.');
+  return;
+}
+
     if (!nomeObra.trim()) {
       alert('Preencha o nome da obra.');
       return;
@@ -220,10 +218,10 @@ export default function PainelProdutos({
 
       const imagensResumo = atualizacoesFinal.flatMap((item) => item.urls);
 
-
       const { data, error: erroInsert } = await supabase
         .from('obras')
         .insert({
+          codigo_obra: codigoObraPersonalizado, // Usar código personalizado
           nome_obra: nomeObra,
           tipo_obra: tipoObra,
           nome_proprietario: nomeProprietario,
@@ -245,13 +243,9 @@ export default function PainelProdutos({
 
       if (erroInsert) throw erroInsert;
 
-     
-      // O código real (ano_obra, mes_obra, numero_obra) foi gerado
-      // pelo Supabase (trigger) e já vem pronto na linha inserida.
       const obraCriada = data?.[0];
       if (obraCriada) {
-        const codigo = formatarCodigoObra(obraCriada);
-        setNotificacao(codigo);
+        setNotificacao(codigoObraPersonalizado);
         window.clearTimeout(notificacaoTimeoutRef.current);
         notificacaoTimeoutRef.current = window.setTimeout(() => {
           setNotificacao(null);
@@ -260,10 +254,8 @@ export default function PainelProdutos({
 
       onCadastrar?.(data);
 
-
-      buscarProximoCodigo();
-
-
+      // Limpar formulário
+      setCodigoObraPersonalizado('');
       setNomeObra('');
       setTipoObra('construcao');
       setNomeProprietario('');
@@ -361,15 +353,27 @@ export default function PainelProdutos({
           <S.TituloSecao>Identificação</S.TituloSecao>
           <S.Info>
             <S.Campo>
-              <S.Label htmlFor="codigoObra">Código da Obra</S.Label>
+              <S.Label htmlFor="codigoObra">Código da Obra (10 dígitos)</S.Label>
               <S.Input
                 id="codigoObra"
                 type="text"
-                value={proximoCodigo}
-                disabled
-                readOnly
-                title="Gerado automaticamente. O código definitivo é confirmado ao salvar."
+                inputMode="numeric"
+                maxLength="10"
+                placeholder="1234567890"
+                value={codigoObraPersonalizado}
+                onChange={handleCodigoObraChange}
+                style={{
+                  borderColor: erroCodigoObra ? '#b3453d' : 'inherit',
+                }}
               />
+              {erroCodigoObra && (
+                <div style={{ color: '#b3453d', fontSize: 12, marginTop: 4 }}>
+                  {erroCodigoObra}
+                </div>
+              )}
+              <div style={{ fontSize: 12, color: '#6e7178', marginTop: 6 }}>
+                {codigoObraPersonalizado.length}/10 dígitos
+              </div>
             </S.Campo>
 
             <S.Camponomeobra>
