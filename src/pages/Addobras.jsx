@@ -353,7 +353,7 @@ if (!validarCodigoObra(codigoObraPersonalizado)) {
           <S.TituloSecao>Identificação</S.TituloSecao>
           <S.Info>
             <S.Campo>
-              <S.Label htmlFor="codigoObra">Código da Obra (10 dígitos)</S.Label>
+              <S.Label htmlFor="codigoObra">Código da Obra ( de 4 a 10 dígitos)</S.Label>
               <S.Input
                 id="codigoObra"
                 type="text"
