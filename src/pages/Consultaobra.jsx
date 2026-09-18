@@ -5,8 +5,7 @@ import heroImg from "../assets/img/capacete.png";
 import * as S from './Consultaobra.styles';
 import {
   formatarCodigoObra,
-  mascaraCodigoObra,
-  extrairComponentesDoCodigo,
+  extrairDigitosDoCodigo,
 } from './mascaras';
 
 function mascaraCPF(valor) {
@@ -42,70 +41,59 @@ export default function ConsultaObra() {
 
   const modoLink = Boolean(codigoDaUrl);
 
-  const [codigo, setCodigo] = useState(modoLink ? mascaraCodigoObra(codigoDaUrl) : '');
+const [codigo, setCodigo] = useState(modoLink ? codigoDaUrl.replace(/\D/g, '') : '');
   const [cpf, setCpf] = useState('');
   const [buscando, setBuscando] = useState(false);
   const [erro, setErro] = useState(null);
   const [obra, setObra] = useState(obraViaNavegacao);
   const [visualizacao, setVisualizacao] = useState(null); // { urls: string[], index: number }
+async function handleConsultar(e) {
+  e.preventDefault();
+  setErro(null);
 
-  async function handleConsultar(e) {
-    e.preventDefault();
-    setErro(null);
+  const valorDigitado = modoLink ? codigoDaUrl : codigo;
+  const digitosCodigo = extrairDigitosDoCodigo(valorDigitado);
 
-    const valorDigitado = modoLink ? codigoDaUrl : codigo;
-    const componentes = extrairComponentesDoCodigo(valorDigitado);
-
-    if (!componentes) {
-      setErro('Código inválido. Confira o modelo (ex: #2020001).')
-    }
-    if (componentes.mes < 1 || componentes.mes > 12) {
-      setErro('Código inválido. Confira o modelo (ex: #2020001).')
-      return;
-    }
-    if (cpf.replace(/\D/g, '').length !== 11) {
-      setErro('Informe um CPF válido.');
-      return;
-    }
-
-    setBuscando(true);
-    setObra(null);
-    try {
-      const { data, error } = await supabase
-        .from('obras')
-        .select('*')
-        .eq('ano_obra', componentes.anoCompleto)
-        .eq('numero_obra', componentes.numero)
-        .eq('cpf_proprietario', cpf)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      // Reconstrói o código a partir dos dados reais da obra encontrada
-      // e compara com o que foi digitado — isso pega, por exemplo,
-      // um mês errado digitado por engano (ex: #2601001 quando o
-      // certo era #2606001, mesmo ano e número).
-      const codigoConfere = data && formatarCodigoObra(data) === `#${componentes.digitos}`;
-
-      if (!data || !codigoConfere) {
-        setErro('Não encontramos nenhuma obra com esse código e CPF. Confira os dados e tente novamente.');
-        return;
-      }
-
-      setObra(data);
-
-      // Só atualiza a URL quando a busca partiu do formulário genérico
-      // (/consultaobra). Se já estávamos em /obra/:codigo, a URL já está certa.
-      if (!modoLink) {
-        navigate(`/obra/${componentes.digitos}`, { state: { obra: data } });
-      }
-    } catch (err) {
-      console.error('Erro ao consultar obra:', err);
-      setErro('Não foi possível consultar a obra agora. Tente novamente em instantes.');
-    } finally {
-      setBuscando(false);
-    }
+  if (!digitosCodigo) {
+    setErro('Código inválido. Confira o código informado.');
+    return;
   }
+  if (cpf.replace(/\D/g, '').length !== 11) {
+    setErro('Informe um CPF válido.');
+    return;
+  }
+
+  setBuscando(true);
+  setObra(null);
+  try {
+    const { data, error } = await supabase
+      .from('obras')
+      .select('*')
+      .eq('codigo_obra', digitosCodigo)
+      .eq('cpf_proprietario', cpf)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) {
+      setErro('Não encontramos nenhuma obra com esse código e CPF. Confira os dados e tente novamente.');
+      return;
+    }
+
+    setObra(data);
+
+    // Só atualiza a URL quando a busca partiu do formulário genérico
+    // (/consultaobra). Se já estávamos em /obra/:codigo, a URL já está certa.
+    if (!modoLink) {
+      navigate(`/obra/${digitosCodigo}`, { state: { obra: data } });
+    }
+  } catch (err) {
+    console.error('Erro ao consultar obra:', err);
+    setErro('Não foi possível consultar a obra agora. Tente novamente em instantes.');
+  } finally {
+    setBuscando(false);
+  }
+}
 
   function novaConsulta() {
     setObra(null);
@@ -172,23 +160,25 @@ export default function ConsultaObra() {
       <S.Container>
         {!obra ? (
           <>
-            <S.Subtitulo>
-              {modoLink
-                ? `Confirme o CPF do proprietário para acompanhar a obra ${mascaraCodigoObra(codigoDaUrl)}.`
-                : 'Digite o código da obra e o CPF do proprietário para acompanhar o andamento.'}
-            </S.Subtitulo>
+      
+<S.Subtitulo>
+  {modoLink
+    ? `Confirme o CPF do proprietário para acompanhar a obra ${codigoDaUrl.replace(/\D/g, '')}.`
+    : 'Digite o código da obra e o CPF do proprietário para acompanhar o andamento.'}
+</S.Subtitulo>
 
             <S.Formulario onSubmit={handleConsultar}>
               {!modoLink && (
                 <div>
                   <S.Label htmlFor="codigoObra">Código da Obra</S.Label>
-            <S.Input
+<S.Input
   id="codigoObra"
   type="text"
   inputMode="numeric"
-  placeholder="Ex: #1010001"
+  maxLength={10}
+  placeholder="de 4 a 10 dígitos"
   value={codigo}
-  onChange={(e) => setCodigo(mascaraCodigoObra(e.target.value))}
+  onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 10))}
 />
                 </div>
               )}
@@ -220,7 +210,7 @@ export default function ConsultaObra() {
             </S.BotaoVoltar>
 
             <S.CabecalhoObra>
-              <S.CodigoObra>{formatarCodigoObra(obra)}</S.CodigoObra>
+      <S.CodigoObra>{formatarCodigoObra(obra)}</S.CodigoObra>
               <S.Titulo>{obra.nome_obra || '(sem nome)'}</S.Titulo>
               <S.Subtitulo>
                 {[obra.bairro, obra.cidade].filter(Boolean).join(' - ')}
