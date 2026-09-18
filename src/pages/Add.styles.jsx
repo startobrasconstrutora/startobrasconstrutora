@@ -1,16 +1,14 @@
 import styled from "styled-components";
 
-
-
 export const Page = styled.main`
-display: flex;
-flex-direction: column;
-padding-top: 50px;
-justify-content: center;
-align-items: center;
+  display: flex;
+  flex-direction: column;
+  padding-top: 50px;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   background: #ffffff;
-    color: #1e1e1e;
+  color: #1e1e1e;
   font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 `;
 
@@ -35,12 +33,11 @@ export const HeroImage = styled.div`
     height: 100%;
     object-fit: cover;
     display: block;
-filter: grayscale(100%);
+    filter: grayscale(100%);
     opacity: 0.8;
     mix-blend-mode: multiply;
   }
 `;
-
 
 export const HeroBadge = styled.div`
   position: absolute;
@@ -74,7 +71,7 @@ export const IntroContent = styled.div`
   text-align: center;
 
   p {
-      color: #1e1e1e;
+    color: #1e1e1e;
     font-size: clamp(0.85rem, 1vw, 0.95rem);
     line-height: 1.8;
     margin-bottom: 1.4rem;
@@ -87,10 +84,78 @@ export const IntroContent = styled.div`
 
 export const ToggleWrapper = styled.div`
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  padding: 0 1.5rem clamp(2rem, 4vw, 3rem);
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    padding: 0 1rem clamp(1.5rem, 3vw, 2rem);
+  }
+`;
+
+export const ToggleGroup = styled.div`
   display: flex;
-  justify-content: center;
-  gap: 1rem;
-  padding: 0 1.5rem clamp(1.5rem, 3vw, 2.5rem);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.8rem;
+  padding: 1.5rem;
+  background: #f9f8f6;
+  border-radius: 10px;
+  border: 1px solid #e6e3da;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #ffb83c;
+    box-shadow: 0 4px 12px rgba(255, 184, 60, 0.1);
+  }
+
+  @media (max-width: 640px) {
+    padding: 1.2rem;
+    gap: 0.6rem;
+  }
+`;
+
+export const ToggleGroupTitle = styled.h3`
+  margin: 0;
+  color: #1e1e1e;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid #ffb83c;
+`;
+
+export const ToggleGroupDesc = styled.p`
+  margin: 0;
+  color: #1e1e1e;
+  opacity: 0.65;
+  text-align: left;
+  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+  line-height: 1.6;
+`;
+
+export const ToggleGroupButtons = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+`;
+
+export const ToggleDivider = styled.div`
+  display: none;
 `;
 
 export const ToggleButton = styled.button`
@@ -98,21 +163,30 @@ export const ToggleButton = styled.button`
   background: ${(props) => (props.$ativo ? "#ffb83c" : "transparent")};
   color: #1e1e1e;
   font-family: inherit;
-  font-weight: 700;
-  letter-spacing: 1px;
-  font-size: clamp(0.8rem, 1vw, 0.9rem);
-  padding: 0.65rem 1.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+  padding: 0.7rem 1.4rem;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
+  text-align: center;
+  white-space: nowrap;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: #ffb83c;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
   }
 
   &:disabled {
     cursor: default;
+    opacity: 0.8;
+  }
+
+  @media (max-width: 640px) {
+    padding: 0.65rem 1.2rem;
+    font-size: 0.75rem;
   }
 `;
 
