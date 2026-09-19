@@ -1,5 +1,5 @@
 import * as S from './Add.styles.jsx'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 import heroImg from "../assets/img/capacete.png"
 import AddObras from './Addobras.jsx'
@@ -13,12 +13,20 @@ import AdmColaboradores from './AdmColaboradores.jsx'
 import AddServicos from './AddServicos.jsx'
 import AdmServicos from './AdmServicos.jsx'
 
-
 function Add() {
   const [tela, setTela] = useState('gerenciar-obra')
-  // 'adicionar-obra' | 'gerenciar-obra' | 'adicionar-obra-concluida' | 'gerenciar-obra-concluida' 
-  // | 'adicionar-materia' | 'gerenciar-materia' | 'adicionar-colaborador' | 'gerenciar-colaborador'
-  // | 'adicionar-servico' | 'gerenciar-servicos'
+  
+  // Criamos a referência para a seção de conteúdo
+  const conteudoRef = useRef(null)
+
+  // Função auxiliar para mudar a tela e fazer o scroll suave
+  function mudarTela(novaTela) {
+    setTela(novaTela)
+    // Pequeno timeout para garantir que o DOM já atualizou antes de rolar
+    setTimeout(() => {
+      conteudoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
+  }
 
   function renderTela() {
     switch (tela) {
@@ -81,7 +89,7 @@ function Add() {
               type="button"
               $ativo={tela === 'adicionar-obra'}
               disabled={tela === 'adicionar-obra'}
-              onClick={() => setTela('adicionar-obra')}
+              onClick={() => mudarTela('adicionar-obra')}
             >
               ➕ ADICIONAR OBRA
             </S.ToggleButton>
@@ -89,7 +97,7 @@ function Add() {
               type="button"
               $ativo={tela === 'gerenciar-obra'}
               disabled={tela === 'gerenciar-obra'}
-              onClick={() => setTela('gerenciar-obra')}
+              onClick={() => mudarTela('gerenciar-obra')}
             >
               🛠️ GERENCIAR OBRAS
             </S.ToggleButton>
@@ -109,7 +117,7 @@ function Add() {
               type="button"
               $ativo={tela === 'adicionar-obra-concluida'}
               disabled={tela === 'adicionar-obra-concluida'}
-              onClick={() => setTela('adicionar-obra-concluida')}
+              onClick={() => mudarTela('adicionar-obra-concluida')}
             >
               ➕ ADICIONAR CONCLUÍDA
             </S.ToggleButton>
@@ -117,7 +125,7 @@ function Add() {
               type="button"
               $ativo={tela === 'gerenciar-obra-concluida'}
               disabled={tela === 'gerenciar-obra-concluida'}
-              onClick={() => setTela('gerenciar-obra-concluida')}
+              onClick={() => mudarTela('gerenciar-obra-concluida')}
             >
               🛠️ GERENCIAR CONCLUÍDAS
             </S.ToggleButton>
@@ -137,7 +145,7 @@ function Add() {
               type="button"
               $ativo={tela === 'adicionar-materia'}
               disabled={tela === 'adicionar-materia'}
-              onClick={() => setTela('adicionar-materia')}
+              onClick={() => mudarTela('adicionar-materia')}
             >
               📰 ADICIONAR MATÉRIA
             </S.ToggleButton>
@@ -145,7 +153,7 @@ function Add() {
               type="button"
               $ativo={tela === 'gerenciar-materia'}
               disabled={tela === 'gerenciar-materia'}
-              onClick={() => setTela('gerenciar-materia')}
+              onClick={() => mudarTela('gerenciar-materia')}
             >
               🗂️ GERENCIAR MATÉRIAS
             </S.ToggleButton>
@@ -165,7 +173,7 @@ function Add() {
               type="button"
               $ativo={tela === 'adicionar-colaborador'}
               disabled={tela === 'adicionar-colaborador'}
-              onClick={() => setTela('adicionar-colaborador')}
+              onClick={() => mudarTela('adicionar-colaborador')}
             >
               👤 ADICIONAR COLABORADOR
             </S.ToggleButton>
@@ -173,7 +181,7 @@ function Add() {
               type="button"
               $ativo={tela === 'gerenciar-colaborador'}
               disabled={tela === 'gerenciar-colaborador'}
-              onClick={() => setTela('gerenciar-colaborador')}
+              onClick={() => mudarTela('gerenciar-colaborador')}
             >
               👥 GERENCIAR COLABORADORES
             </S.ToggleButton>
@@ -193,7 +201,7 @@ function Add() {
               type="button"
               $ativo={tela === 'adicionar-servico'}
               disabled={tela === 'adicionar-servico'}
-              onClick={() => setTela('adicionar-servico')}
+              onClick={() => mudarTela('adicionar-servico')}
             >
               ➕ REGISTRAR SERVIÇO
             </S.ToggleButton>
@@ -201,7 +209,7 @@ function Add() {
               type="button"
               $ativo={tela === 'gerenciar-servicos'}
               disabled={tela === 'gerenciar-servicos'}
-              onClick={() => setTela('gerenciar-servicos')}
+              onClick={() => mudarTela('gerenciar-servicos')}
             >
               📋 GERENCIAR SERVIÇOS
             </S.ToggleButton>
@@ -209,7 +217,8 @@ function Add() {
         </S.ToggleGroup>
       </S.ToggleWrapper>
 
-      <S.DevSection>
+      {/* Anexamos a ref aqui */}
+      <S.DevSection ref={conteudoRef}>
         {renderTela()}
         <br />
         <br />
