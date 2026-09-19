@@ -69,17 +69,17 @@ export default function PainelGerenciarObras() {
     );
   }
 
-function iniciarEdicao(obra) {
-  setEditandoId(obra.id);
-  setFormEdicao({ ...CAMPOS_VAZIOS, ...obra });
-  setCodigoObraAntigo(obra.codigo_obra || '');
-  setCodigoObraEditando(obra.codigo_obra || '');   // ← garante string vazia se for null
-  setImagensParaRemover([]);
-  setNovasImagens([]);
-  setAtualizacoesParaRemover([]);
-  setFotosAtualizacaoParaRemover([]);
-  setErroCodigoObra('');
-}
+  function iniciarEdicao(obra) {
+    setEditandoId(obra.id);
+    setFormEdicao({ ...CAMPOS_VAZIOS, ...obra });
+    setCodigoObraAntigo(obra.codigo_obra || '');
+    setCodigoObraEditando(obra.codigo_obra || '');
+    setImagensParaRemover([]);
+    setNovasImagens([]);
+    setAtualizacoesParaRemover([]);
+    setFotosAtualizacaoParaRemover([]);
+    setErroCodigoObra('');
+  }
 
   function cancelarEdicao() {
     setEditandoId(null);
@@ -96,26 +96,26 @@ function iniciarEdicao(obra) {
     setFormEdicao((prev) => ({ ...prev, [campo]: valor }));
   }
 
-function validarCodigoObra(codigo) {
-  const apenasNumeros = codigo.replace(/\D/g, '');
-  if (apenasNumeros.length < 4 || apenasNumeros.length > 10) {
-    setErroCodigoObra('O código deve conter entre 4 e 10 dígitos numéricos');
-    return false;
-  }
-  setErroCodigoObra('');
-  return true;
-}
-
-function handleCodigoObraChange(valor) {
-  let apenasNumeros = valor.replace(/\D/g, '');
-  if (apenasNumeros.length > 10) apenasNumeros = apenasNumeros.slice(0, 10);
-
-  setCodigoObraEditando(apenasNumeros);
-
-  if (apenasNumeros.length >= 4 && apenasNumeros.length <= 10) {
+  function validarCodigoObra(codigo) {
+    const apenasNumeros = codigo.replace(/\D/g, '');
+    if (apenasNumeros.length < 4 || apenasNumeros.length > 10) {
+      setErroCodigoObra('O código deve conter entre 4 e 10 dígitos numéricos');
+      return false;
+    }
     setErroCodigoObra('');
+    return true;
   }
-}
+
+  function handleCodigoObraChange(valor) {
+    let apenasNumeros = valor.replace(/\D/g, '');
+    if (apenasNumeros.length > 10) apenasNumeros = apenasNumeros.slice(0, 10);
+
+    setCodigoObraEditando(apenasNumeros);
+
+    if (apenasNumeros.length >= 4 && apenasNumeros.length <= 10) {
+      setErroCodigoObra('');
+    }
+  }
 
   function tentarAlterarCodigo() {
     if (!validarCodigoObra(codigoObraEditando)) {
@@ -368,25 +368,29 @@ function handleCodigoObraChange(valor) {
     }
   }
 
+  const obraSendoEditada = obras.find((o) => o.id === editandoId);
+
   return (
     <S.Wrapper>
-      <S.CabecalhoLista>
-        <S.TituloLista>Gerenciar Obras</S.TituloLista>
-        <S.AcoesLista>
-          <S.BotaoPequeno as="button" onClick={buscarObras} style={{ flex: 'none' }}>
-            🔄 Atualizar
-          </S.BotaoPequeno>
-          <S.BotaoPequeno
-            $perigo
-            as="button"
-            style={{ flex: 'none' }}
-            disabled={selecionados.length === 0 || excluindoSelecao}
-            onClick={excluirSelecionados}
-          >
-            🗑️ Excluir seleção ({selecionados.length})
-          </S.BotaoPequeno>
-        </S.AcoesLista>
-      </S.CabecalhoLista>
+      {!editandoId && (
+        <S.CabecalhoLista>
+          <S.TituloLista>Gerenciar Obras</S.TituloLista>
+          <S.AcoesLista>
+            <S.BotaoPequeno as="button" onClick={buscarObras} style={{ flex: 'none' }}>
+              🔄 Atualizar
+            </S.BotaoPequeno>
+            <S.BotaoPequeno
+              $perigo
+              as="button"
+              style={{ flex: 'none' }}
+              disabled={selecionados.length === 0 || excluindoSelecao}
+              onClick={excluirSelecionados}
+            >
+              🗑️ Excluir seleção ({selecionados.length})
+            </S.BotaoPequeno>
+          </S.AcoesLista>
+        </S.CabecalhoLista>
+      )}
 
       {erro && <S.Aviso $erro>{erro}</S.Aviso>}
       {carregando && <S.Aviso>Carregando obras...</S.Aviso>}
@@ -395,49 +399,51 @@ function handleCodigoObraChange(valor) {
         <S.VazioLista>Nenhuma obra cadastrada ainda.</S.VazioLista>
       )}
 
-      <S.Grid>
-        {obras.map((obra) =>
-          editandoId === obra.id ? (
-            <FormularioEdicao
-              key={obra.id}
-              obra={obra}
-              formEdicao={formEdicao}
-              atualizarCampo={atualizarCampo}
-              imagensParaRemover={imagensParaRemover}
-              alternarRemocaoImagem={alternarRemocaoImagem}
-              reordenarImagens={reordenarImagens}
-              novasImagens={novasImagens}
-              adicionarNovaImagem={adicionarNovaImagem}
-              removerNovaImagem={removerNovaImagem}
-              atualizacoesParaRemover={atualizacoesParaRemover}
-              alternarRemocaoAtualizacao={alternarRemocaoAtualizacao}
-              fotoDaAtualizacaoMarcada={fotoDaAtualizacaoMarcada}
-              alternarRemocaoFotoAtualizacao={alternarRemocaoFotoAtualizacao}
-              atualizarCampoAtualizacao={atualizarCampoAtualizacao}
-              salvando={salvando}
-              onSalvar={() => salvarEdicao(obra.id)}
-              onCancelar={cancelarEdicao}
-              codigoObraEditando={codigoObraEditando}
-              handleCodigoObraChange={handleCodigoObraChange}
-              tentarAlterarCodigo={tentarAlterarCodigo}
-              mostrarConfirmacaoCodigo={mostrarConfirmacaoCodigo}
-              confirmarAlteracaoCodigo={confirmarAlteracaoCodigo}
-              cancelarAlteracaoCodigo={cancelarAlteracaoCodigo}
-              codigoObraAntigo={codigoObraAntigo}
-              erroCodigoObra={erroCodigoObra}
-            />
-          ) : (
-            <CardObra
-              key={obra.id}
-              obra={obra}
-              selecionado={selecionados.includes(obra.id)}
-              onToggleSelecionado={() => toggleSelecionado(obra.id)}
-              onEditar={() => iniciarEdicao(obra)}
-              onExcluir={() => excluirObra(obra)}
-            />
-          )
-        )}
-      </S.Grid>
+      {/* Renderização Condicional: Form de Edição OU Grid de Obras */}
+      {editandoId && obraSendoEditada ? (
+        <FormularioEdicao
+          obra={obraSendoEditada}
+          formEdicao={formEdicao}
+          atualizarCampo={atualizarCampo}
+          imagensParaRemover={imagensParaRemover}
+          alternarRemocaoImagem={alternarRemocaoImagem}
+          reordenarImagens={reordenarImagens}
+          novasImagens={novasImagens}
+          adicionarNovaImagem={adicionarNovaImagem}
+          removerNovaImagem={removerNovaImagem}
+          atualizacoesParaRemover={atualizacoesParaRemover}
+          alternarRemocaoAtualizacao={alternarRemocaoAtualizacao}
+          fotoDaAtualizacaoMarcada={fotoDaAtualizacaoMarcada}
+          alternarRemocaoFotoAtualizacao={alternarRemocaoFotoAtualizacao}
+          atualizarCampoAtualizacao={atualizarCampoAtualizacao}
+          salvando={salvando}
+          onSalvar={() => salvarEdicao(obraSendoEditada.id)}
+          onCancelar={cancelarEdicao}
+          codigoObraEditando={codigoObraEditando}
+          handleCodigoObraChange={handleCodigoObraChange}
+          tentarAlterarCodigo={tentarAlterarCodigo}
+          mostrarConfirmacaoCodigo={mostrarConfirmacaoCodigo}
+          confirmarAlteracaoCodigo={confirmarAlteracaoCodigo}
+          cancelarAlteracaoCodigo={cancelarAlteracaoCodigo}
+          codigoObraAntigo={codigoObraAntigo}
+          erroCodigoObra={erroCodigoObra}
+        />
+      ) : (
+        !carregando && (
+          <S.Grid>
+            {obras.map((obra) => (
+              <CardObra
+                key={obra.id}
+                obra={obra}
+                selecionado={selecionados.includes(obra.id)}
+                onToggleSelecionado={() => toggleSelecionado(obra.id)}
+                onEditar={() => iniciarEdicao(obra)}
+                onExcluir={() => excluirObra(obra)}
+              />
+            ))}
+          </S.Grid>
+        )
+      )}
     </S.Wrapper>
   );
 }
@@ -831,10 +837,8 @@ function FormularioEdicao({
             return (
               <S.MiniaturaExistente
                 key={url}
-                $src={url}
-                $marcada={marcada}
-                $arrastando={indiceArrastando === index}
-                $sobre={indiceSobre === index && indiceArrastando !== index}
+                $src={url}$marcada={marcada}
+                $arrastando={indiceArrastando === index}$sobre={indiceSobre === index && indiceArrastando !== index}
                 draggable={!marcada}
                 onDragStart={() => handleDragStart(index)}
                 onDragOver={(e) => handleDragOver(e, index)}
@@ -974,7 +978,7 @@ function FormularioEdicao({
                         {(item.urls || []).map((url) => {
                           const marcada = fotoDaAtualizacaoMarcada(index, url);
                           return (
-                            <S.MiniaturaExistente key={url} $src={url} $marcada={marcada}>
+                            <S.MiniaturaExistente key={url} $src={url}$marcada={marcada}>
                               <S.BotaoRemoverImagem
                                 type="button"
                                 $marcada={marcada}
