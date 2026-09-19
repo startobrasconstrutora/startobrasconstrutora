@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import { Link } from 'react-router-dom'
 
 const BREAKPOINT_MOBILE = '1200px'
 
@@ -7,8 +8,8 @@ export const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0px;
-  margin: 0px;
+  padding: 0 40px; /* Aumentado para dar margem nas pontas da tela */
+  margin: 0;
   width: 100%;
   height: 90px;
   background: ${({ $scrolled, $naHome }) => {
@@ -16,38 +17,35 @@ export const Container = styled.div`
     return $scrolled ? '#e1e1e1' : '#ffffffd1'
   }};
   z-index: 100;
-  overflow: hidden;
 
   @media (max-width: ${BREAKPOINT_MOBILE}) {
     height: 70px;
+    padding: 0 20px;
   }
 `
 
 export const MenuInner = styled.div`
-  width: min(1200px, 92%);
+  width: min(1300px, 100%);
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
 `
 
 export const DivLogo = styled.div`
-  position: absolute;
-  left: calc((100% - min(1200px, 92%)) / 4);
-  top: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
+  margin-right: 30px; /* Afasta a logo dos itens do menu */
 
   img {
-    height: 70px;
+    height: 65px;
     width: auto;
   }
 
   @media (max-width: ${BREAKPOINT_MOBILE}) {
-    left: 20px;
-
+    margin-right: 0;
     img {
       height: 50px;
       width: auto;
@@ -59,12 +57,11 @@ export const UlMenu = styled.ul`
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
-  width: auto;
+  padding: 0;
   margin: 0;
   height: 100%;
   list-style: none;
-  gap: 20px;
+  gap: 12px;
 
   @media (max-width: ${BREAKPOINT_MOBILE}) {
     display: none;
@@ -84,12 +81,13 @@ export const LiMenu = styled.li`
   align-items: center;
   flex: none;
   height: 100%;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 500;
-  padding: 0 18px;
+  padding: 0 10px;
   transition: 0.3s;
   white-space: nowrap;
   color: #171717;
+  cursor: pointer;
 
   a {
     text-decoration: none;
@@ -97,15 +95,40 @@ export const LiMenu = styled.li`
   }
 
   &:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
   }
 `
 
 export const LinhaVer = styled.span`
-  width: 2px;
-  height: 40%;
+  width: 1px;
+  height: 35%;
   background: #bcbcbc;
   border-radius: 10px;
+`
+
+/* Botão em destaque empurrado para a extrema direita */
+export const CtaButton = styled(Link)`
+  margin-left: auto; /* Força o botão para a direita */
+  background-color: #ffa52f;
+  color: #171717;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 22px;
+  border-radius: 25px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.08);
+
+  &:hover {
+    background-color: #e69123;
+    transform: translateY(-2px);
+    box-shadow: 0px 6px 14px rgba(0, 0, 0, 0.12);
+  }
+
+  @media (max-width: ${BREAKPOINT_MOBILE}) {
+    display: none;
+  }
 `
 
 export const SubMenu = styled.div`
@@ -114,16 +137,16 @@ export const SubMenu = styled.div`
   justify-content: center;
   width: auto;
   height: auto;
-  padding: 10px 0;
-  padding-right: 50px;
+  padding: 12px 0;
   color: #303030;
-  background: ${({ $scrolled }) => ($scrolled ? '#ffa52ff3' : '#ffa52ff3')};
-  z-index: 50;
+  background: #ffa52ff3;
+  z-index: 101;
   position: fixed;
   top: 92px;
   left: ${({ $left }) => $left}px;
   cursor: pointer;
   border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 
   opacity: ${({ $aberto }) => ($aberto ? '1' : '0')};
   transform: translate(-50%, ${({ $aberto }) => ($aberto ? '0' : '-15px')});
@@ -153,21 +176,21 @@ export const ListaSubMenuLi = styled.li`
   align-items: center;
   justify-content: flex-start;
   width: 100%;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   transition: 0.3s;
   white-space: nowrap;
   padding: 6px 20px;
   margin: 0;
 
-   a {
+  a {
     text-decoration: none;
     color: #000000;
   }
 
   &:hover {
     text-decoration: underline;
-    text-underline-offset: 8px;
+    text-underline-offset: 6px;
     text-decoration-thickness: 2px;
     color: black;
   }
@@ -177,7 +200,6 @@ export const Hamburger = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin-right: 20px;
   width: 28px;
   height: 20px;
   cursor: pointer;
@@ -200,17 +222,35 @@ export const MenuMobile = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #ffa52ff3;
+  background: #ffa52f;
   width: 100%;
   z-index: 99;
   position: fixed;
   top: 70px;
   left: 0;
+  padding: 20px 0;
   max-height: calc(100vh - 70px);
   overflow-y: auto;
 
   @media (min-width: calc(${BREAKPOINT_MOBILE} + 1px)) {
     display: none;
+  }
+`
+
+export const CtaButtonMobile = styled(Link)`
+  background-color: #171717;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 12px 24px;
+  margin-top: 15px;
+  border-radius: 25px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: 0.3s;
+
+  &:hover {
+    background-color: #333333;
   }
 `
 
@@ -220,6 +260,7 @@ export const Overlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
   z-index: 97;
   cursor: pointer;
 `
@@ -228,11 +269,11 @@ export const LiMenuMobile = styled.li`
   display: flex;
   justify-content: center;
   align-items: center;
-  flex: 1;
-  height: 100%;
-  font-size: 1.3rem;
-  padding: 8px;
+  width: 100%;
+  font-size: 1.2rem;
+  padding: 12px 0;
   transition: 0.3s;
+  cursor: pointer;
 
   a {
     text-decoration: none;
@@ -245,10 +286,9 @@ export const LiMenuMobile = styled.li`
 `
 
 export const LinhaHor = styled.span`
-  width: 70%;
-  height: 2px;
-  background: #616161;
-  border-radius: 3px;
+  width: 80%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.15);
 `
 
 export const SubMobile = styled.div`
@@ -257,8 +297,9 @@ export const SubMobile = styled.div`
   align-items: center;
   width: 100%;
   overflow: hidden;
-  max-height: ${({ $aberto }) => ($aberto ? '400px' : '0')}; 
+  max-height: ${({ $aberto }) => ($aberto ? '300px' : '0')}; 
   transition: max-height 0.3s ease;
+  background: rgba(0, 0, 0, 0.05);
 `
 
 export const LiSubMobile = styled.li`
@@ -266,11 +307,12 @@ export const LiSubMobile = styled.li`
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 10px;
-  font-size: 1.1rem;
-  font-weight: 400;
+  padding: 10px 0;
+  font-size: 1rem;
+  font-weight: 500;
   transition: 0.3s;
-  color: white;
+  color: #171717;
+  cursor: pointer;
 
   &:hover {
     transform: scale(1.02);
