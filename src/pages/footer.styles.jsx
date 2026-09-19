@@ -1,89 +1,166 @@
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-export const Container = styled.div`
+export const Container = styled.footer`
   display: flex;
-  background: var(--bg-cinza);
+  background: var(--bg-cinza, #f5f5f5);
   width: 100%;
   flex-direction: column;
-  font-size: clamp(10px, 1.0vw, 1.2rem);
-  padding: 0px 10%;
+  font-size: clamp(10px, 1vw, 1.2rem);
+  padding: 0 10%;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+
+  /* Textura de telhado em marca d'água sutil */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'%3E%3C!-- Linhas do telhado vazando no fundo do footer --%3E%3Cpath d='M-100 320 L250 -20 L600 320' fill='none' stroke='%2324231F' stroke-width='18' stroke-linecap='round' stroke-linejoin='round' opacity='0.035'/%3E%3Cpath d='M140 320 L370 40 L700 320' fill='none' stroke='%2324231F' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' opacity='0.025'/%3E%3Cpath d='M650 320 L980 80 L1310 320' fill='none' stroke='%2324231F' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' opacity='0.03'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+    z-index: 0;
+  }
 `
 
 export const FooterEmbaixo = styled.div`
   display: flex;
   flex-direction: row;
-  align-items: center;
-  padding-top: 50px;
-  padding-bottom: 1.5rem;
-  border-bottom: 0.5px solid rgba(88, 88, 88, 0.15);
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-top: 40px;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(88, 88, 88, 0.15);
   width: 100%;
-  justify-content: space-around;
-`
+  gap: 40px;
+  position: relative;
+  z-index: 1; /* Garante prioridade sobre o background */
 
-export const LogoFooter = styled.div`
-  display: flex;
-  width: 100%;
-  margin-bottom: 0.75rem;
-  height: auto;
-  margin-top: 0;
-  justify-content: center;
-
-  img {
-    height: 90px;
-    width: auto;
-    object-fit: contain;
+  @media (max-width: 992px) {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 36px;
   }
 `
 
 export const Endereco = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
+  align-items: center; /* Centraliza os filhos na horizontal */
+  text-align: center;  /* Centraliza as linhas de texto */
   justify-content: flex-start;
+  max-width: 320px;
+  width: 100%;
 
   p {
-    color: black;
-    font-size: clamp(13px, 1vw, 0.9rem);
+    color: #1a1a1a;
+    font-size: clamp(13px, 1vw, 0.95rem);
     line-height: 1.6;
     margin: 0;
-    text-align: left;
+    text-align: center;
   }
 
   a {
-    color: black;
+    color: #1a1a1a;
     text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #555;
+    }
+  }
+`
+
+export const LogoFooter = styled.div`
+  display: flex;
+  width: 100%;
+  margin-bottom: 1rem;
+  justify-content: center; /* Centraliza a logo dentro do bloco */
+
+  img {
+    height: 75px;
+    width: auto;
+    object-fit: contain;
+  }
+`
+
+export const Social = styled.div`
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centraliza o conteúdo das redes sociais */
+  gap: 12px;
+  width: 100%;
+
+  p {
+    font-size: 13px;
+    color: #555;
+    text-align: center;
+  }
+`
+
+export const LogoSocial = styled(FontAwesomeIcon)`
+  color: rgb(35, 0, 45);
+  font-size: 24px;
+  transition: transform 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.25);
   }
 `
 
 export const FooterLinks = styled.div`
   display: flex;
   justify-content: flex-end;
-  gap: 50px;
+  gap: 48px;
+  flex-wrap: wrap;
+
+  @media (max-width: 868px) {
+    width: 100%;
+    justify-content: space-around;
+    gap: 32px;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
 `
 
 export const Mapasite = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding-top: 0.25rem;
-  justify-content: flex-start;
-  min-width: 150px;
+  min-width: 140px;
+
+  @media (max-width: 868px) {
+    align-items: center;
+  }
 `
 
 export const FooterLabel = styled.span`
-  color: black;
-  font-size: 17px;
+  color: #1a1a1a;
+  font-size: 15px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-bottom: 0.5rem;
+  letter-spacing: 1.2px;
+  margin-bottom: 0.75rem;
 `
 
 export const FooterMenu = styled.ul`
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.6rem;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -94,53 +171,32 @@ export const FooterMenu = styled.ul`
   }
 
   a {
-    color: black;
+    color: #4a4a4a;
     text-decoration: none;
-    font-size: 14px;
-    transition: color 0.2s;
-    margin-top: 0;
-    font-weight: 400;
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+    display: inline-block;
 
     &:hover {
-      color: rgb(51, 51, 51);
-      font-weight: 900;
+      color: #000;
+      text-shadow: 0 0 0.65px #000, 0 0 0.65px #000;
     }
   }
 `
 
-export const FooterCopy = styled.div`
-  color: black;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 1.25rem;
-  padding-bottom: 50px;
-`
-
-export const Social = styled.div`
-  padding-top: 50px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  justify-content: space-around;
-  width: 100%;
-`
-
 export const LinhaHorizontal = styled.div`
-
   width: 100%;
   height: 1px;
   background: rgba(88, 88, 88, 0.15);
 `
 
-export const LogoSocial = styled(FontAwesomeIcon)`
-    color: rgb(35, 0, 45);
-  font-size: 30px;
-  transition: 0.4s;
-  cursor: pointer;
-
-  &:hover {
-    color: rgb(35, 0, 45);
-    font-size: 30px;
-    transform: scale(1.4);
-  }
+export const FooterCopy = styled.div`
+  color: #666;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-bottom: 30px;
+  position: relative;
+  z-index: 1;
 `

@@ -279,16 +279,33 @@ export const ObrasSection = styled.div`
     }
   }
 `
-
 export const StatsBar = styled.div`
   display: flex;
   justify-content: center;
   width: 100%;
-  padding: 60px 10%;
-  background: #F0A23A;
+  padding: 50px 10%;
+  background-color: #F0A23A;
+  position: relative;
+  overflow: hidden;
 
-  @media (max-width: 768px) {
-    padding: 40px 8%;
+  /* Borda dupla estilizada no topo e na base */
+  border-top: 6px double #e0e0e0;
+  border-bottom: 6px double #e0e0e0;
+
+  /* Mantém a textura de fundo */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M-80 240 L210 -10 L500 240' fill='none' stroke='%2324231F' stroke-width='16' stroke-linecap='round' stroke-linejoin='round' opacity='0.08'/%3E%3Cpath d='M110 240 L310 50 L580 240' fill='none' stroke='%2324231F' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' opacity='0.06'/%3E%3Cpath d='M480 240 L780 70 L1080 240' fill='none' stroke='%2324231F' stroke-width='8' stroke-linecap='round' stroke-linejoin='round' opacity='0.05'/%3E%3Cpath d='M820 240 L1020 120 L1220 240' fill='none' stroke='%2324231F' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' opacity='0.07'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+    z-index: 1;
   }
 `
 
@@ -298,6 +315,8 @@ export const StatItem = styled.div`
   align-items: center;
   text-align: center;
   max-width: 700px;
+  position: relative;
+  z-index: 2; /* Garante que o texto fique por cima do grafismo */
 
   strong {
     font-size: 1.9rem;
