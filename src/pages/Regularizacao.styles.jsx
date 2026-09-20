@@ -61,16 +61,17 @@ export const IntroSection = styled.section`
   justify-content: center;
   padding: clamp(3.5rem, 6vw, 4rem) 1.5rem clamp(1.5rem, 3vw, 2rem);
 `;
+
 export const IntroContent = styled.div`
   max-width: 780px;
-  text-align: left; /* Alterado de 'center' para 'left' */
+  text-align: left;
 
   h2 {
     font-size: clamp(1.2rem, 2vw, 1.6rem);
     color: #1e1e1e;
     margin-bottom: 1.2rem;
     font-weight: 700;
-    text-align: center; /* O título pode continuar centralizado se preferir */
+    text-align: center;
   }
 
   p {
@@ -81,7 +82,7 @@ export const IntroContent = styled.div`
   }
 `;
 
-export const CtaButton = styled.button`
+export const CtaButton = styled.a`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -94,6 +95,7 @@ export const CtaButton = styled.button`
   font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.5px;
+  text-decoration: none;
   cursor: pointer;
   transition: background 0.25s ease, transform 0.25s ease;
 
@@ -109,10 +111,10 @@ export const CtaButton = styled.button`
 `;
 
 // =============================================================
-//  DESTAQUES / MÉTRICAS
+//  SERVIÇOS / CARDS (ESTILO DESTAQUES)
 // =============================================================
 
-export const DestaquesSection = styled.section`
+export const ServicosSection = styled.section`
   width: min(1200px, 92%);
   margin: 0 auto clamp(2.5rem, 5vw, 4rem);
   display: grid;
@@ -121,7 +123,7 @@ export const DestaquesSection = styled.section`
   padding: 0 1.5rem;
 `;
 
-export const DestaqueCard = styled.div`
+export const ServicoCard = styled.div`
   background: #fdfdfd;
   border: 1px solid #eaeaea;
   border-top: 4px solid #ffb83c;
@@ -133,13 +135,6 @@ export const DestaqueCard = styled.div`
 
   &:hover {
     transform: translateY(-3px);
-  }
-
-  h3 {
-    font-size: clamp(1.8rem, 2.5vw, 2.2rem);
-    color: #1e1e1e;
-    font-weight: 800;
-    margin-bottom: 0.3rem;
   }
 
   h4 {
@@ -159,7 +154,7 @@ export const DestaqueCard = styled.div`
 `;
 
 // =============================================================
-//  MISSÃO / VISÃO / VALORES
+//  DIFERENCIAIS / LINHAS (ESTILO VALORES)
 // =============================================================
 
 export const ValoresSection = styled.section`
@@ -236,7 +231,6 @@ export const ValorTexto = styled.div`
 
   p {
     color: #1e1e1e;
-    font-style: italic;
     font-size: clamp(0.85rem, 1vw, 0.95rem);
     line-height: 1.7;
   }

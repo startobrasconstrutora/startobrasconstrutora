@@ -52,6 +52,7 @@ function MenuPrincipal() {
 
   function fecharMenu() {
     setAberto(false)
+    setSubMenuAtivo(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -67,7 +68,7 @@ function MenuPrincipal() {
             <S.LiMenu><Link to="/" onClick={() => setSubMenuAtivo(null)}>Home</Link></S.LiMenu>
             <S.LinhaVer />
 
-            <S.LiMenu><Link to="/Quemsomos" onClick={() => setSubMenuAtivo(null)}>Quem Somos</Link></S.LiMenu>
+            <S.LiMenu><Link to="/quemsomos" onClick={() => setSubMenuAtivo(null)}>Quem Somos</Link></S.LiMenu>
             <S.LinhaVer />
 
             <S.LiMenu
@@ -88,7 +89,7 @@ function MenuPrincipal() {
             </S.LiMenu>
             <S.LinhaVer />
 
-            <S.LiMenu><Link to="/Contato" onClick={() => setSubMenuAtivo(null)}>Contato</Link></S.LiMenu>
+            <S.LiMenu><Link to="/contato" onClick={() => setSubMenuAtivo(null)}>Contato</Link></S.LiMenu>
           </S.UlMenu>
 
           {/* Botão de Destaque para Clientes */}
@@ -113,9 +114,15 @@ function MenuPrincipal() {
         onMouseLeave={fecharSub}
       >
         <S.ListaSubMenu>
-          <S.ListaSubMenuLi>Construção</S.ListaSubMenuLi>
-          <S.ListaSubMenuLi>Reformas</S.ListaSubMenuLi>
-          <S.ListaSubMenuLi>Regularização</S.ListaSubMenuLi>
+          <S.ListaSubMenuLi>
+            <Link to="/servicos/construcao" onClick={fecharMenu}>Construção</Link>
+          </S.ListaSubMenuLi>
+          <S.ListaSubMenuLi>
+            <Link to="/servicos/reformas" onClick={fecharMenu}>Reformas</Link>
+          </S.ListaSubMenuLi>
+          <S.ListaSubMenuLi>
+            <Link to="/servicos/regularizacao" onClick={fecharMenu}>Regularização</Link>
+          </S.ListaSubMenuLi>
         </S.ListaSubMenu>
       </S.SubMenu>
 
@@ -128,9 +135,15 @@ function MenuPrincipal() {
         onMouseLeave={fecharSub}
       >
         <S.ListaSubMenu>
-          <S.ListaSubMenuLi>Obras Concluídas</S.ListaSubMenuLi>
-          <S.ListaSubMenuLi>Terrenos à Venda</S.ListaSubMenuLi>
-          <S.ListaSubMenuLi>Casas à Venda</S.ListaSubMenuLi>
+          <S.ListaSubMenuLi>
+            <Link to="/subpagina" onClick={fecharMenu}>Obras Concluídas</Link>
+          </S.ListaSubMenuLi>
+          <S.ListaSubMenuLi>
+            <Link to="/subpagina" onClick={fecharMenu}>Terrenos à Venda</Link>
+          </S.ListaSubMenuLi>
+          <S.ListaSubMenuLi>
+            <Link to="/subpagina" onClick={fecharMenu}>Casas à Venda</Link>
+          </S.ListaSubMenuLi>
         </S.ListaSubMenu>
       </S.SubMenu>
 
@@ -141,16 +154,16 @@ function MenuPrincipal() {
             <S.LiMenuMobile><Link to="/" onClick={fecharMenu}>Home</Link></S.LiMenuMobile>
             <S.LinhaHor />
 
-            <S.LiMenuMobile><Link to="/Quemsomos" onClick={fecharMenu}>Quem Somos</Link></S.LiMenuMobile>
+            <S.LiMenuMobile><Link to="/quemsomos" onClick={fecharMenu}>Quem Somos</Link></S.LiMenuMobile>
             <S.LinhaHor />
 
             <S.LiMenuMobile onClick={() => setSubServicosMobile(!subServicosMobile)}>
               Serviços <S.SetaIcon $aberto={subServicosMobile}>▼</S.SetaIcon>
             </S.LiMenuMobile>
             <S.SubMobile $aberto={subServicosMobile}>
-              <S.LiSubMobile onClick={fecharMenu}>Construção</S.LiSubMobile>
-              <S.LiSubMobile onClick={fecharMenu}>Reformas</S.LiSubMobile>
-              <S.LiSubMobile onClick={fecharMenu}>Regularização</S.LiSubMobile>
+              <S.LiSubMobile><Link to="/servicos/construcao" onClick={fecharMenu}>Construção</Link></S.LiSubMobile>
+              <S.LiSubMobile><Link to="/servicos/reformas" onClick={fecharMenu}>Reformas</Link></S.LiSubMobile>
+              <S.LiSubMobile><Link to="/servicos/regularizacao" onClick={fecharMenu}>Regularização</Link></S.LiSubMobile>
             </S.SubMobile>
             <S.LinhaHor />
 
@@ -158,13 +171,13 @@ function MenuPrincipal() {
               Obras e Imóveis <S.SetaIcon $aberto={subObrasMobile}>▼</S.SetaIcon>
             </S.LiMenuMobile>
             <S.SubMobile $aberto={subObrasMobile}>
-              <S.LiSubMobile onClick={fecharMenu}>Obras Concluídas</S.LiSubMobile>
-              <S.LiSubMobile onClick={fecharMenu}>Terrenos à Venda</S.LiSubMobile>
-              <S.LiSubMobile onClick={fecharMenu}>Casas à Venda</S.LiSubMobile>
+              <S.LiSubMobile><Link to="/subpagina" onClick={fecharMenu}>Obras Concluídas</Link></S.LiSubMobile>
+              <S.LiSubMobile><Link to="/subpagina" onClick={fecharMenu}>Terrenos à Venda</Link></S.LiSubMobile>
+              <S.LiSubMobile><Link to="/subpagina" onClick={fecharMenu}>Casas à Venda</Link></S.LiSubMobile>
             </S.SubMobile>
             <S.LinhaHor />
 
-            <S.LiMenuMobile><Link to="/Contato" onClick={fecharMenu}>Contato</Link></S.LiMenuMobile>
+            <S.LiMenuMobile><Link to="/contato" onClick={fecharMenu}>Contato</Link></S.LiMenuMobile>
             <S.LinhaHor />
 
             <S.LiMenuMobile><Link to="/trabalheconosco" onClick={fecharMenu}>Trabalhe Conosco</Link></S.LiMenuMobile>

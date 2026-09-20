@@ -14,6 +14,11 @@ import ScrollToTop from "./components/ScrollToTop.jsx"
 import SocialBar from "./components/SocialBar.jsx"
 import Materia from './pages/Materia.jsx'
 
+// Páginas de Serviços
+import Construcao from './pages/Construcao.jsx'
+import Reformas from './pages/Reformas.jsx'
+import Regularizacao from './pages/Regularizacao.jsx'
+
 function App() {
   return (
     <BrowserRouter>
@@ -23,15 +28,27 @@ function App() {
         <SocialBar />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/subpagina" element={<Subpagina />} />
           <Route path="/Quemsomos" element={<Quemsomos />} />
           <Route path="/Contato" element={<Contato />} />
-          <Route path="/Add" element={<Add />} />
-          <Route path="/Admobras" element={<Admobras />} />
-          <Route path="/consultaobra" element={<ConsultaObra />} />
           <Route path="/trabalheconosco" element={<Trabalhe />} />
+          <Route path="/consultaobra" element={<ConsultaObra />} />
           <Route path="/obra/:codigo" element={<ConsultaObra />} />
           <Route path="/materia/:id" element={<Materia />} />
+
+          {/* Rotas de Serviços */}
+          <Route path="/servicos/construcao" element={<Construcao />} />
+          <Route path="/servicos/reformas" element={<Reformas />} />
+          <Route path="/servicos/regularizacao" element={<Regularizacao />} />
+
+          {/* Rotas de Obras e Imóveis */}
+          {/* <Route path="/obras/concluidas" element={<Subpagina />} /> */}
+          {/* <Route path="/imoveis/terrenos" element={<Subpagina />} /> */}
+          {/* <Route path="/imoveis/casas" element={<Subpagina />} /> */}
+
+          {/* Rotas Administrativas */}
+          <Route path="/Add" element={<Add />} />
+          <Route path="/Admobras" element={<Admobras />} />
+          <Route path="/subpagina" element={<Subpagina />} />
         </Routes>
         <Footer />
       </div>

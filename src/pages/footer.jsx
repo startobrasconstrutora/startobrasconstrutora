@@ -5,7 +5,7 @@ import logo from '../assets/img/logob.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInstagram, faFacebook, faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 
-const Footer = ({ onFiltrar }) => {
+const Footer = () => {
   return (
     <S.Container>
       <S.FooterEmbaixo>
@@ -91,19 +91,19 @@ const Footer = ({ onFiltrar }) => {
             <S.FooterLabel>SERVIÇOS</S.FooterLabel>
             <S.FooterMenu>
               <li>
-                <a href="#" onClick={(e) => { e.preventDefault(); onFiltrar?.('construcao'); }}>
+                <Link to="/servicos/construcao" title="Construção residencial e comercial">
                   Construção
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" onClick={(e) => { e.preventDefault(); onFiltrar?.('reformas'); }}>
+                <Link to="/servicos/reformas" title="Reformas gerais">
                   Reformas
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" onClick={(e) => { e.preventDefault(); onFiltrar?.('regularizacao'); }}>
+                <Link to="/servicos/regularizacao" title="Regularização de imóveis">
                   Regularização
-                </a>
+                </Link>
               </li>
             </S.FooterMenu>
           </S.Mapasite>
@@ -113,19 +113,19 @@ const Footer = ({ onFiltrar }) => {
             <S.FooterLabel>OBRAS E IMÓVEIS</S.FooterLabel>
             <S.FooterMenu>
               <li>
-                <a href="#" onClick={(e) => { e.preventDefault(); onFiltrar?.('concluidas'); }}>
+                <Link to="/subpagina" title="Confira nossos projetos entregues">
                   Obras Concluídas
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" onClick={(e) => { e.preventDefault(); onFiltrar?.('terrenos'); }}>
+                <Link to="/subpagina" title="Terrenos disponíveis">
                   Terrenos à Venda
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" onClick={(e) => { e.preventDefault(); onFiltrar?.('casas'); }}>
+                <Link to="/subpagina" title="Casas disponíveis">
                   Casas à Venda
-                </a>
+                </Link>
               </li>
             </S.FooterMenu>
           </S.Mapasite>
