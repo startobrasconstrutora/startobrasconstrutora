@@ -1,6 +1,6 @@
 import React from 'react'
 import * as S from './Reformas.styles.jsx'
-import heroImg from "../assets/img/capacete.png"
+import heroImg from "../assets/img/reforma1.png"
 
 const SERVICOS = [
   {

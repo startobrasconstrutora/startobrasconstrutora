@@ -136,7 +136,7 @@ function MenuPrincipal() {
       >
         <S.ListaSubMenu>
           <S.ListaSubMenuLi>
-            <Link to="/subpagina" onClick={fecharMenu}>Obras Concluídas</Link>
+            <Link to="/obras-concluidas" onClick={fecharMenu}>Obras Concluídas</Link>
           </S.ListaSubMenuLi>
           <S.ListaSubMenuLi>
             <Link to="/subpagina" onClick={fecharMenu}>Terrenos à Venda</Link>
@@ -171,7 +171,7 @@ function MenuPrincipal() {
               Obras e Imóveis <S.SetaIcon $aberto={subObrasMobile}>▼</S.SetaIcon>
             </S.LiMenuMobile>
             <S.SubMobile $aberto={subObrasMobile}>
-              <S.LiSubMobile><Link to="/subpagina" onClick={fecharMenu}>Obras Concluídas</Link></S.LiSubMobile>
+              <S.LiSubMobile><Link to="/obras-concluidas" onClick={fecharMenu}>Obras Concluídas</Link></S.LiSubMobile>
               <S.LiSubMobile><Link to="/subpagina" onClick={fecharMenu}>Terrenos à Venda</Link></S.LiSubMobile>
               <S.LiSubMobile><Link to="/subpagina" onClick={fecharMenu}>Casas à Venda</Link></S.LiSubMobile>
             </S.SubMobile>

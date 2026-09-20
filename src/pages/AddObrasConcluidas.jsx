@@ -19,7 +19,7 @@ export default function AddObraConcluida() {
   const [categoria, setCategoria] = useState('');
   const [localizacao, setLocalizacao] = useState('');
   const [descricao, setDescricao] = useState('');
-  
+
   const [arquivos, setArquivos] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [enviando, setEnviando] = useState(false);
@@ -72,16 +72,18 @@ export default function AddObraConcluida() {
         fotosUrls.push(publicUrlData.publicUrl);
       }
 
+      // Mapeamento para os nomes reais das colunas da tabela obras_concluidas.
+      // numero_obra é coluna identity (auto-incremento) e não deve ser enviado.
       const { error: insertError } = await supabase
         .from('obras_concluidas')
         .insert([
           {
-            titulo,
-            categoria,
-            localizacao,
+            nome_obra: titulo,
+            tipo_obra: categoria,
+            cidade: localizacao,
             descricao,
-            fotos: fotosUrls,
-            capa: fotosUrls[0] || null
+            galeria_fotos: fotosUrls,
+            foto_capa: fotosUrls[0] || null
           }
         ]);
 
@@ -121,13 +123,17 @@ export default function AddObraConcluida() {
         </GrupoInput>
 
         <GrupoInput>
-          <Rotulo>Categoria</Rotulo>
-          <InputText
-            type="text"
-            placeholder="Ex: Residencial, Comercial, Reforma..."
+          <Rotulo>Categoria *</Rotulo>
+          <select
             value={categoria}
             onChange={(e) => setCategoria(e.target.value)}
-          />
+            required
+            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+          >
+            <option value="">Selecione...</option>
+            <option value="construcao">Construção</option>
+            <option value="reforma">Reforma</option>
+          </select>
         </GrupoInput>
 
         <GrupoInput>

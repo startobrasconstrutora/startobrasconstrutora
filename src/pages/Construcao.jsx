@@ -1,5 +1,5 @@
 import * as S from './Construcao.styles.jsx'
-import heroImg from "../assets/img/capacete.png"
+import heroImg from "../assets/img/construcao.png"
 
 const ETAPAS = [
   {

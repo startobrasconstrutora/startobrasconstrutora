@@ -29,6 +29,11 @@ const SwiperMod = ({ slides = [] }) => {
         grabCursor={true}
         speed={800}
         navigation={true}
+        autoplay={{
+          delay: 4000, // Intervalo de 4 segundos entre as trocas
+          disableOnInteraction: false, // Continua rodando mesmo após interação manual
+          pauseOnMouseEnter: true, // Pausa o slide se passar o mouse por cima
+        }}
       >
         {dadosSlides.map((slide, i) => (
           <SwiperSlide key={i}>

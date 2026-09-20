@@ -4,13 +4,13 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import * as S from './SwiperObras.styles.jsx'
 
-function SwiperObras({ obras }) {
+function SwiperObras({ obras, onSelecionar }) {
   return (
     <S.Wrapper>
       <Swiper
         modules={[Navigation]}
         navigation={true}
-        loop={true}
+        loop={obras.length > 3}
         spaceBetween={24}
         slidesPerView={1}
         breakpoints={{
@@ -19,8 +19,8 @@ function SwiperObras({ obras }) {
         }}
       >
         {obras.map((obra, index) => (
-          <SwiperSlide key={index}>
-            <S.Card>
+          <SwiperSlide key={obra.id || index}>
+            <S.Card onClick={() => onSelecionar && onSelecionar(obra.id)} style={{ cursor: 'pointer' }}>
               <S.CardImg>
                 <img src={obra.src} alt={obra.titulo || 'Obra concluída'} />
               </S.CardImg>

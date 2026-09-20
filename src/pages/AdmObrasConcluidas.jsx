@@ -33,7 +33,7 @@ export default function AdmObrasConcluidas() {
   const [carregando, setCarregando] = useState(true);
   const [mensagem, setMensagem] = useState({ texto: '', erro: false });
   const [selecionadas, setSelecionadas] = useState([]);
-  
+
   const [obraEmEdicao, setObraEmEdicao] = useState(null);
   const [novosArquivos, setNovosArquivos] = useState([]);
   const [imagensParaRemover, setImagensParaRemover] = useState([]);
@@ -117,12 +117,12 @@ export default function AdmObrasConcluidas() {
   };
   const handleDrop = (index) => {
     if (arrastandoIndex === null || arrastandoIndex === index) return;
-    
-    const fotosAtualizadas = [...obraEmEdicao.fotos];
+
+    const fotosAtualizadas = [...obraEmEdicao.galeria_fotos];
     const [itemRemovido] = fotosAtualizadas.splice(arrastandoIndex, 1);
     fotosAtualizadas.splice(index, 0, itemRemovido);
 
-    setObraEmEdicao({ ...obraEmEdicao, fotos: fotosAtualizadas });
+    setObraEmEdicao({ ...obraEmEdicao, galeria_fotos: fotosAtualizadas });
     setArrastandoIndex(null);
     setSobreIndex(null);
   };
@@ -133,7 +133,7 @@ export default function AdmObrasConcluidas() {
     setMensagem({ texto: '', erro: false });
 
     try {
-      let fotosFinais = (obraEmEdicao.fotos || []).filter(
+      let fotosFinais = (obraEmEdicao.galeria_fotos || []).filter(
         (url) => !imagensParaRemover.includes(url)
       );
 
@@ -160,12 +160,12 @@ export default function AdmObrasConcluidas() {
       const { error: updateError } = await supabase
         .from('obras_concluidas')
         .update({
-          titulo: obraEmEdicao.titulo,
+          nome_obra: obraEmEdicao.nome_obra,
           descricao: obraEmEdicao.descricao,
-          categoria: obraEmEdicao.categoria,
-          localizacao: obraEmEdicao.localizacao,
-          fotos: fotosFinais,
-          capa: fotosFinais[0] || null
+          tipo_obra: obraEmEdicao.tipo_obra,
+          cidade: obraEmEdicao.cidade,
+          galeria_fotos: fotosFinais,
+          foto_capa: fotosFinais[0] || null
         })
         .eq('id', obraEmEdicao.id);
 
@@ -209,20 +209,20 @@ export default function AdmObrasConcluidas() {
         <Grid>
           {obras.map((obra) => {
             const isEditing = obraEmEdicao?.id === obra.id;
-            const capaUrl = obra.capa || (obra.fotos && obra.fotos[0]) || '';
+            const capaUrl = obra.foto_capa || (obra.galeria_fotos && obra.galeria_fotos[0]) || '';
 
             if (isEditing) {
               return (
                 <PainelEdicao key={obra.id}>
-                  <h3>Editando: {obra.titulo}</h3>
+                  <h3>Editando: {obra.nome_obra}</h3>
 
                   <label>
                     <strong>Título da Obra:</strong>
                     <input
                       type="text"
-                      value={obraEmEdicao.titulo || ''}
+                      value={obraEmEdicao.nome_obra || ''}
                       onChange={(e) =>
-                        setObraEmEdicao({ ...obraEmEdicao, titulo: e.target.value })
+                        setObraEmEdicao({ ...obraEmEdicao, nome_obra: e.target.value })
                       }
                       style={{ width: '100%', padding: '8px', marginTop: '4px', borderRadius: '6px', border: '1px solid #d9d6cf' }}
                     />
@@ -230,23 +230,26 @@ export default function AdmObrasConcluidas() {
 
                   <label>
                     <strong>Categoria:</strong>
-                    <input
-                      type="text"
-                      value={obraEmEdicao.categoria || ''}
+                    <select
+                      value={obraEmEdicao.tipo_obra || ''}
                       onChange={(e) =>
-                        setObraEmEdicao({ ...obraEmEdicao, categoria: e.target.value })
+                        setObraEmEdicao({ ...obraEmEdicao, tipo_obra: e.target.value })
                       }
                       style={{ width: '100%', padding: '8px', marginTop: '4px', borderRadius: '6px', border: '1px solid #d9d6cf' }}
-                    />
+                    >
+                      <option value="">Selecione...</option>
+                      <option value="construcao">Construção</option>
+                      <option value="reforma">Reforma</option>
+                    </select>
                   </label>
 
                   <label>
                     <strong>Localização:</strong>
                     <input
                       type="text"
-                      value={obraEmEdicao.localizacao || ''}
+                      value={obraEmEdicao.cidade || ''}
                       onChange={(e) =>
-                        setObraEmEdicao({ ...obraEmEdicao, localizacao: e.target.value })
+                        setObraEmEdicao({ ...obraEmEdicao, cidade: e.target.value })
                       }
                       style={{ width: '100%', padding: '8px', marginTop: '4px', borderRadius: '6px', border: '1px solid #d9d6cf' }}
                     />
@@ -267,7 +270,7 @@ export default function AdmObrasConcluidas() {
                   <div>
                     <strong>Organizar Imagens Existentes (Arraste para reordenar):</strong>
                     <GridImagensExistentes style={{ marginTop: '10px' }}>
-                      {obraEmEdicao.fotos?.map((url, idx) => {
+                      {obraEmEdicao.galeria_fotos?.map((url, idx) => {
                         const marcada = imagensParaRemover.includes(url);
                         return (
                           <MiniaturaExistente
@@ -322,7 +325,7 @@ export default function AdmObrasConcluidas() {
             return (
               <Card key={obra.id}>
                 <Thumb $src={capaUrl}>
-                  {obra.categoria && <SeloTipo>{obra.categoria}</SeloTipo>}
+                  {obra.tipo_obra && <SeloTipo>{obra.tipo_obra}</SeloTipo>}
                   <CaixaSelecao>
                     <input
                       type="checkbox"
@@ -334,9 +337,9 @@ export default function AdmObrasConcluidas() {
                 </Thumb>
 
                 <CardCorpo>
-                  <NomeObra>{obra.titulo}</NomeObra>
-                  {obra.localizacao && <LinhaSecundaria>{obra.localizacao}</LinhaSecundaria>}
-                  <LinhaSecundaria>{obra.fotos?.length || 0} foto(s) cadastrada(s)</LinhaSecundaria>
+                  <NomeObra>{obra.nome_obra}</NomeObra>
+                  {obra.cidade && <LinhaSecundaria>{obra.cidade}</LinhaSecundaria>}
+                  <LinhaSecundaria>{obra.galeria_fotos?.length || 0} foto(s) cadastrada(s)</LinhaSecundaria>
                 </CardCorpo>
 
                 <CardRodape>

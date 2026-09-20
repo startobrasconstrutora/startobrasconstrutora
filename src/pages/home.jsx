@@ -1,15 +1,14 @@
+import { useState, useEffect } from 'react'
 import * as S from './home.styles.jsx'
 import DivComum from '../components/DivComum.jsx'
 import SwiperMod from '../components/SwiperPrincipal.jsx'
 import BannerFull from '../components/BannerFull.jsx'
 import BannerImagemFull from '../components/BannerImagemFull.jsx'
 import SwiperObras from '../components/SwiperObras.jsx'
+import ObraModal from '../components/ObraModal.jsx'
+import { supabase } from '../supabaseClient'
 import slide1 from "../assets/img/slide1.png"
 import slide2 from "../assets/img/slide2.png"
-import banner1 from "../assets/img/banner_conjunto1.png"
-import banner2 from "../assets/img/banner_conjunto2.png"
-import banner3 from "../assets/img/banner_conjunto3.png"
-import banner4 from "../assets/img/banner_conjunto4.png"
 import texto_imagem from "../assets/img/capacete.png"
 import texto_imagem2 from "../assets/img/caixa.png"
 import { Content } from '../components/DivComum.styles.jsx'
@@ -19,6 +18,38 @@ import { Reveal } from '../components/Reveal.jsx'
 import MateriasHome from '../components/MateriasHome.jsx'
 
 function Home() {
+  const [obrasConcluidas, setObrasConcluidas] = useState([])
+  const [obraSelecionadaId, setObraSelecionadaId] = useState(null)
+
+  useEffect(() => {
+    buscarObrasConcluidas()
+  }, [])
+
+  const buscarObrasConcluidas = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('obras_concluidas')
+        .select('*')
+        .eq('oculta_da_home', false)
+        .order('created_at', { ascending: false })
+        .limit(8)
+
+      if (error) throw error
+
+      const obrasFormatadas = (data || [])
+        .filter((obra) => obra.foto_capa || (obra.galeria_fotos && obra.galeria_fotos[0]))
+        .map((obra) => ({
+          id: obra.id,
+          src: obra.foto_capa || obra.galeria_fotos[0],
+          titulo: obra.nome_obra
+        }))
+
+      setObrasConcluidas(obrasFormatadas)
+    } catch (err) {
+      console.error('Erro ao carregar obras concluídas:', err.message)
+    }
+  }
+
   return (
     <>
       <S.ContainerSwiper>
@@ -88,19 +119,14 @@ function Home() {
 
           <br />
 
+{obrasConcluidas.length > 0 && (
 <Reveal delay={0.2}>
           <S.ObrasSection>
             <h2>Obras prontas</h2>
-            <SwiperObras
-              obras={[
-                { src: banner1, titulo: 'Casa Jardim Marambá' },
-                { src: banner2, titulo: 'Salão Comercial Centro' },
-                { src: banner3, titulo: 'Casa Centro de Piratininga' },
-                { src: banner4, titulo: 'Galpão Jardim Estoril' },
-              ]}
-            />
+            <SwiperObras obras={obrasConcluidas} onSelecionar={setObraSelecionadaId} />
           </S.ObrasSection>
 </Reveal>
+)}
 
 <Reveal delay={0.3}>
           <MateriasHome />
@@ -108,6 +134,10 @@ function Home() {
 
         </S.Container>
       </div>
+
+      {obraSelecionadaId && (
+        <ObraModal id={obraSelecionadaId} onFechar={() => setObraSelecionadaId(null)} />
+      )}
     </>
   )
 }

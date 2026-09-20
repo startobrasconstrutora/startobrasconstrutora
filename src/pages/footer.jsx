@@ -113,7 +113,7 @@ const Footer = () => {
             <S.FooterLabel>OBRAS E IMÓVEIS</S.FooterLabel>
             <S.FooterMenu>
               <li>
-                <Link to="/subpagina" title="Confira nossos projetos entregues">
+                <Link to="/obras-concluidas" title="Confira nossos projetos entregues">
                   Obras Concluídas
                 </Link>
               </li>
