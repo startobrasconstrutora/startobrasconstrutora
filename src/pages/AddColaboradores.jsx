@@ -2,6 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import * as S from './AddColaboradores.styles.jsx';
 import { supabase } from '../supabaseClient';
 import { mascaraCPF, mascaraTelefone } from './mascaras';
+import {
+  toastSuccess,
+  toastError,
+  toastWarning,
+  showError,
+  showLoading,
+  hideLoading,
+} from '../utils/alert.js';
 
 const FUNCOES_DISPONÍVEIS = [
   { id: 1, nome: 'Pedreiro' },
@@ -32,13 +40,6 @@ export default function AddColaboradores({
   
   const [selecionados, setSelecionados] = useState([]);
   const [cadastrando, setCadastrando] = useState(false);
-  
-  const [notificacao, setNotificacao] = useState(null);
-  const notificacaoTimeoutRef = useRef(null);
-
-  useEffect(() => {
-    return () => window.clearTimeout(notificacaoTimeoutRef.current);
-  }, []);
 
   function toggleFuncao(funcaoId) {
     setFuncoesSelecionadas((prev) =>
@@ -73,40 +74,42 @@ export default function AddColaboradores({
   }
 
   async function handleCadastrar() {
+    // ============ VALIDAÇÕES ============
     if (!nomeCompleto.trim()) {
-      alert('Preencha o nome completo.');
+      toastError('Preencha o nome completo');
       return;
     }
 
     if (!cpf.trim() || cpf.length < 14) {
-      alert('CPF inválido.');
+      toastError('CPF inválido');
       return;
     }
 
     if (!validarCPF(cpf)) {
-      alert('CPF inválido. Verifique o formato.');
+      toastError('CPF inválido. Verifique o formato');
       return;
     }
 
     if (!telefone.trim() || telefone.length < 14) {
-      alert('Telefone inválido.');
+      toastError('Telefone inválido');
       return;
     }
 
     // Email agora é opcional, mas se preenchido deve ser válido
     if (email.trim() && !email.includes('@')) {
-      alert('Email inválido.');
+      toastError('Email inválido');
       return;
     }
 
     if (funcoesSelecionadas.length === 0) {
-      alert('Selecione pelo menos uma função.');
+      toastWarning('Selecione pelo menos uma função');
       return;
     }
 
-    // Data de nascimento agora é opcional
-
+    // ============ CADASTRO ============
     setCadastrando(true);
+    showLoading('Cadastrando colaborador...');
+
     try {
       // Verificar se CPF já existe
       const { data: cpfExistente, error: erroVerificacao } = await supabase
@@ -116,7 +119,8 @@ export default function AddColaboradores({
         .single();
 
       if (!erroVerificacao && cpfExistente) {
-        alert('⚠️ Este CPF já está cadastrado no sistema.');
+        hideLoading();
+        toastError('Este CPF já está cadastrado no sistema');
         setCadastrando(false);
         return;
       }
@@ -134,11 +138,14 @@ export default function AddColaboradores({
         .select();
 
       if (erroInsert) {
+        hideLoading();
         if (erroInsert.code === '23505') {
-          alert('⚠️ Este CPF já está cadastrado no sistema.');
+          toastError('Este CPF já está cadastrado no sistema');
         } else {
-          throw erroInsert;
+          showError('Erro ao cadastrar', 'Verifique o console para detalhes');
+          console.error('Erro ao inserir colaborador:', erroInsert);
         }
+        setCadastrando(false);
         return;
       }
 
@@ -154,14 +161,16 @@ export default function AddColaboradores({
         .from('colaborador_funcoes')
         .insert(funcoes_para_inserir);
 
-      if (erroFuncoes) throw erroFuncoes;
+      if (erroFuncoes) {
+        hideLoading();
+        showError('Erro ao cadastrar', 'Não foi possível adicionar as funções');
+        console.error('Erro ao inserir funções:', erroFuncoes);
+        setCadastrando(false);
+        return;
+      }
 
-      // Mostrar notificação de sucesso
-      setNotificacao(nomeCompleto);
-      window.clearTimeout(notificacaoTimeoutRef.current);
-      notificacaoTimeoutRef.current = window.setTimeout(() => {
-        setNotificacao(null);
-      }, 6000);
+      hideLoading();
+      toastSuccess(`${nomeCompleto} cadastrado com sucesso!`);
 
       onCadastrar?.(colaboradorData);
 
@@ -173,8 +182,9 @@ export default function AddColaboradores({
       setDataNascimento('');
       setFuncoesSelecionadas([]);
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao cadastrar colaborador:', erro);
-      alert('Erro ao cadastrar colaborador. Veja o console para detalhes.');
+      showError('Erro inesperado', 'Verifique o console para detalhes');
     } finally {
       setCadastrando(false);
     }
@@ -182,48 +192,6 @@ export default function AddColaboradores({
 
   return (
     <S.Painel>
-      {notificacao && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 20,
-            right: 20,
-            zIndex: 1000,
-            background: '#1e1e1e',
-            color: '#fff',
-            padding: '16px 20px',
-            borderRadius: 10,
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            maxWidth: 340,
-          }}
-        >
-          <span style={{ fontSize: 20 }}>✅</span>
-          <div style={{ fontSize: 14, lineHeight: 1.4 }}>
-            <strong>{notificacao} cadastrado!</strong>
-            <br />
-            Pode ser gerenciado na sessão de admin.
-          </div>
-          <button
-            type="button"
-            onClick={() => setNotificacao(null)}
-            style={{
-              marginLeft: 'auto',
-              background: 'transparent',
-              border: 'none',
-              color: '#fff',
-              fontSize: 16,
-              cursor: 'pointer',
-              lineHeight: 1,
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       <S.TopoAcoes>
         <S.BotaoAcao type="button" onClick={onAtualizarLista}>
           🔄 Atualizar Lista

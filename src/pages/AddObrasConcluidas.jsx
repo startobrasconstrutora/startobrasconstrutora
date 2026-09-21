@@ -13,6 +13,13 @@ import {
   BotaoSubmit,
   Aviso
 } from './Addobras.styles';
+import {
+  toastSuccess,
+  toastError,
+  showLoading,
+  hideLoading,
+  showError,
+} from '../utils/alert.js';
 
 export default function AddObraConcluida() {
   const [titulo, setTitulo] = useState('');
@@ -23,11 +30,18 @@ export default function AddObraConcluida() {
   const [arquivos, setArquivos] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [enviando, setEnviando] = useState(false);
-  const [mensagem, setMensagem] = useState({ texto: '', erro: false });
 
   const handleFotosChange = (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
+
+    const LIMITE_MB = 5;
+    for (const file of files) {
+      if (file.size / (1024 * 1024) > LIMITE_MB) {
+        toastError(`${file.name} excede ${LIMITE_MB}MB`);
+        return;
+      }
+    }
 
     const novosArquivos = [...arquivos, ...files];
     setArquivos(novosArquivos);
@@ -43,13 +57,26 @@ export default function AddObraConcluida() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // ============ VALIDAÇÕES ============
     if (!titulo.trim()) {
-      setMensagem({ texto: 'Por favor, preencha ao menos o título da obra.', erro: true });
+      toastError('Preencha o título da obra');
       return;
     }
 
+    if (!categoria) {
+      toastError('Selecione uma categoria');
+      return;
+    }
+
+    if (arquivos.length === 0) {
+      toastError('Adicione pelo menos uma foto');
+      return;
+    }
+
+    // ============ CADASTRO ============
     setEnviando(true);
-    setMensagem({ texto: '', erro: false });
+    showLoading('Cadastrando obra concluída...');
 
     try {
       const fotosUrls = [];
@@ -72,8 +99,6 @@ export default function AddObraConcluida() {
         fotosUrls.push(publicUrlData.publicUrl);
       }
 
-      // Mapeamento para os nomes reais das colunas da tabela obras_concluidas.
-      // numero_obra é coluna identity (auto-incremento) e não deve ser enviado.
       const { error: insertError } = await supabase
         .from('obras_concluidas')
         .insert([
@@ -89,8 +114,10 @@ export default function AddObraConcluida() {
 
       if (insertError) throw insertError;
 
-      setMensagem({ texto: 'Obra concluída cadastrada com sucesso!', erro: false });
+      hideLoading();
+      toastSuccess('Obra concluída cadastrada com sucesso!');
 
+      // Limpar formulário
       setTitulo('');
       setCategoria('');
       setLocalizacao('');
@@ -98,7 +125,9 @@ export default function AddObraConcluida() {
       setArquivos([]);
       setPreviews([]);
     } catch (err) {
-      setMensagem({ texto: 'Erro ao cadastrar obra: ' + err.message, erro: true });
+      hideLoading();
+      console.error('Erro ao cadastrar obra:', err);
+      showError('Erro ao cadastrar', 'Verifique o console para detalhes');
     } finally {
       setEnviando(false);
     }
@@ -108,8 +137,6 @@ export default function AddObraConcluida() {
     <Wrapper>
       <h2>Cadastrar Obra Concluída</h2>
 
-      {mensagem.texto && <Aviso $erro={mensagem.erro}>{mensagem.texto}</Aviso>}
-
       <Formulario onSubmit={handleSubmit}>
         <GrupoInput>
           <Rotulo>Título da Obra *</Rotulo>
@@ -118,7 +145,6 @@ export default function AddObraConcluida() {
             placeholder="Ex: Residência Villa Lobos"
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
-            required
           />
         </GrupoInput>
 
@@ -127,7 +153,6 @@ export default function AddObraConcluida() {
           <select
             value={categoria}
             onChange={(e) => setCategoria(e.target.value)}
-            required
             style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
           >
             <option value="">Selecione...</option>

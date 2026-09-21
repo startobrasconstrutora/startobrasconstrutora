@@ -1,15 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as S from './AddColaboradores.styles.jsx';
 import { supabase } from '../supabaseClient';
+import {
+  toastSuccess,
+  toastError,
+  showLoading,
+  hideLoading,
+  confirmDelete,
+  showError,
+} from '../utils/alert.js';
 
 export default function AdmServicos() {
   const [servicos, setServicos] = useState([]);
   const [carregando, setCarregando] = useState(true);
-  const [filtro, setFiltro] = useState('todos'); // 'todos', 'colaborador', 'obra'
+  const [filtro, setFiltro] = useState('todos');
   const [filtroValor, setFiltroValor] = useState('');
   const [excluindo, setExcluindo] = useState(false);
-  const [notificacao, setNotificacao] = useState(null);
-  const notificacaoTimeoutRef = useRef(null);
 
   const [colaboradores, setColaboradores] = useState([]);
   const [obras, setObras] = useState([]);
@@ -18,41 +24,35 @@ export default function AdmServicos() {
     carregarDados();
   }, []);
 
-  useEffect(() => {
-    return () => window.clearTimeout(notificacaoTimeoutRef.current);
-  }, []);
-
   async function carregarDados() {
     try {
       setCarregando(true);
 
-      // Carregar serviços com dados relacionados
-const { data: servicosData, error: servicosError } = await supabase
-  .from('servicos_colaborador')
-  .select(`
-    id,
-    descricao_servico,
-    data_inicio,
-    data_fim,
-    valor_diaria,
-    valor_total,
-    observacoes,
-    data_cadastro,
-    colaboradores (
-      id,
-      nome_completo
-    ),
-    obras (
-      id,
-      nome_obra,
-      codigo_obra
-    )
-  `)
-  .order('data_cadastro', { ascending: false });
+      const { data: servicosData, error: servicosError } = await supabase
+        .from('servicos_colaborador')
+        .select(`
+          id,
+          descricao_servico,
+          data_inicio,
+          data_fim,
+          valor_diaria,
+          valor_total,
+          observacoes,
+          data_cadastro,
+          colaboradores (
+            id,
+            nome_completo
+          ),
+          obras (
+            id,
+            nome_obra,
+            codigo_obra
+          )
+        `)
+        .order('data_cadastro', { ascending: false });
 
       if (servicosError) throw servicosError;
 
-      // Carregar colaboradores
       const { data: colabData, error: colabError } = await supabase
         .from('colaboradores')
         .select('id, nome_completo')
@@ -60,7 +60,6 @@ const { data: servicosData, error: servicosError } = await supabase
 
       if (colabError) throw colabError;
 
-      // Carregar obras
       const { data: obrasData, error: obrasError } = await supabase
         .from('obras')
         .select('id, codigo_obra, nome_obra')
@@ -73,22 +72,22 @@ const { data: servicosData, error: servicosError } = await supabase
       setObras(obrasData || []);
     } catch (erro) {
       console.error('Erro ao carregar dados:', erro);
-      alert('Erro ao carregar dados.');
+      showError('Erro ao carregar', 'Não foi possível carregar os dados');
     } finally {
       setCarregando(false);
     }
   }
 
-function filtrarServicos() {
-  if (filtro === 'todos') return servicos;
-  if (filtro === 'colaborador') {
-    return servicos.filter((s) => s.colaboradores?.id === filtroValor);
+  function filtrarServicos() {
+    if (filtro === 'todos') return servicos;
+    if (filtro === 'colaborador') {
+      return servicos.filter((s) => s.colaboradores?.id === filtroValor);
+    }
+    if (filtro === 'obra') {
+      return servicos.filter((s) => s.obras?.codigo_obra === filtroValor);
+    }
+    return servicos;
   }
-  if (filtro === 'obra') {
-    return servicos.filter((s) => s.obras?.codigo_obra === filtroValor);
-  }
-  return servicos;
-}
 
   function calcularDias(dataInicio, dataFim) {
     const inicio = new Date(dataInicio);
@@ -110,11 +109,15 @@ function filtrarServicos() {
   }
 
   async function handleExcluir(id) {
-    if (!window.confirm('Tem certeza que deseja excluir este registro?')) {
+    const result = await confirmDelete('este serviço');
+    
+    if (!result.isConfirmed) {
       return;
     }
 
     setExcluindo(true);
+    showLoading('Excluindo serviço...');
+
     try {
       const { error } = await supabase
         .from('servicos_colaborador')
@@ -123,22 +126,16 @@ function filtrarServicos() {
 
       if (error) throw error;
 
-      mostrarNotificacao('Registro excluído com sucesso!');
+      hideLoading();
+      toastSuccess('Serviço excluído com sucesso!');
       carregarDados();
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao excluir:', erro);
-      alert('Erro ao excluir registro.');
+      showError('Erro ao excluir', 'Verifique o console para detalhes');
     } finally {
       setExcluindo(false);
     }
-  }
-
-  function mostrarNotificacao(mensagem) {
-    setNotificacao(mensagem);
-    window.clearTimeout(notificacaoTimeoutRef.current);
-    notificacaoTimeoutRef.current = window.setTimeout(() => {
-      setNotificacao(null);
-    }, 5000);
   }
 
   const servicosFiltrados = filtrarServicos();
@@ -156,44 +153,6 @@ function filtrarServicos() {
 
   return (
     <S.Painel>
-      {notificacao && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 20,
-            right: 20,
-            zIndex: 1000,
-            background: '#1e1e1e',
-            color: '#fff',
-            padding: '16px 20px',
-            borderRadius: 10,
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            maxWidth: 340,
-          }}
-        >
-          <span style={{ fontSize: 20 }}>✅</span>
-          <div style={{ fontSize: 14, lineHeight: 1.4 }}>{notificacao}</div>
-          <button
-            type="button"
-            onClick={() => setNotificacao(null)}
-            style={{
-              marginLeft: 'auto',
-              background: 'transparent',
-              border: 'none',
-              color: '#fff',
-              fontSize: 16,
-              cursor: 'pointer',
-              lineHeight: 1,
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       <S.TopoAcoes>
         <S.BotaoAcao type="button" onClick={carregarDados}>
           🔄 Atualizar

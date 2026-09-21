@@ -1,7 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as S from './AddColaboradores.styles.jsx';
 import { supabase } from '../supabaseClient';
 import { mascaraCPF, mascaraTelefone } from './mascaras';
+import {
+  toastSuccess,
+  toastError,
+  showLoading,
+  hideLoading,
+  confirmDelete,
+  showError,
+} from '../utils/alert.js';
 
 const FUNCOES_DISPONÍVEIS = [
   { id: 1, nome: 'Pedreiro' },
@@ -22,8 +30,6 @@ export default function AdmColaboradores() {
   const [carregando, setCarregando] = useState(true);
   const [editando, setEditando] = useState(null);
   const [selecionados, setSelecionados] = useState([]);
-  const [notificacao, setNotificacao] = useState(null);
-  const notificacaoTimeoutRef = useRef(null);
 
   // Estados de edição
   const [nomeCompleto, setNomeCompleto] = useState('');
@@ -40,15 +46,10 @@ export default function AdmColaboradores() {
     carregarColaboradores();
   }, []);
 
-  useEffect(() => {
-    return () => window.clearTimeout(notificacaoTimeoutRef.current);
-  }, []);
-
   async function carregarColaboradores() {
     try {
       setCarregando(true);
 
-      // Carregar colaboradores
       const { data, error } = await supabase
         .from('colaboradores')
         .select(`
@@ -67,7 +68,6 @@ export default function AdmColaboradores() {
 
       if (error) throw error;
 
-      // Usar FUNCOES_DISPONÍVEIS como fonte de dados das funções
       const dadosProcessados = data.map(colab => ({
         ...colab,
         colaborador_funcoes: colab.colaborador_funcoes.map(cf => {
@@ -83,7 +83,7 @@ export default function AdmColaboradores() {
       setColaboradores(dadosProcessados);
     } catch (erro) {
       console.error('Erro ao carregar colaboradores:', erro);
-      alert('Erro ao carregar colaboradores.');
+      showError('Erro ao carregar', 'Não foi possível carregar os colaboradores');
     } finally {
       setCarregando(false);
     }
@@ -131,16 +131,18 @@ export default function AdmColaboradores() {
 
   async function handleAtualizar() {
     if (!nomeCompleto.trim()) {
-      alert('Preencha o nome completo.');
+      toastError('Preencha o nome completo');
       return;
     }
 
     if (funcoesSelecionadas.length === 0) {
-      alert('Selecione pelo menos uma função.');
+      toastError('Selecione pelo menos uma função');
       return;
     }
 
     setAtualizando(true);
+    showLoading('Atualizando colaborador...');
+
     try {
       const { error: erroUpdate } = await supabase
         .from('colaboradores')
@@ -155,7 +157,6 @@ export default function AdmColaboradores() {
 
       if (erroUpdate) throw erroUpdate;
 
-      // Deletar funções antigas
       const { error: erroDelete } = await supabase
         .from('colaborador_funcoes')
         .delete()
@@ -163,7 +164,6 @@ export default function AdmColaboradores() {
 
       if (erroDelete) throw erroDelete;
 
-      // Inserir novas funções
       const funcoes_para_inserir = funcoesSelecionadas.map((funcaoId) => ({
         colaborador_id: editando,
         funcao_id: funcaoId,
@@ -175,23 +175,29 @@ export default function AdmColaboradores() {
 
       if (erroInsert) throw erroInsert;
 
-      mostrarNotificacao('Colaborador atualizado com sucesso!');
+      hideLoading();
+      toastSuccess('Colaborador atualizado com sucesso!');
       await carregarColaboradores();
       cancelarEdicao();
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao atualizar:', erro);
-      alert('Erro ao atualizar colaborador.');
+      showError('Erro ao atualizar', 'Verifique o console para detalhes');
     } finally {
       setAtualizando(false);
     }
   }
 
-  async function handleExcluir(id) {
-    if (!window.confirm('Tem certeza que deseja excluir este colaborador?')) {
+  async function handleExcluir(id, nome) {
+    const result = await confirmDelete(nome);
+    
+    if (!result.isConfirmed) {
       return;
     }
 
     setExcluindo(true);
+    showLoading('Excluindo colaborador...');
+
     try {
       const { error } = await supabase
         .from('colaboradores')
@@ -200,11 +206,13 @@ export default function AdmColaboradores() {
 
       if (error) throw error;
 
-      mostrarNotificacao('Colaborador excluído com sucesso!');
+      hideLoading();
+      toastSuccess('Colaborador excluído com sucesso!');
       await carregarColaboradores();
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao excluir:', erro);
-      alert('Erro ao excluir colaborador.');
+      showError('Erro ao excluir', 'Verifique o console para detalhes');
     } finally {
       setExcluindo(false);
     }
@@ -212,15 +220,19 @@ export default function AdmColaboradores() {
 
   async function handleExcluirSelecionados() {
     if (selecionados.length === 0) {
-      alert('Selecione pelo menos um colaborador.');
+      toastError('Selecione pelo menos um colaborador');
       return;
     }
 
-    if (!window.confirm(`Tem certeza que deseja excluir ${selecionados.length} colaborador(es)?`)) {
+    const result = await confirmDelete(`${selecionados.length} colaborador(es)`);
+    
+    if (!result.isConfirmed) {
       return;
     }
 
     setExcluindo(true);
+    showLoading('Excluindo colaboradores...');
+
     try {
       const { error } = await supabase
         .from('colaboradores')
@@ -229,23 +241,17 @@ export default function AdmColaboradores() {
 
       if (error) throw error;
 
-      mostrarNotificacao(`${selecionados.length} colaborador(es) excluído(s)!`);
+      hideLoading();
+      toastSuccess(`${selecionados.length} colaborador(es) excluído(s) com sucesso!`);
       setSelecionados([]);
       await carregarColaboradores();
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao excluir:', erro);
-      alert('Erro ao excluir colaboradores.');
+      showError('Erro ao excluir', 'Verifique o console para detalhes');
     } finally {
       setExcluindo(false);
     }
-  }
-
-  function mostrarNotificacao(mensagem) {
-    setNotificacao(mensagem);
-    window.clearTimeout(notificacaoTimeoutRef.current);
-    notificacaoTimeoutRef.current = window.setTimeout(() => {
-      setNotificacao(null);
-    }, 5000);
   }
 
   if (carregando) {
@@ -262,44 +268,6 @@ export default function AdmColaboradores() {
 
   return (
     <S.Painel>
-      {notificacao && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 20,
-            right: 20,
-            zIndex: 1000,
-            background: '#1e1e1e',
-            color: '#fff',
-            padding: '16px 20px',
-            borderRadius: 10,
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            maxWidth: 340,
-          }}
-        >
-          <span style={{ fontSize: 20 }}>✅</span>
-          <div style={{ fontSize: 14, lineHeight: 1.4 }}>{notificacao}</div>
-          <button
-            type="button"
-            onClick={() => setNotificacao(null)}
-            style={{
-              marginLeft: 'auto',
-              background: 'transparent',
-              border: 'none',
-              color: '#fff',
-              fontSize: 16,
-              cursor: 'pointer',
-              lineHeight: 1,
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       <S.TopoAcoes>
         <S.BotaoAcao type="button" onClick={carregarColaboradores}>
           🔄 Atualizar Lista
@@ -518,7 +486,7 @@ export default function AdmColaboradores() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleExcluir(colaborador.id)}
+                        onClick={() => handleExcluir(colaborador.id, colaborador.nome_completo)}
                         disabled={excluindo}
                         title="Excluir"
                         style={{

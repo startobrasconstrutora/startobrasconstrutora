@@ -1,6 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as S from './AddColaboradores.styles.jsx';
 import { supabase } from '../supabaseClient';
+import {
+  toastSuccess,
+  toastError,
+  showLoading,
+  hideLoading,
+  showError,
+  toastWarning,
+} from '../utils/alert.js';
 
 export default function AddServicos() {
   const [colaboradores, setColaboradores] = useState([]);
@@ -17,15 +25,9 @@ export default function AddServicos() {
   const [observacoes, setObservacoes] = useState('');
 
   const [cadastrando, setCadastrando] = useState(false);
-  const [notificacao, setNotificacao] = useState(null);
-  const notificacaoTimeoutRef = useRef(null);
 
   useEffect(() => {
     carregarDados();
-  }, []);
-
-  useEffect(() => {
-    return () => window.clearTimeout(notificacaoTimeoutRef.current);
   }, []);
 
   async function carregarDados() {
@@ -52,7 +54,7 @@ export default function AddServicos() {
       setObras(obrasData || []);
     } catch (erro) {
       console.error('Erro ao carregar dados:', erro);
-      alert('Erro ao carregar dados.');
+      showError('Erro ao carregar', 'Não foi possível carregar os dados');
     } finally {
       setCarregando(false);
     }
@@ -77,32 +79,36 @@ export default function AddServicos() {
   }, [valorDiaria, dataInicio, dataFim]);
 
   async function handleCadastrar() {
+    // ============ VALIDAÇÕES ============
     if (!colaboradorId) {
-      alert('Selecione um colaborador.');
+      toastError('Selecione um colaborador');
       return;
     }
 
     if (!obraId) {
-      alert('Selecione uma obra.');
+      toastError('Selecione uma obra');
       return;
     }
 
     if (!descricaoServico.trim()) {
-      alert('Preencha a descrição do serviço.');
+      toastError('Preencha a descrição do serviço');
       return;
     }
 
     if (!dataInicio || !dataFim) {
-      alert('Preencha as datas.');
+      toastError('Preencha as datas');
       return;
     }
 
     if (new Date(dataFim) < new Date(dataInicio)) {
-      alert('A data final não pode ser anterior à data inicial.');
+      toastError('A data final não pode ser anterior à data inicial');
       return;
     }
 
+    // ============ CADASTRO ============
     setCadastrando(true);
+    showLoading('Registrando serviço...');
+
     try {
       const { data, error } = await supabase
         .from('servicos_colaborador')
@@ -120,11 +126,8 @@ export default function AddServicos() {
 
       if (error) throw error;
 
-      setNotificacao('Serviço registrado com sucesso!');
-      window.clearTimeout(notificacaoTimeoutRef.current);
-      notificacaoTimeoutRef.current = window.setTimeout(() => {
-        setNotificacao(null);
-      }, 6000);
+      hideLoading();
+      toastSuccess('Serviço registrado com sucesso!');
 
       // Limpar formulário
       setColaboradorId('');
@@ -136,8 +139,9 @@ export default function AddServicos() {
       setValorTotal('');
       setObservacoes('');
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao registrar serviço:', erro);
-      alert('Erro ao registrar serviço. Veja o console para detalhes.');
+      showError('Erro ao registrar', 'Verifique o console para detalhes');
     } finally {
       setCadastrando(false);
     }
@@ -157,44 +161,6 @@ export default function AddServicos() {
 
   return (
     <S.Painel>
-      {notificacao && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 20,
-            right: 20,
-            zIndex: 1000,
-            background: '#1e1e1e',
-            color: '#fff',
-            padding: '16px 20px',
-            borderRadius: 10,
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            maxWidth: 340,
-          }}
-        >
-          <span style={{ fontSize: 20 }}>✅</span>
-          <div style={{ fontSize: 14, lineHeight: 1.4 }}>{notificacao}</div>
-          <button
-            type="button"
-            onClick={() => setNotificacao(null)}
-            style={{
-              marginLeft: 'auto',
-              background: 'transparent',
-              border: 'none',
-              color: '#fff',
-              fontSize: 16,
-              cursor: 'pointer',
-              lineHeight: 1,
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       <S.TituloPainel>REGISTRAR SERVIÇO</S.TituloPainel>
 
       <S.Formulario onSubmit={(e) => e.preventDefault()}>

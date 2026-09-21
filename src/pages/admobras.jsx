@@ -1,7 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as S from './admobras.styles.jsx';
 import { supabase } from '../supabaseClient';
 import { mascaraCPF, mascaraTelefone, caminhoDoStorage } from './mascaras';
+import {
+  toastSuccess,
+  toastError,
+  showLoading,
+  hideLoading,
+  confirmDelete,
+  showError,
+} from '../utils/alert.js';
 
 const CAMPOS_VAZIOS = {
   codigo_obra: '',
@@ -16,6 +24,18 @@ const CAMPOS_VAZIOS = {
   descricao: '',
   imagens: [],
   atualizacoes: [],
+};
+
+const inputStyle = {
+  background: '#fbfaf8',
+  color: '#23262b',
+  border: '1px solid #d9d6cf',
+  borderRadius: 6,
+  padding: '10px 12px',
+  fontSize: 14,
+  width: '100%',
+  boxSizing: 'border-box',
+  marginTop: 6,
 };
 
 export default function PainelGerenciarObras() {
@@ -39,7 +59,6 @@ export default function PainelGerenciarObras() {
   // Estado para controlar a mudança de código_obra
   const [codigoObraAntigo, setCodigoObraAntigo] = useState('');
   const [codigoObraEditando, setCodigoObraEditando] = useState('');
-  const [mostrarConfirmacaoCodigo, setMostrarConfirmacaoCodigo] = useState(false);
   const [erroCodigoObra, setErroCodigoObra] = useState('');
 
   useEffect(() => {
@@ -88,7 +107,6 @@ export default function PainelGerenciarObras() {
     setNovasImagens([]);
     setAtualizacoesParaRemover([]);
     setFotosAtualizacaoParaRemover([]);
-    setMostrarConfirmacaoCodigo(false);
     setErroCodigoObra('');
   }
 
@@ -117,24 +135,22 @@ export default function PainelGerenciarObras() {
     }
   }
 
-  function tentarAlterarCodigo() {
+  async function tentarAlterarCodigo() {
     if (!validarCodigoObra(codigoObraEditando)) {
       return;
     }
 
     if (codigoObraEditando !== codigoObraAntigo) {
-      setMostrarConfirmacaoCodigo(true);
+      const res = await confirmDelete(
+        `alterar o código da obra de "${codigoObraAntigo}" para "${codigoObraEditando}"`
+      );
+      if (res.isConfirmed) {
+        atualizarCampo('codigo_obra', codigoObraEditando);
+        toastSuccess('Código da obra alterado no formulário!');
+      } else {
+        setCodigoObraEditando(codigoObraAntigo);
+      }
     }
-  }
-
-  function confirmarAlteracaoCodigo() {
-    atualizarCampo('codigo_obra', codigoObraEditando);
-    setMostrarConfirmacaoCodigo(false);
-  }
-
-  function cancelarAlteracaoCodigo() {
-    setCodigoObraEditando(codigoObraAntigo);
-    setMostrarConfirmacaoCodigo(false);
   }
 
   function alternarRemocaoImagem(url) {
@@ -156,7 +172,7 @@ export default function PainelGerenciarObras() {
     if (!file) return;
     const LIMITE_MB = 5;
     if (file.size / (1024 * 1024) > LIMITE_MB) {
-      alert(`A imagem deve ter no máximo ${LIMITE_MB}MB.`);
+      toastError(`A imagem deve ter no máximo ${LIMITE_MB}MB.`);
       return;
     }
     setNovasImagens((prev) => [...prev, file]);
@@ -208,18 +224,22 @@ export default function PainelGerenciarObras() {
       );
       return urlsRestantes.length === 0;
     });
+
     if (atualizacoesInvalidas) {
-      alert(
+      showError(
+        'Atenção',
         'Uma atualização ficaria sem nenhuma foto. Restaure uma foto ou exclua a atualização inteira.'
       );
       return;
     }
 
     setSalvando(true);
+    showLoading('Salvando alterações...');
+
     try {
       const urlsNovas = [];
       for (const arquivo of novasImagens) {
-        const extensao = arquivo.name.split('.').pop();
+        const extensao = arquivo.name.split('.').pop().toLowerCase();
         const nomeArquivo = `${crypto.randomUUID()}.${extensao}`;
         const caminho = `obrasandamento/${nomeArquivo}`;
 
@@ -289,21 +309,24 @@ export default function PainelGerenciarObras() {
 
       if (erroUpdate) throw erroUpdate;
 
+      hideLoading();
+      toastSuccess('Obra atualizada com sucesso!');
       await buscarObras();
       cancelarEdicao();
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao salvar edição:', erro);
-      alert('Erro ao salvar as alterações. Veja o console para detalhes.');
+      showError('Erro ao salvar', 'Verifique o console para detalhes.');
     } finally {
       setSalvando(false);
     }
   }
 
   async function excluirObra(obra) {
-    const confirmar = window.confirm(
-      `Excluir a obra "${obra.nome_obra}"? Essa ação não pode ser desfeita.`
-    );
-    if (!confirmar) return;
+    const result = await confirmDelete(`a obra "${obra.nome_obra}"`);
+    if (!result.isConfirmed) return;
+
+    showLoading('Excluindo obra...');
 
     try {
       const urlsDasAtualizacoes = (obra.atualizacoes || []).flatMap((item) => item.urls || []);
@@ -321,22 +344,26 @@ export default function PainelGerenciarObras() {
       const { error } = await supabase.from('obras').delete().eq('id', obra.id);
       if (error) throw error;
 
+      hideLoading();
+      toastSuccess('Obra excluída com sucesso!');
       await buscarObras();
       setSelecionados((prev) => prev.filter((id) => id !== obra.id));
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao excluir obra:', erro);
-      alert('Erro ao excluir a obra. Veja o console para detalhes.');
+      showError('Erro ao excluir', 'Verifique o console para detalhes.');
     }
   }
 
   async function excluirSelecionados() {
     if (selecionados.length === 0) return;
-    const confirmar = window.confirm(
-      `Excluir ${selecionados.length} obra(s) selecionada(s)? Essa ação não pode ser desfeita.`
-    );
-    if (!confirmar) return;
+
+    const result = await confirmDelete(`${selecionados.length} obra(s)`);
+    if (!result.isConfirmed) return;
 
     setExcluindoSelecao(true);
+    showLoading('Excluindo obras...');
+
     try {
       const obrasSelecionadas = obras.filter((o) => selecionados.includes(o.id));
 
@@ -358,11 +385,14 @@ export default function PainelGerenciarObras() {
         .in('id', selecionados);
       if (error) throw error;
 
+      hideLoading();
+      toastSuccess(`${selecionados.length} obra(s) excluída(s) com sucesso!`);
       setSelecionados([]);
       await buscarObras();
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao excluir selecionados:', erro);
-      alert('Erro ao excluir as obras selecionadas. Veja o console para detalhes.');
+      showError('Erro ao excluir', 'Verifique o console para detalhes.');
     } finally {
       setExcluindoSelecao(false);
     }
@@ -399,7 +429,6 @@ export default function PainelGerenciarObras() {
         <S.VazioLista>Nenhuma obra cadastrada ainda.</S.VazioLista>
       )}
 
-      {/* Renderização Condicional: Form de Edição OU Grid de Obras */}
       {editandoId && obraSendoEditada ? (
         <FormularioEdicao
           obra={obraSendoEditada}
@@ -422,9 +451,6 @@ export default function PainelGerenciarObras() {
           codigoObraEditando={codigoObraEditando}
           handleCodigoObraChange={handleCodigoObraChange}
           tentarAlterarCodigo={tentarAlterarCodigo}
-          mostrarConfirmacaoCodigo={mostrarConfirmacaoCodigo}
-          confirmarAlteracaoCodigo={confirmarAlteracaoCodigo}
-          cancelarAlteracaoCodigo={cancelarAlteracaoCodigo}
           codigoObraAntigo={codigoObraAntigo}
           erroCodigoObra={erroCodigoObra}
         />
@@ -509,9 +535,6 @@ function FormularioEdicao({
   codigoObraEditando,
   handleCodigoObraChange,
   tentarAlterarCodigo,
-  mostrarConfirmacaoCodigo,
-  confirmarAlteracaoCodigo,
-  cancelarAlteracaoCodigo,
   codigoObraAntigo,
   erroCodigoObra,
 }) {
@@ -542,74 +565,6 @@ function FormularioEdicao({
 
   return (
     <S.PainelEdicao>
-      {mostrarConfirmacaoCodigo && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 2000,
-          }}
-        >
-          <div
-            style={{
-              background: '#fff',
-              borderRadius: 12,
-              padding: 24,
-              maxWidth: 400,
-              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
-            }}
-          >
-            <h3 style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 600 }}>
-              Confirmar alteração do código
-            </h3>
-            <p style={{ margin: '0 0 16px', fontSize: 14, color: '#6e7178', lineHeight: 1.5 }}>
-              Tem certeza que deseja alterar o código da obra de{' '}
-              <strong>{codigoObraAntigo}</strong> para <strong>{codigoObraEditando}</strong>?
-            </p>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-              <button
-                type="button"
-                onClick={cancelarAlteracaoCodigo}
-                style={{
-                  padding: '10px 16px',
-                  border: '1px solid #d9d6cf',
-                  background: '#fbfaf8',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  fontSize: 14,
-                  fontWeight: 500,
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={confirmarAlteracaoCodigo}
-                style={{
-                  padding: '10px 16px',
-                  border: 'none',
-                  background: '#ffb83c',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: '#fff',
-                }}
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <S.TituloLista style={{ fontSize: 18 }}>
         {obra.codigo_obra} — Editando: {obra.nome_obra || '(sem nome)'}
       </S.TituloLista>
@@ -639,6 +594,7 @@ function FormularioEdicao({
                   type="text"
                   inputMode="numeric"
                   maxLength="10"
+                  disabled={salvando}
                   value={codigoObraEditando}
                   onChange={(e) => handleCodigoObraChange(e.target.value)}
                   placeholder="1234567890"
@@ -681,6 +637,7 @@ function FormularioEdicao({
             <input
               style={inputStyle}
               type="text"
+              disabled={salvando}
               value={formEdicao.nome_obra}
               onChange={(e) => atualizarCampo('nome_obra', e.target.value)}
             />
@@ -694,6 +651,7 @@ function FormularioEdicao({
               <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <input
                   type="radio"
+                  disabled={salvando}
                   checked={formEdicao.tipo_obra === 'construcao'}
                   onChange={() => atualizarCampo('tipo_obra', 'construcao')}
                 />
@@ -702,6 +660,7 @@ function FormularioEdicao({
               <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <input
                   type="radio"
+                  disabled={salvando}
                   checked={formEdicao.tipo_obra === 'reforma'}
                   onChange={() => atualizarCampo('tipo_obra', 'reforma')}
                 />
@@ -730,6 +689,7 @@ function FormularioEdicao({
             <input
               style={inputStyle}
               type="text"
+              disabled={salvando}
               value={formEdicao.nome_proprietario}
               onChange={(e) => atualizarCampo('nome_proprietario', e.target.value)}
             />
@@ -742,6 +702,7 @@ function FormularioEdicao({
               style={inputStyle}
               type="text"
               maxLength={14}
+              disabled={salvando}
               value={formEdicao.cpf_proprietario}
               onChange={(e) =>
                 atualizarCampo('cpf_proprietario', mascaraCPF(e.target.value))
@@ -756,6 +717,7 @@ function FormularioEdicao({
               style={inputStyle}
               type="text"
               maxLength={15}
+              disabled={salvando}
               value={formEdicao.telefone_proprietario}
               onChange={(e) =>
                 atualizarCampo('telefone_proprietario', mascaraTelefone(e.target.value))
@@ -783,6 +745,7 @@ function FormularioEdicao({
             <input
               style={inputStyle}
               type="text"
+              disabled={salvando}
               value={formEdicao.endereco}
               onChange={(e) => atualizarCampo('endereco', e.target.value)}
             />
@@ -794,6 +757,7 @@ function FormularioEdicao({
             <input
               style={inputStyle}
               type="text"
+              disabled={salvando}
               value={formEdicao.bairro}
               onChange={(e) => atualizarCampo('bairro', e.target.value)}
             />
@@ -805,6 +769,7 @@ function FormularioEdicao({
             <input
               style={inputStyle}
               type="text"
+              disabled={salvando}
               value={formEdicao.cidade}
               onChange={(e) => atualizarCampo('cidade', e.target.value)}
             />
@@ -820,6 +785,7 @@ function FormularioEdicao({
           style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }}
           rows={5}
           maxLength={2000}
+          disabled={salvando}
           value={formEdicao.descricao}
           onChange={(e) => atualizarCampo('descricao', e.target.value)}
         />
@@ -839,7 +805,7 @@ function FormularioEdicao({
                 key={url}
                 $src={url}$marcada={marcada}
                 $arrastando={indiceArrastando === index}$sobre={indiceSobre === index && indiceArrastando !== index}
-                draggable={!marcada}
+                draggable={!marcada && !salvando}
                 onDragStart={() => handleDragStart(index)}
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDrop={() => handleDrop(index)}
@@ -851,6 +817,7 @@ function FormularioEdicao({
                 <S.BotaoRemoverImagem
                   type="button"
                   $marcada={marcada}
+                  disabled={salvando}
                   onClick={() => alternarRemocaoImagem(url)}
                 >
                   {marcada ? 'Desfazer' : 'Remover'}
@@ -872,7 +839,7 @@ function FormularioEdicao({
               }}
             >
               <span>📎 {arquivo.name}</span>
-              <button type="button" onClick={() => removerNovaImagem(index)}>
+              <button type="button" disabled={salvando} onClick={() => removerNovaImagem(index)}>
                 Remover
               </button>
             </div>
@@ -880,6 +847,7 @@ function FormularioEdicao({
           <input
             type="file"
             accept="image/*"
+            disabled={salvando}
             onChange={(e) => {
               adicionarNovaImagem(e.target.files[0]);
               e.target.value = '';
@@ -924,6 +892,7 @@ function FormularioEdicao({
                   <strong style={{ fontSize: 13 }}>Atualização {index + 1}</strong>
                   <button
                     type="button"
+                    disabled={salvando}
                     onClick={() => alternarRemocaoAtualizacao(index)}
                     style={{
                       border: 'none',
@@ -948,6 +917,7 @@ function FormularioEdicao({
                       <input
                         style={inputStyle}
                         type="date"
+                        disabled={salvando}
                         value={item.data || ''}
                         onChange={(e) =>
                           atualizarCampoAtualizacao(index, 'data', e.target.value)
@@ -963,6 +933,7 @@ function FormularioEdicao({
                         style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }}
                         rows={2}
                         maxLength={500}
+                        disabled={salvando}
                         value={item.descricao || ''}
                         onChange={(e) =>
                           atualizarCampoAtualizacao(index, 'descricao', e.target.value)
@@ -982,6 +953,7 @@ function FormularioEdicao({
                               <S.BotaoRemoverImagem
                                 type="button"
                                 $marcada={marcada}
+                                disabled={salvando}
                                 onClick={() => alternarRemocaoFotoAtualizacao(index, url)}
                               >
                                 {marcada ? 'Desfazer' : 'Remover'}
@@ -1010,15 +982,3 @@ function FormularioEdicao({
     </S.PainelEdicao>
   );
 }
-
-const inputStyle = {
-  background: '#fbfaf8',
-  color: '#23262b',
-  border: '1px solid #d9d6cf',
-  borderRadius: 6,
-  padding: '10px 12px',
-  fontSize: 14,
-  width: '100%',
-  boxSizing: 'border-box',
-  marginTop: 6,
-};

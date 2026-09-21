@@ -2,6 +2,14 @@ import React, { useEffect, useState } from 'react';
 import * as S from './admobras.styles.jsx';
 import { supabase } from '../supabaseClient';
 import { caminhoDoStorage } from './mascaras';
+import {
+  toastSuccess,
+  toastError,
+  showLoading,
+  hideLoading,
+  confirmDelete,
+  showError,
+} from '../utils/alert.js';
 
 const CAMPOS_VAZIOS = {
   titulo: '',
@@ -74,7 +82,7 @@ export default function AdmMaterias() {
     if (!file) return;
     const LIMITE_MB = 5;
     if (file.size / (1024 * 1024) > LIMITE_MB) {
-      alert(`A imagem deve ter no máximo ${LIMITE_MB}MB.`);
+      toastError(`A imagem deve ter no máximo ${LIMITE_MB}MB`);
       return;
     }
     if (novaImagemPreview) URL.revokeObjectURL(novaImagemPreview);
@@ -84,6 +92,8 @@ export default function AdmMaterias() {
 
   async function salvarEdicao(id) {
     setSalvando(true);
+    showLoading('Salvando alterações...');
+
     try {
       let urlImagemFinal = formEdicao.imagem;
 
@@ -123,21 +133,27 @@ export default function AdmMaterias() {
 
       if (erroUpdate) throw erroUpdate;
 
+      hideLoading();
+      toastSuccess('Matéria atualizada com sucesso!');
       await buscarMaterias();
       cancelarEdicao();
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao salvar matéria:', erro);
-      alert('Erro ao salvar as alterações. Veja o console para detalhes.');
+      showError('Erro ao salvar', 'Verifique o console para detalhes');
     } finally {
       setSalvando(false);
     }
   }
 
   async function excluirMateria(materia) {
-    const confirmar = window.confirm(
-      `Excluir a matéria "${materia.titulo}"? Essa ação não pode ser desfeita.`
-    );
-    if (!confirmar) return;
+    const result = await confirmDelete(`a matéria "${materia.titulo}"`);
+    
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    showLoading('Excluindo matéria...');
 
     try {
       const caminho = caminhoDoStorage(materia.imagem);
@@ -151,22 +167,29 @@ export default function AdmMaterias() {
       const { error } = await supabase.from('materias').delete().eq('id', materia.id);
       if (error) throw error;
 
+      hideLoading();
+      toastSuccess('Matéria excluída com sucesso!');
       await buscarMaterias();
       setSelecionados((prev) => prev.filter((id) => id !== materia.id));
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao excluir matéria:', erro);
-      alert('Erro ao excluir a matéria. Veja o console para detalhes.');
+      showError('Erro ao excluir', 'Verifique o console para detalhes');
     }
   }
 
   async function excluirSelecionados() {
     if (selecionados.length === 0) return;
-    const confirmar = window.confirm(
-      `Excluir ${selecionados.length} matéria(s) selecionada(s)? Essa ação não pode ser desfeita.`
-    );
-    if (!confirmar) return;
+    
+    const result = await confirmDelete(`${selecionados.length} matéria(s)`);
+    
+    if (!result.isConfirmed) {
+      return;
+    }
 
     setExcluindoSelecao(true);
+    showLoading('Excluindo matérias...');
+
     try {
       const materiasSelecionadas = materias.filter((m) => selecionados.includes(m.id));
       const caminhos = materiasSelecionadas
@@ -186,11 +209,14 @@ export default function AdmMaterias() {
         .in('id', selecionados);
       if (error) throw error;
 
+      hideLoading();
+      toastSuccess(`${selecionados.length} matéria(s) excluída(s) com sucesso!`);
       setSelecionados([]);
       await buscarMaterias();
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao excluir selecionados:', erro);
-      alert('Erro ao excluir as matérias selecionadas. Veja o console para detalhes.');
+      showError('Erro ao excluir', 'Verifique o console para detalhes');
     } finally {
       setExcluindoSelecao(false);
     }

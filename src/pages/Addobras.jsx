@@ -1,7 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as S from './Addobras.styles.jsx';
 import { supabase } from '../supabaseClient';
-import { mascaraCPF, mascaraTelefone } from './mascaras';
+import {
+  toastSuccess,
+  toastError,
+  toastWarning,
+  showError,
+  showLoading,
+  hideLoading,
+} from '../utils/alert.js';
 
 const ETAPAS_PADRAO = [
   'Fundação',
@@ -53,44 +60,39 @@ export default function PainelProdutos({
   const [previsaoEntrega, setPrevisaoEntrega] = useState('');
 
   const [etapas, setEtapas] = useState(ETAPAS_PADRAO);
-
   const [descricao, setDescricao] = useState('');
-
   const [atualizacoes, setAtualizacoes] = useState([novaAtualizacaoVazia()]);
 
   const [selecionados, setSelecionados] = useState([]);
   const [cadastrando, setCadastrando] = useState(false);
 
-  const [notificacao, setNotificacao] = useState(null); 
-  const notificacaoTimeoutRef = useRef(null);
-
   useEffect(() => {
-    return () => window.clearTimeout(notificacaoTimeoutRef.current);
+    return () => window.clearTimeout();
   }, []);
 
   const etapasConcluidas = etapas.filter((e) => e.concluida).length;
   const percentualConcluido = Math.round((etapasConcluidas / etapas.length) * 100);
 
-  // Validar código de obra (apenas números, exatamente 10 dígitos)
-function validarCodigoObra(codigo) {
-  const apenasNumeros = codigo.replace(/\D/g, '');
-  if (apenasNumeros.length < 4 || apenasNumeros.length > 10) {
-    setErroCodigoObra('O código deve conter entre 4 e 10 dígitos numéricos');
-    return false;
-  }
-  setErroCodigoObra('');
-  return true;
-}
-
-function handleCodigoObraChange(e) {
-  let valor = e.target.value.replace(/\D/g, '');
-  if (valor.length > 10) valor = valor.slice(0, 10);
-  setCodigoObraPersonalizado(valor);
-
-  if (valor.length >= 4 && valor.length <= 10) {
+  // Validar código de obra (apenas números, entre 4 e 10 dígitos)
+  function validarCodigoObra(codigo) {
+    const apenasNumeros = codigo.replace(/\D/g, '');
+    if (apenasNumeros.length < 4 || apenasNumeros.length > 10) {
+      setErroCodigoObra('O código deve conter entre 4 e 10 dígitos numéricos');
+      return false;
+    }
     setErroCodigoObra('');
+    return true;
   }
-}
+
+  function handleCodigoObraChange(e) {
+    let valor = e.target.value.replace(/\D/g, '');
+    if (valor.length > 10) valor = valor.slice(0, 10);
+    setCodigoObraPersonalizado(valor);
+
+    if (valor.length >= 4 && valor.length <= 10) {
+      setErroCodigoObra('');
+    }
+  }
 
   function toggleEtapa(id) {
     setEtapas((prev) =>
@@ -122,7 +124,7 @@ function handleCodigoObraChange(e) {
     if (!file) return;
     const LIMITE_MB = 5;
     if (file.size / (1024 * 1024) > LIMITE_MB) {
-      alert(`A imagem deve ter no máximo ${LIMITE_MB}MB.`);
+      toastError(`A imagem deve ter no máximo ${LIMITE_MB}MB`);
       return;
     }
 
@@ -157,35 +159,38 @@ function handleCodigoObraChange(e) {
   }
 
   async function handleCadastrar() {
-    // Validar código de obra
-if (!codigoObraPersonalizado.trim()) {
-  alert('Preencha o código da obra (4 a 10 dígitos).');
-  return;
-}
+    // ============ VALIDAÇÕES ============
+    if (!codigoObraPersonalizado.trim()) {
+      toastError('Preencha o código da obra (4 a 10 dígitos)');
+      return;
+    }
 
-if (!validarCodigoObra(codigoObraPersonalizado)) {
-  alert('O código deve conter entre 4 e 10 dígitos numéricos.');
-  return;
-}
+    if (!validarCodigoObra(codigoObraPersonalizado)) {
+      toastError('O código deve conter entre 4 e 10 dígitos numéricos');
+      return;
+    }
 
     if (!nomeObra.trim()) {
-      alert('Preencha o nome da obra.');
+      toastError('Preencha o nome da obra');
       return;
     }
 
     const atualizacoesComFoto = atualizacoes.filter((item) => item.fotos.length > 0);
     if (atualizacoesComFoto.length === 0) {
-      alert('Adicione pelo menos uma foto de atualização.');
+      toastError('Adicione pelo menos uma foto de atualização');
       return;
     }
+
     if (atualizacoesComFoto.some((item) => !item.descricao.trim())) {
-      alert('Toda atualização precisa de uma descrição contando o que foi feito.');
+      toastWarning('Toda atualização precisa de uma descrição');
       return;
     }
 
+    // ============ CADASTRO ============
     setCadastrando(true);
-    try {
+    showLoading('Cadastrando obra...');
 
+    try {
       const atualizacoesFinal = [];
 
       for (const item of atualizacoesComFoto) {
@@ -221,7 +226,7 @@ if (!validarCodigoObra(codigoObraPersonalizado)) {
       const { data, error: erroInsert } = await supabase
         .from('obras')
         .insert({
-          codigo_obra: codigoObraPersonalizado, // Usar código personalizado
+          codigo_obra: codigoObraPersonalizado,
           nome_obra: nomeObra,
           tipo_obra: tipoObra,
           nome_proprietario: nomeProprietario,
@@ -243,13 +248,10 @@ if (!validarCodigoObra(codigoObraPersonalizado)) {
 
       if (erroInsert) throw erroInsert;
 
+      hideLoading();
       const obraCriada = data?.[0];
       if (obraCriada) {
-        setNotificacao(codigoObraPersonalizado);
-        window.clearTimeout(notificacaoTimeoutRef.current);
-        notificacaoTimeoutRef.current = window.setTimeout(() => {
-          setNotificacao(null);
-        }, 6000);
+        toastSuccess(`Obra ${codigoObraPersonalizado} cadastrada com sucesso!`);
       }
 
       onCadastrar?.(data);
@@ -274,8 +276,9 @@ if (!validarCodigoObra(codigoObraPersonalizado)) {
       });
       setAtualizacoes([novaAtualizacaoVazia()]);
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao cadastrar obra:', erro);
-      alert('Erro ao cadastrar obra. Veja o console para detalhes.');
+      showError('Erro ao cadastrar', 'Verifique o console para detalhes');
     } finally {
       setCadastrando(false);
     }
@@ -283,48 +286,6 @@ if (!validarCodigoObra(codigoObraPersonalizado)) {
 
   return (
     <S.Painel>
-      {notificacao && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 20,
-            right: 20,
-            zIndex: 1000,
-            background: '#1e1e1e',
-            color: '#fff',
-            padding: '16px 20px',
-            borderRadius: 10,
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            maxWidth: 340,
-          }}
-        >
-          <span style={{ fontSize: 20 }}>✅</span>
-          <div style={{ fontSize: 14, lineHeight: 1.4 }}>
-            <strong>Obra {notificacao} cadastrada!</strong>
-            <br />
-            Pode ser revisada na sessão de admin.
-          </div>
-          <button
-            type="button"
-            onClick={() => setNotificacao(null)}
-            style={{
-              marginLeft: 'auto',
-              background: 'transparent',
-              border: 'none',
-              color: '#fff',
-              fontSize: 16,
-              cursor: 'pointer',
-              lineHeight: 1,
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       <S.TopoAcoes>
         <S.BotaoAcao type="button" onClick={onAtualizarLista}>
           🔄 Atualizar Lista
@@ -353,7 +314,7 @@ if (!validarCodigoObra(codigoObraPersonalizado)) {
           <S.TituloSecao>Identificação</S.TituloSecao>
           <S.Info>
             <S.Campo>
-              <S.Label htmlFor="codigoObra">Código da Obra ( de 4 a 10 dígitos)</S.Label>
+              <S.Label htmlFor="codigoObra">Código da Obra (de 4 a 10 dígitos)</S.Label>
               <S.Input
                 id="codigoObra"
                 type="text"
@@ -436,7 +397,7 @@ if (!validarCodigoObra(codigoObraPersonalizado)) {
                 inputMode="numeric"
                 maxLength={14}
                 value={cpfProprietario}
-                onChange={(e) => setCpfProprietario(mascaraCPF(e.target.value))}
+                onChange={(e) => setCpfProprietario(e.target.value)}
               />
             </S.Campo>
 
@@ -449,7 +410,7 @@ if (!validarCodigoObra(codigoObraPersonalizado)) {
                 inputMode="numeric"
                 maxLength={15}
                 value={telefoneProprietario}
-                onChange={(e) => setTelefoneProprietario(mascaraTelefone(e.target.value))}
+                onChange={(e) => setTelefoneProprietario(e.target.value)}
               />
             </S.Campo>
           </S.Info>

@@ -27,11 +27,18 @@ import {
   BotaoCancelar,
   VazioLista
 } from './admobras.styles';
+import {
+  toastSuccess,
+  toastError,
+  showLoading,
+  hideLoading,
+  confirmDelete,
+  showError,
+} from '../utils/alert.js';
 
 export default function AdmObrasConcluidas() {
   const [obras, setObras] = useState([]);
   const [carregando, setCarregando] = useState(true);
-  const [mensagem, setMensagem] = useState({ texto: '', erro: false });
   const [selecionadas, setSelecionadas] = useState([]);
 
   const [obraEmEdicao, setObraEmEdicao] = useState(null);
@@ -57,7 +64,8 @@ export default function AdmObrasConcluidas() {
       if (error) throw error;
       setObras(data || []);
     } catch (err) {
-      setMensagem({ texto: 'Erro ao carregar obras concluídas: ' + err.message, erro: true });
+      showError('Erro ao carregar', 'Não foi possível carregar as obras concluídas');
+      console.error('Erro:', err);
     } finally {
       setCarregando(false);
     }
@@ -78,7 +86,13 @@ export default function AdmObrasConcluidas() {
   };
 
   const deletarObras = async (idsParaDeletar) => {
-    if (!window.confirm(`Deseja realmente excluir ${idsParaDeletar.length} obra(s) concluída(s)?`)) return;
+    const result = await confirmDelete(`${idsParaDeletar.length} obra(s) concluída(s)`);
+    
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    showLoading('Excluindo obras...');
 
     try {
       const { error } = await supabase
@@ -88,11 +102,14 @@ export default function AdmObrasConcluidas() {
 
       if (error) throw error;
 
-      setMensagem({ texto: 'Obra(s) concluída(s) removida(s) com sucesso!', erro: false });
+      hideLoading();
+      toastSuccess('Obra(s) concluída(s) removida(s) com sucesso!');
       setSelecionadas([]);
       buscarObrasConcluidas();
     } catch (err) {
-      setMensagem({ texto: 'Erro ao deletar: ' + err.message, erro: true });
+      hideLoading();
+      console.error('Erro ao deletar:', err);
+      showError('Erro ao deletar', 'Verifique o console para detalhes');
     }
   };
 
@@ -130,7 +147,7 @@ export default function AdmObrasConcluidas() {
   const salvarEdicao = async (e) => {
     e.preventDefault();
     setSalvando(true);
-    setMensagem({ texto: '', erro: false });
+    showLoading('Salvando alterações...');
 
     try {
       let fotosFinais = (obraEmEdicao.galeria_fotos || []).filter(
@@ -171,11 +188,14 @@ export default function AdmObrasConcluidas() {
 
       if (updateError) throw updateError;
 
-      setMensagem({ texto: 'Obra concluída atualizada com sucesso!', erro: false });
+      hideLoading();
+      toastSuccess('Obra concluída atualizada com sucesso!');
       setObraEmEdicao(null);
       buscarObrasConcluidas();
     } catch (err) {
-      setMensagem({ texto: 'Erro ao salvar alterações: ' + err.message, erro: true });
+      hideLoading();
+      console.error('Erro ao salvar:', err);
+      showError('Erro ao salvar', 'Verifique o console para detalhes');
     } finally {
       setSalvando(false);
     }
@@ -198,8 +218,6 @@ export default function AdmObrasConcluidas() {
           )}
         </AcoesLista>
       </CabecalhoLista>
-
-      {mensagem.texto && <Aviso $erro={mensagem.erro}>{mensagem.texto}</Aviso>}
 
       {carregando ? (
         <VazioLista>Carregando obras concluídas...</VazioLista>

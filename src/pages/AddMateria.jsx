@@ -1,6 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import * as S from './Addobras.styles.jsx';
 import { supabase } from '../supabaseClient';
+import {
+  toastSuccess,
+  toastError,
+  showLoading,
+  hideLoading,
+  showError,
+} from '../utils/alert.js';
 
 function hojeISO() {
   return new Date().toISOString().slice(0, 10);
@@ -13,14 +20,12 @@ export default function AddMateria({ onCadastrar }) {
   const [imagem, setImagem] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [cadastrando, setCadastrando] = useState(false);
-  const [notificacao, setNotificacao] = useState(null);
-  const notificacaoTimeoutRef = useRef(null);
 
   function selecionarImagem(file) {
     if (!file) return;
     const LIMITE_MB = 5;
     if (file.size / (1024 * 1024) > LIMITE_MB) {
-      alert(`A imagem deve ter no máximo ${LIMITE_MB}MB.`);
+      toastError(`A imagem deve ter no máximo ${LIMITE_MB}MB`);
       return;
     }
     setImagem(file);
@@ -34,20 +39,26 @@ export default function AddMateria({ onCadastrar }) {
   }
 
   async function handleCadastrar() {
+    // ============ VALIDAÇÕES ============
     if (!titulo.trim()) {
-      alert('Preencha o título da matéria.');
-      return;
-    }
-    if (!texto.trim()) {
-      alert('Preencha o texto da matéria.');
-      return;
-    }
-    if (!imagem) {
-      alert('Adicione uma imagem de capa.');
+      toastError('Preencha o título da matéria');
       return;
     }
 
+    if (!texto.trim()) {
+      toastError('Preencha o texto da matéria');
+      return;
+    }
+
+    if (!imagem) {
+      toastError('Adicione uma imagem de capa');
+      return;
+    }
+
+    // ============ CADASTRO ============
     setCadastrando(true);
+    showLoading('Cadastrando matéria...');
+
     try {
       const extensao = imagem.name.split('.').pop();
       const nomeArquivo = `${crypto.randomUUID()}.${extensao}`;
@@ -56,6 +67,7 @@ export default function AddMateria({ onCadastrar }) {
       const { error: erroUpload } = await supabase.storage
         .from('obras')
         .upload(caminho, imagem);
+
       if (erroUpload) throw erroUpload;
 
       const { data: urlData } = supabase.storage
@@ -73,19 +85,20 @@ export default function AddMateria({ onCadastrar }) {
 
       if (erroInsert) throw erroInsert;
 
-      setNotificacao('Matéria cadastrada!');
-      window.clearTimeout(notificacaoTimeoutRef.current);
-      notificacaoTimeoutRef.current = window.setTimeout(() => setNotificacao(null), 5000);
+      hideLoading();
+      toastSuccess('Matéria cadastrada com sucesso!');
 
       onCadastrar?.();
 
+      // Limpar formulário
       setTitulo('');
       setTexto('');
       setDataPublicacao(hojeISO());
       removerImagem();
     } catch (erro) {
+      hideLoading();
       console.error('Erro ao cadastrar matéria:', erro);
-      alert('Erro ao cadastrar matéria. Veja o console para detalhes.');
+      showError('Erro ao cadastrar', 'Verifique o console para detalhes');
     } finally {
       setCadastrando(false);
     }
@@ -93,42 +106,6 @@ export default function AddMateria({ onCadastrar }) {
 
   return (
     <S.Painel>
-      {notificacao && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 20,
-            right: 20,
-            zIndex: 1000,
-            background: '#1e1e1e',
-            color: '#fff',
-            padding: '16px 20px',
-            borderRadius: 10,
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-          }}
-        >
-          <span style={{ fontSize: 20 }}>✅</span>
-          <strong style={{ fontSize: 14 }}>{notificacao}</strong>
-          <button
-            type="button"
-            onClick={() => setNotificacao(null)}
-            style={{
-              marginLeft: 'auto',
-              background: 'transparent',
-              border: 'none',
-              color: '#fff',
-              fontSize: 16,
-              cursor: 'pointer',
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       <S.TituloPainel>MATÉRIA</S.TituloPainel>
 
       <S.Formulario onSubmit={(e) => e.preventDefault()}>
