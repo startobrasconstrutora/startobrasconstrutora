@@ -196,4 +196,5 @@ export const DevSection = styled.div`
   align-items: center;
   justify-content: center;
   padding-bottom: 40px;
+  scroll-margin-top: 100px;
 `;

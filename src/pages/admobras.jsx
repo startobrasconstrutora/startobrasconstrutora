@@ -53,6 +53,7 @@ export default function PainelGerenciarObras() {
 
   const [atualizacoesParaRemover, setAtualizacoesParaRemover] = useState([]);
   const [fotosAtualizacaoParaRemover, setFotosAtualizacaoParaRemover] = useState([]);
+  const [novasAtualizacoes, setNovasAtualizacoes] = useState([]);
 
   const [salvando, setSalvando] = useState(false);
 
@@ -97,6 +98,7 @@ export default function PainelGerenciarObras() {
     setNovasImagens([]);
     setAtualizacoesParaRemover([]);
     setFotosAtualizacaoParaRemover([]);
+    setNovasAtualizacoes([]);
     setErroCodigoObra('');
   }
 
@@ -107,6 +109,7 @@ export default function PainelGerenciarObras() {
     setNovasImagens([]);
     setAtualizacoesParaRemover([]);
     setFotosAtualizacaoParaRemover([]);
+    setNovasAtualizacoes([]);
     setErroCodigoObra('');
   }
 
@@ -216,6 +219,59 @@ export default function PainelGerenciarObras() {
     );
   }
 
+  function adicionarNovaAtualizacao() {
+    setNovasAtualizacoes((prev) => [
+      ...prev,
+      { data: '', descricao: '', arquivos: [] },
+    ]);
+  }
+
+  function atualizarNovaAtualizacao(index, campo, valor) {
+    setNovasAtualizacoes((prev) => {
+      const atualizacoes = [...prev];
+      atualizacoes[index] = { ...atualizacoes[index], [campo]: valor };
+      return atualizacoes;
+    });
+  }
+
+  function adicionarFotosNovaAtualizacao(index, files) {
+    const arquivos = Array.from(files || []);
+    if (arquivos.length === 0) return;
+
+    const LIMITE_MB = 5;
+    const validos = arquivos.filter((arquivo) => {
+      if (arquivo.size / (1024 * 1024) > LIMITE_MB) {
+        toastError(`A imagem "${arquivo.name}" deve ter no máximo ${LIMITE_MB}MB.`);
+        return false;
+      }
+      return true;
+    });
+
+    setNovasAtualizacoes((prev) => {
+      const atualizacoes = [...prev];
+      atualizacoes[index] = {
+        ...atualizacoes[index],
+        arquivos: [...(atualizacoes[index].arquivos || []), ...validos],
+      };
+      return atualizacoes;
+    });
+  }
+
+  function removerFotoNovaAtualizacao(atualizacaoIndex, fotoIndex) {
+    setNovasAtualizacoes((prev) => {
+      const atualizacoes = [...prev];
+      atualizacoes[atualizacaoIndex] = {
+        ...atualizacoes[atualizacaoIndex],
+        arquivos: atualizacoes[atualizacaoIndex].arquivos.filter((_, i) => i !== fotoIndex),
+      };
+      return atualizacoes;
+    });
+  }
+
+  function removerNovaAtualizacao(index) {
+    setNovasAtualizacoes((prev) => prev.filter((_, i) => i !== index));
+  }
+
   async function salvarEdicao(id) {
     const atualizacoesInvalidas = (formEdicao.atualizacoes || []).some((item, index) => {
       if (atualizacoesParaRemover.includes(index)) return false;
@@ -229,6 +285,18 @@ export default function PainelGerenciarObras() {
       showError(
         'Atenção',
         'Uma atualização ficaria sem nenhuma foto. Restaure uma foto ou exclua a atualização inteira.'
+      );
+      return;
+    }
+
+    const novaAtualizacaoInvalida = novasAtualizacoes.some(
+      (item) => !item.data || !item.descricao?.trim() || !(item.arquivos || []).length
+    );
+
+    if (novaAtualizacaoInvalida) {
+      showError(
+        'Atenção',
+        'Preencha a data, a descrição e adicione pelo menos uma foto em todas as novas atualizações.'
       );
       return;
     }
@@ -252,6 +320,34 @@ export default function PainelGerenciarObras() {
           .from('obras')
           .getPublicUrl(caminho);
         urlsNovas.push(urlData.publicUrl);
+      }
+
+      const novasAtualizacoesSalvas = [];
+
+      for (const atualizacao of novasAtualizacoes) {
+        const urls = [];
+
+        for (const arquivo of atualizacao.arquivos || []) {
+          const extensao = arquivo.name.split('.').pop().toLowerCase();
+          const nomeArquivo = `${crypto.randomUUID()}.${extensao}`;
+          const caminho = `obrasandamento/${nomeArquivo}`;
+
+          const { error: erroUpload } = await supabase.storage
+            .from('obras')
+            .upload(caminho, arquivo);
+          if (erroUpload) throw erroUpload;
+
+          const { data: urlData } = supabase.storage
+            .from('obras')
+            .getPublicUrl(caminho);
+          urls.push(urlData.publicUrl);
+        }
+
+        novasAtualizacoesSalvas.push({
+          data: atualizacao.data,
+          descricao: atualizacao.descricao.trim(),
+          urls,
+        });
       }
 
       const urlsDeAtualizacoesExcluidas = (formEdicao.atualizacoes || [])
@@ -281,13 +377,18 @@ export default function PainelGerenciarObras() {
         .filter((url) => !imagensParaRemover.includes(url))
         .concat(urlsNovas);
 
-      const atualizacoesFinal = (formEdicao.atualizacoes || [])
+      const atualizacoesExistentesFinal = (formEdicao.atualizacoes || [])
         .map((item, index) => ({ item, index }))
         .filter(({ index }) => !atualizacoesParaRemover.includes(index))
         .map(({ item, index }) => ({
           ...item,
           urls: (item.urls || []).filter((url) => !fotoDaAtualizacaoMarcada(index, url)),
         }));
+
+      const atualizacoesFinal = [
+        ...atualizacoesExistentesFinal,
+        ...novasAtualizacoesSalvas,
+      ];
 
       const { error: erroUpdate } = await supabase
         .from('obras')
@@ -445,6 +546,12 @@ export default function PainelGerenciarObras() {
           fotoDaAtualizacaoMarcada={fotoDaAtualizacaoMarcada}
           alternarRemocaoFotoAtualizacao={alternarRemocaoFotoAtualizacao}
           atualizarCampoAtualizacao={atualizarCampoAtualizacao}
+          novasAtualizacoes={novasAtualizacoes}
+          adicionarNovaAtualizacao={adicionarNovaAtualizacao}
+          atualizarNovaAtualizacao={atualizarNovaAtualizacao}
+          adicionarFotosNovaAtualizacao={adicionarFotosNovaAtualizacao}
+          removerFotoNovaAtualizacao={removerFotoNovaAtualizacao}
+          removerNovaAtualizacao={removerNovaAtualizacao}
           salvando={salvando}
           onSalvar={() => salvarEdicao(obraSendoEditada.id)}
           onCancelar={cancelarEdicao}
@@ -529,6 +636,12 @@ function FormularioEdicao({
   fotoDaAtualizacaoMarcada,
   alternarRemocaoFotoAtualizacao,
   atualizarCampoAtualizacao,
+  novasAtualizacoes,
+  adicionarNovaAtualizacao,
+  atualizarNovaAtualizacao,
+  adicionarFotosNovaAtualizacao,
+  removerFotoNovaAtualizacao,
+  removerNovaAtualizacao,
   salvando,
   onSalvar,
   onCancelar,
@@ -540,6 +653,33 @@ function FormularioEdicao({
 }) {
   const [indiceArrastando, setIndiceArrastando] = useState(null);
   const [indiceSobre, setIndiceSobre] = useState(null);
+
+  // Controla quais atualizações estão abertas no acordeão.
+  const [atualizacoesAbertas, setAtualizacoesAbertas] = useState({});
+
+  function alternarAtualizacaoAberta(chave) {
+    setAtualizacoesAbertas((prev) => ({
+      ...prev,
+      [chave]: !prev[chave],
+    }));
+  }
+
+  // Controla quais seções principais estão abertas.
+  const [secoesAbertas, setSecoesAbertas] = useState({
+    identificacao: true,
+    proprietario: false,
+    localizacao: false,
+    descricao: false,
+    imagens: false,
+    atualizacoes: false,
+  });
+
+  function alternarSecao(chave) {
+    setSecoesAbertas((prev) => ({
+      ...prev,
+      [chave]: !prev[chave],
+    }));
+  }
 
   function handleDragStart(index) {
     setIndiceArrastando(index);
@@ -565,418 +705,1418 @@ function FormularioEdicao({
 
   return (
     <S.PainelEdicao>
-      <S.TituloLista style={{ fontSize: 18 }}>
-        {obra.codigo_obra} — Editando: {obra.nome_obra || '(sem nome)'}
-      </S.TituloLista>
-
-      <div>
-        <S.TituloLista style={{ fontSize: 13, color: '#6e7178', marginBottom: 10 }}>
-          Identificação
-        </S.TituloLista>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: 16,
-          }}
-        >
-          <div>
-            <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-              Código da Obra (10 dígitos)
-            </label>
-            <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-              <div style={{ flex: 1 }}>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: erroCodigoObra ? '#b3453d' : 'inherit',
-                  }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength="10"
-                  disabled={salvando}
-                  value={codigoObraEditando}
-                  onChange={(e) => handleCodigoObraChange(e.target.value)}
-                  placeholder="1234567890"
-                />
-                {erroCodigoObra && (
-                  <div style={{ color: '#b3453d', fontSize: 12, marginTop: 4 }}>
-                    {erroCodigoObra}
-                  </div>
-                )}
-                <div style={{ fontSize: 12, color: '#6e7178', marginTop: 4 }}>
-                  {codigoObraEditando.length}/10 dígitos
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={tentarAlterarCodigo}
-                disabled={salvando}
-                style={{
-                  padding: '10px 16px',
-                  background: codigoObraEditando !== codigoObraAntigo ? '#ffb83c' : '#e6e3da',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: codigoObraEditando !== codigoObraAntigo ? 'pointer' : 'default',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: codigoObraEditando !== codigoObraAntigo ? '#fff' : '#a7a49c',
-                  alignSelf: 'flex-start',
-                  marginTop: 6,
-                }}
-              >
-                Alterar
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-              Nome da Obra
-            </label>
-            <input
-              style={inputStyle}
-              type="text"
-              disabled={salvando}
-              value={formEdicao.nome_obra}
-              onChange={(e) => atualizarCampo('nome_obra', e.target.value)}
-            />
-          </div>
-
-          <div style={{ gridColumn: 'span 2' }}>
-            <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-              Tipo
-            </label>
-            <div style={{ display: 'flex', gap: 16, paddingTop: 10 }}>
-              <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <input
-                  type="radio"
-                  disabled={salvando}
-                  checked={formEdicao.tipo_obra === 'construcao'}
-                  onChange={() => atualizarCampo('tipo_obra', 'construcao')}
-                />
-                Construção
-              </label>
-              <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <input
-                  type="radio"
-                  disabled={salvando}
-                  checked={formEdicao.tipo_obra === 'reforma'}
-                  onChange={() => atualizarCampo('tipo_obra', 'reforma')}
-                />
-                Reforma
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <S.TituloLista style={{ fontSize: 13, color: '#6e7178', marginBottom: 10 }}>
-          Proprietário
-        </S.TituloLista>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: 16,
-          }}
-        >
-          <div>
-            <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-              Nome do Proprietário
-            </label>
-            <input
-              style={inputStyle}
-              type="text"
-              disabled={salvando}
-              value={formEdicao.nome_proprietario}
-              onChange={(e) => atualizarCampo('nome_proprietario', e.target.value)}
-            />
-          </div>
-          <div>
-            <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-              CPF
-            </label>
-            <input
-              style={inputStyle}
-              type="text"
-              maxLength={14}
-              disabled={salvando}
-              value={formEdicao.cpf_proprietario}
-              onChange={(e) =>
-                atualizarCampo('cpf_proprietario', mascaraCPF(e.target.value))
-              }
-            />
-          </div>
-          <div>
-            <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-              Telefone
-            </label>
-            <input
-              style={inputStyle}
-              type="text"
-              maxLength={15}
-              disabled={salvando}
-              value={formEdicao.telefone_proprietario}
-              onChange={(e) =>
-                atualizarCampo('telefone_proprietario', mascaraTelefone(e.target.value))
-              }
-            />
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <S.TituloLista style={{ fontSize: 13, color: '#6e7178', marginBottom: 10 }}>
-          Localização
-        </S.TituloLista>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: 16,
-          }}
-        >
-          <div style={{ gridColumn: 'span 2' }}>
-            <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-              Endereço
-            </label>
-            <input
-              style={inputStyle}
-              type="text"
-              disabled={salvando}
-              value={formEdicao.endereco}
-              onChange={(e) => atualizarCampo('endereco', e.target.value)}
-            />
-          </div>
-          <div>
-            <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-              Bairro
-            </label>
-            <input
-              style={inputStyle}
-              type="text"
-              disabled={salvando}
-              value={formEdicao.bairro}
-              onChange={(e) => atualizarCampo('bairro', e.target.value)}
-            />
-          </div>
-          <div>
-            <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-              Cidade
-            </label>
-            <input
-              style={inputStyle}
-              type="text"
-              disabled={salvando}
-              value={formEdicao.cidade}
-              onChange={(e) => atualizarCampo('cidade', e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <S.TituloLista style={{ fontSize: 13, color: '#6e7178', marginBottom: 10 }}>
-          Descrição
-        </S.TituloLista>
-        <textarea
-          style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }}
-          rows={5}
-          maxLength={2000}
+      <div style={{ marginBottom: 10 }}>
+        <button
+          type="button"
           disabled={salvando}
-          value={formEdicao.descricao}
-          onChange={(e) => atualizarCampo('descricao', e.target.value)}
-        />
-      </div>
+          onClick={() => alternarSecao('identificacao')}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '12px 14px',
+            border: '1px solid #e4e1db',
+            borderRadius: secoesAbertas.identificacao
+              ? '8px 8px 0 0'
+              : 8,
+            background: '#f5f4f0',
+            color: '#23262b',
+            cursor: salvando ? 'default' : 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <span>{secoesAbertas.identificacao ? '▼' : '▶'}</span>
 
-      <div>
-        <S.TituloLista style={{ fontSize: 13, color: '#6e7178', marginBottom: 10 }}>
-          Imagens (arraste para reordenar — a primeira é a principal)
-        </S.TituloLista>
+          <strong style={{ flex: 1, fontSize: 13 }}>
+            Identificação
+          </strong>
 
-        <S.GridImagensExistentes style={{ marginBottom: 14 }}>
-          {(formEdicao.imagens || []).map((url, index) => {
-            const marcada = imagensParaRemover.includes(url);
-            const ehPrincipal = index === 0 && !marcada;
-            return (
-              <S.MiniaturaExistente
-                key={url}
-                $src={url}$marcada={marcada}
-                $arrastando={indiceArrastando === index}$sobre={indiceSobre === index && indiceArrastando !== index}
-                draggable={!marcada && !salvando}
-                onDragStart={() => handleDragStart(index)}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDrop={() => handleDrop(index)}
-                onDragEnd={handleDragEnd}
-              >
-                {ehPrincipal && <S.EtiquetaPrincipal>Principal</S.EtiquetaPrincipal>}
-                {!marcada && <S.AlcaArrastar>⠿</S.AlcaArrastar>}
-
-                <S.BotaoRemoverImagem
-                  type="button"
-                  $marcada={marcada}
-                  disabled={salvando}
-                  onClick={() => alternarRemocaoImagem(url)}
-                >
-                  {marcada ? 'Desfazer' : 'Remover'}
-                </S.BotaoRemoverImagem>
-              </S.MiniaturaExistente>
-            );
-          })}
-        </S.GridImagensExistentes>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {novasImagens.map((arquivo, index) => (
-            <div
-              key={index}
+          {!secoesAbertas.identificacao && (
+            <span
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                fontSize: 13,
+                fontSize: 12,
+                color: '#8a8780',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '55%',
               }}
             >
-              <span>📎 {arquivo.name}</span>
-              <button type="button" disabled={salvando} onClick={() => removerNovaImagem(index)}>
-                Remover
-              </button>
-            </div>
-          ))}
-          <input
-            type="file"
-            accept="image/*"
-            disabled={salvando}
-            onChange={(e) => {
-              adicionarNovaImagem(e.target.files[0]);
-              e.target.value = '';
+              {formEdicao.nome_obra || 'Código e tipo da obra'}
+            </span>
+          )}
+        </button>
+
+        {secoesAbertas.identificacao && (
+          <div
+            style={{
+              border: '1px solid #e4e1db',
+              borderTop: 'none',
+              borderRadius: '0 0 8px 8px',
+              padding: 14,
             }}
-          />
-        </div>
-      </div>
+          >
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: 16,
+              }}
+            >
+              <div>
+                <label
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 13,
+                    color: '#4b4e54',
+                  }}
+                >
+                  Código da Obra (10 dígitos)
+                </label>
 
-      <div>
-        <S.TituloLista style={{ fontSize: 13, color: '#6e7178', marginBottom: 10 }}>
-          Atualizações da Obra (postadas pelo cliente/equipe)
-        </S.TituloLista>
-
-        {(formEdicao.atualizacoes || []).length === 0 && (
-          <p style={{ fontSize: 13, color: '#a7a49c' }}>Nenhuma atualização postada ainda.</p>
-        )}
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {(formEdicao.atualizacoes || []).map((item, index) => {
-            const removida = atualizacoesParaRemover.includes(index);
-            return (
-              <div
-                key={index}
-                style={{
-                  border: '1px solid #e4e1db',
-                  borderRadius: 10,
-                  padding: 16,
-                  background: '#fff',
-                  opacity: removida ? 0.45 : 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 12,
-                }}
-              >
                 <div
                   style={{
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
+                    gap: 8,
+                    marginTop: 6,
                   }}
                 >
-                  <strong style={{ fontSize: 13 }}>Atualização {index + 1}</strong>
+                  <div style={{ flex: 1 }}>
+                    <input
+                      style={{
+                        ...inputStyle,
+                        borderColor: erroCodigoObra
+                          ? '#b3453d'
+                          : 'inherit',
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength="10"
+                      disabled={salvando}
+                      value={codigoObraEditando}
+                      onChange={(e) =>
+                        handleCodigoObraChange(e.target.value)
+                      }
+                      placeholder="1234567890"
+                    />
+
+                    {erroCodigoObra && (
+                      <div
+                        style={{
+                          color: '#b3453d',
+                          fontSize: 12,
+                          marginTop: 4,
+                        }}
+                      >
+                        {erroCodigoObra}
+                      </div>
+                    )}
+
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: '#6e7178',
+                        marginTop: 4,
+                      }}
+                    >
+                      {codigoObraEditando.length}/10 dígitos
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={tentarAlterarCodigo}
+                    disabled={salvando}
+                    style={{
+                      padding: '10px 16px',
+                      background:
+                        codigoObraEditando !== codigoObraAntigo
+                          ? '#ffb83c'
+                          : '#e6e3da',
+                      border: 'none',
+                      borderRadius: 6,
+                      cursor:
+                        codigoObraEditando !== codigoObraAntigo
+                          ? 'pointer'
+                          : 'default',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color:
+                        codigoObraEditando !== codigoObraAntigo
+                          ? '#fff'
+                          : '#a7a49c',
+                      alignSelf: 'flex-start',
+                      marginTop: 6,
+                    }}
+                  >
+                    Alterar
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 13,
+                    color: '#4b4e54',
+                  }}
+                >
+                  Nome da Obra
+                </label>
+
+                <input
+                  style={inputStyle}
+                  type="text"
+                  disabled={salvando}
+                  value={formEdicao.nome_obra}
+                  onChange={(e) =>
+                    atualizarCampo('nome_obra', e.target.value)
+                  }
+                />
+              </div>
+
+              <div style={{ gridColumn: 'span 2' }}>
+                <label
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 13,
+                    color: '#4b4e54',
+                  }}
+                >
+                  Tipo
+                </label>
+
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 16,
+                    paddingTop: 10,
+                  }}
+                >
+                  <label
+                    style={{
+                      display: 'flex',
+                      gap: 6,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      disabled={salvando}
+                      checked={formEdicao.tipo_obra === 'construcao'}
+                      onChange={() =>
+                        atualizarCampo('tipo_obra', 'construcao')
+                      }
+                    />
+                    Construção
+                  </label>
+
+                  <label
+                    style={{
+                      display: 'flex',
+                      gap: 6,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      disabled={salvando}
+                      checked={formEdicao.tipo_obra === 'reforma'}
+                      onChange={() =>
+                        atualizarCampo('tipo_obra', 'reforma')
+                      }
+                    />
+                    Reforma
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginBottom: 10 }}>
+        <button
+          type="button"
+          disabled={salvando}
+          onClick={() => alternarSecao('proprietario')}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '12px 14px',
+            border: '1px solid #e4e1db',
+            borderRadius: secoesAbertas.proprietario
+              ? '8px 8px 0 0'
+              : 8,
+            background: '#f5f4f0',
+            color: '#23262b',
+            cursor: salvando ? 'default' : 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <span>{secoesAbertas.proprietario ? '▼' : '▶'}</span>
+
+          <strong style={{ flex: 1, fontSize: 13 }}>
+            Proprietário
+          </strong>
+
+          {!secoesAbertas.proprietario && (
+            <span
+              style={{
+                fontSize: 12,
+                color: '#8a8780',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '55%',
+              }}
+            >
+              {formEdicao.nome_proprietario || 'Dados do proprietário'}
+            </span>
+          )}
+        </button>
+
+        {secoesAbertas.proprietario && (
+          <div
+            style={{
+              border: '1px solid #e4e1db',
+              borderTop: 'none',
+              borderRadius: '0 0 8px 8px',
+              padding: 14,
+            }}
+          >
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: 16,
+              }}
+            >
+              <div>
+                <label
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 13,
+                    color: '#4b4e54',
+                  }}
+                >
+                  Nome do Proprietário
+                </label>
+
+                <input
+                  style={inputStyle}
+                  type="text"
+                  disabled={salvando}
+                  value={formEdicao.nome_proprietario}
+                  onChange={(e) =>
+                    atualizarCampo('nome_proprietario', e.target.value)
+                  }
+                />
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 13,
+                    color: '#4b4e54',
+                  }}
+                >
+                  CPF
+                </label>
+
+                <input
+                  style={inputStyle}
+                  type="text"
+                  maxLength={14}
+                  disabled={salvando}
+                  value={formEdicao.cpf_proprietario}
+                  onChange={(e) =>
+                    atualizarCampo(
+                      'cpf_proprietario',
+                      mascaraCPF(e.target.value)
+                    )
+                  }
+                />
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 13,
+                    color: '#4b4e54',
+                  }}
+                >
+                  Telefone
+                </label>
+
+                <input
+                  style={inputStyle}
+                  type="text"
+                  maxLength={15}
+                  disabled={salvando}
+                  value={formEdicao.telefone_proprietario}
+                  onChange={(e) =>
+                    atualizarCampo(
+                      'telefone_proprietario',
+                      mascaraTelefone(e.target.value)
+                    )
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginBottom: 10 }}>
+        <button
+          type="button"
+          disabled={salvando}
+          onClick={() => alternarSecao('localizacao')}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '12px 14px',
+            border: '1px solid #e4e1db',
+            borderRadius: secoesAbertas.localizacao
+              ? '8px 8px 0 0'
+              : 8,
+            background: '#f5f4f0',
+            color: '#23262b',
+            cursor: salvando ? 'default' : 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <span>{secoesAbertas.localizacao ? '▼' : '▶'}</span>
+
+          <strong style={{ flex: 1, fontSize: 13 }}>
+            Localização
+          </strong>
+
+          {!secoesAbertas.localizacao && (
+            <span
+              style={{
+                fontSize: 12,
+                color: '#8a8780',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '55%',
+              }}
+            >
+              {[formEdicao.bairro, formEdicao.cidade]
+                .filter(Boolean)
+                .join(' - ') || 'Endereço da obra'}
+            </span>
+          )}
+        </button>
+
+        {secoesAbertas.localizacao && (
+          <div
+            style={{
+              border: '1px solid #e4e1db',
+              borderTop: 'none',
+              borderRadius: '0 0 8px 8px',
+              padding: 14,
+            }}
+          >
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: 16,
+              }}
+            >
+              <div style={{ gridColumn: 'span 2' }}>
+                <label
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 13,
+                    color: '#4b4e54',
+                  }}
+                >
+                  Endereço
+                </label>
+
+                <input
+                  style={inputStyle}
+                  type="text"
+                  disabled={salvando}
+                  value={formEdicao.endereco}
+                  onChange={(e) =>
+                    atualizarCampo('endereco', e.target.value)
+                  }
+                />
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 13,
+                    color: '#4b4e54',
+                  }}
+                >
+                  Bairro
+                </label>
+
+                <input
+                  style={inputStyle}
+                  type="text"
+                  disabled={salvando}
+                  value={formEdicao.bairro}
+                  onChange={(e) =>
+                    atualizarCampo('bairro', e.target.value)
+                  }
+                />
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 13,
+                    color: '#4b4e54',
+                  }}
+                >
+                  Cidade
+                </label>
+
+                <input
+                  style={inputStyle}
+                  type="text"
+                  disabled={salvando}
+                  value={formEdicao.cidade}
+                  onChange={(e) =>
+                    atualizarCampo('cidade', e.target.value)
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginBottom: 10 }}>
+        <button
+          type="button"
+          disabled={salvando}
+          onClick={() => alternarSecao('descricao')}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '12px 14px',
+            border: '1px solid #e4e1db',
+            borderRadius: secoesAbertas.descricao
+              ? '8px 8px 0 0'
+              : 8,
+            background: '#f5f4f0',
+            color: '#23262b',
+            cursor: salvando ? 'default' : 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <span>{secoesAbertas.descricao ? '▼' : '▶'}</span>
+
+          <strong style={{ flex: 1, fontSize: 13 }}>
+            Descrição
+          </strong>
+
+          {!secoesAbertas.descricao && (
+            <span
+              style={{
+                fontSize: 12,
+                color: '#8a8780',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '55%',
+              }}
+            >
+              {formEdicao.descricao?.trim() || 'Descrição da obra'}
+            </span>
+          )}
+        </button>
+
+        {secoesAbertas.descricao && (
+          <div
+            style={{
+              border: '1px solid #e4e1db',
+              borderTop: 'none',
+              borderRadius: '0 0 8px 8px',
+              padding: 14,
+            }}
+          >
+            <textarea
+              style={{
+                ...inputStyle,
+                resize: 'vertical',
+                fontFamily: 'inherit',
+              }}
+              rows={5}
+              maxLength={2000}
+              disabled={salvando}
+              value={formEdicao.descricao}
+              onChange={(e) =>
+                atualizarCampo('descricao', e.target.value)
+              }
+            />
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginBottom: 10 }}>
+        <button
+          type="button"
+          disabled={salvando}
+          onClick={() => alternarSecao('imagens')}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '12px 14px',
+            border: '1px solid #e4e1db',
+            borderRadius: secoesAbertas.imagens
+              ? '8px 8px 0 0'
+              : 8,
+            background: '#f5f4f0',
+            color: '#23262b',
+            cursor: salvando ? 'default' : 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <span>{secoesAbertas.imagens ? '▼' : '▶'}</span>
+
+          <strong style={{ flex: 1, fontSize: 13 }}>
+            Imagens
+          </strong>
+
+          {!secoesAbertas.imagens && (
+            <span
+              style={{
+                fontSize: 12,
+                color: '#8a8780',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '55%',
+              }}
+            >
+              {`${(formEdicao.imagens || []).length} imagem(ns) cadastrada(s)`}
+            </span>
+          )}
+        </button>
+
+        {secoesAbertas.imagens && (
+          <div
+            style={{
+              border: '1px solid #e4e1db',
+              borderTop: 'none',
+              borderRadius: '0 0 8px 8px',
+              padding: 14,
+            }}
+          >
+            <S.GridImagensExistentes style={{ marginBottom: 14 }}>
+              {(formEdicao.imagens || []).map((url, index) => {
+                const marcada = imagensParaRemover.includes(url);
+                const ehPrincipal = index === 0 && !marcada;
+
+                return (
+                  <S.MiniaturaExistente
+                    key={url}
+                    $src={url}
+                    $marcada={marcada}
+                    $arrastando={indiceArrastando === index}
+                    $sobre={
+                      indiceSobre === index &&
+                      indiceArrastando !== index
+                    }
+                    draggable={!marcada && !salvando}
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={() => handleDrop(index)}
+                    onDragEnd={handleDragEnd}
+                  >
+                    {ehPrincipal && (
+                      <S.EtiquetaPrincipal>
+                        Principal
+                      </S.EtiquetaPrincipal>
+                    )}
+
+                    {!marcada && (
+                      <S.AlcaArrastar>⠿</S.AlcaArrastar>
+                    )}
+
+                    <S.BotaoRemoverImagem
+                      type="button"
+                      $marcada={marcada}
+                      disabled={salvando}
+                      onClick={() =>
+                        alternarRemocaoImagem(url)
+                      }
+                    >
+                      {marcada ? 'Desfazer' : 'Remover'}
+                    </S.BotaoRemoverImagem>
+                  </S.MiniaturaExistente>
+                );
+              })}
+            </S.GridImagensExistentes>
+
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+              }}
+            >
+              {novasImagens.map((arquivo, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    fontSize: 13,
+                  }}
+                >
+                  <span>📎 {arquivo.name}</span>
+
                   <button
                     type="button"
                     disabled={salvando}
-                    onClick={() => alternarRemocaoAtualizacao(index)}
-                    style={{
-                      border: 'none',
-                      background: 'transparent',
-                      color: removida ? '#23262b' : '#c1473c',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      padding: '4px 8px',
-                    }}
+                    onClick={() =>
+                      removerNovaImagem(index)
+                    }
                   >
-                    {removida ? '↺ Desfazer exclusão' : '✕ Excluir atualização'}
+                    Remover
                   </button>
                 </div>
+              ))}
 
-                {!removida && (
-                  <>
-                    <div style={{ width: 200 }}>
-                      <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-                        Data
-                      </label>
-                      <input
-                        style={inputStyle}
-                        type="date"
-                        disabled={salvando}
-                        value={item.data || ''}
-                        onChange={(e) =>
-                          atualizarCampoAtualizacao(index, 'data', e.target.value)
-                        }
-                      />
-                    </div>
+              <input
+                type="file"
+                accept="image/*"
+                disabled={salvando}
+                onChange={(e) => {
+                  adicionarNovaImagem(e.target.files[0]);
+                  e.target.value = '';
+                }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
-                    <div>
-                      <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-                        O que foi feito?
-                      </label>
-                      <textarea
-                        style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }}
-                        rows={2}
-                        maxLength={500}
-                        disabled={salvando}
-                        value={item.descricao || ''}
-                        onChange={(e) =>
-                          atualizarCampoAtualizacao(index, 'descricao', e.target.value)
-                        }
-                      />
-                    </div>
+      <div style={{ marginBottom: 10 }}>
+        <button
+          type="button"
+          disabled={salvando}
+          onClick={() => alternarSecao('atualizacoes')}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '12px 14px',
+            border: '1px solid #e4e1db',
+            borderRadius: secoesAbertas.atualizacoes
+              ? '8px 8px 0 0'
+              : 8,
+            background: '#f5f4f0',
+            color: '#23262b',
+            cursor: salvando ? 'default' : 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <span>{secoesAbertas.atualizacoes ? '▼' : '▶'}</span>
 
-                    <div>
-                      <label style={{ fontWeight: 600, fontSize: 13, color: '#4b4e54' }}>
-                        Fotos
-                      </label>
-                      <S.GridImagensExistentes style={{ marginTop: 6 }}>
-                        {(item.urls || []).map((url) => {
-                          const marcada = fotoDaAtualizacaoMarcada(index, url);
-                          return (
-                            <S.MiniaturaExistente key={url} $src={url}$marcada={marcada}>
-                              <S.BotaoRemoverImagem
-                                type="button"
-                                $marcada={marcada}
-                                disabled={salvando}
-                                onClick={() => alternarRemocaoFotoAtualizacao(index, url)}
-                              >
-                                {marcada ? 'Desfazer' : 'Remover'}
-                              </S.BotaoRemoverImagem>
-                            </S.MiniaturaExistente>
-                          );
-                        })}
-                      </S.GridImagensExistentes>
+          <strong style={{ flex: 1, fontSize: 13 }}>
+            Atualizações da Obra
+          </strong>
+
+          {!secoesAbertas.atualizacoes && (
+            <span
+              style={{
+                fontSize: 12,
+                color: '#8a8780',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '55%',
+              }}
+            >
+              {`${(formEdicao.atualizacoes || []).length} atualização(ões)`}
+            </span>
+          )}
+        </button>
+
+        {secoesAbertas.atualizacoes && (
+          <div
+            style={{
+              border: '1px solid #e4e1db',
+              borderTop: 'none',
+              borderRadius: '0 0 8px 8px',
+              padding: 14,
+            }}
+          >
+
+                        <div>
+              <S.TituloLista
+                style={{
+                  fontSize: 13,
+                  color: '#6e7178',
+                  marginBottom: 10,
+                }}
+              >
+                Atualizações da Obra (postadas pelo cliente/equipe)
+              </S.TituloLista>
+
+              {(formEdicao.atualizacoes || []).length === 0 && (
+                <p
+                  style={{
+                    fontSize: 13,
+                    color: '#a7a49c',
+                  }}
+                >
+                  Nenhuma atualização postada ainda.
+                </p>
+              )}
+
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 10,
+                }}
+              >
+                {(formEdicao.atualizacoes || []).map((item, index) => {
+                  const removida =
+                    atualizacoesParaRemover.includes(index);
+
+                  const chave = `existente-${index}`;
+
+                  const aberta =
+                    !!atualizacoesAbertas[chave];
+
+                  const descricaoResumo =
+                    (item.descricao || '').trim();
+
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        border: '1px solid #e4e1db',
+                        borderRadius: 10,
+                        background: '#fff',
+                        opacity: removida ? 0.45 : 1,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          padding: '12px 14px',
+                        }}
+                      >
+                        <button
+                          type="button"
+                          disabled={salvando || removida}
+                          onClick={() =>
+                            alternarAtualizacaoAberta(chave)
+                          }
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            border: 'none',
+                            background: aberta
+                              ? '#faf9f6'
+                              : 'transparent',
+                            borderRadius: 7,
+                            padding: '7px 8px',
+                            margin: '-7px 0 -7px -8px',
+                            textAlign: 'left',
+                            cursor:
+                              salvando || removida
+                                ? 'default'
+                                : 'pointer',
+                            color: '#23262b',
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 15,
+                              fontWeight: 700,
+                              width: 18,
+                              flex: '0 0 18px',
+                              textAlign: 'center',
+                              color: '#6e7178',
+                            }}
+                          >
+                            {aberta ? '▼' : '▶'}
+                          </span>
+
+                          <strong
+                            style={{
+                              fontSize: 13,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            Atualização {index + 1}
+                          </strong>
+
+                          <span
+                            style={{
+                              fontSize: 12,
+                              color: '#6e7178',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {item.data
+                              ? new Date(
+                                  `${item.data}T12:00:00`
+                                ).toLocaleDateString('pt-BR')
+                              : 'Sem data'}
+                          </span>
+
+                          {descricaoResumo && (
+                            <span
+                              style={{
+                                minWidth: 0,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                fontSize: 12,
+                                color: '#8a8780',
+                              }}
+                            >
+                              — {descricaoResumo}
+                            </span>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={salvando}
+                          onClick={() =>
+                            alternarRemocaoAtualizacao(index)
+                          }
+                          style={{
+                            border: 'none',
+                            background: 'transparent',
+                            color: removida
+                              ? '#23262b'
+                              : '#c1473c',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            padding: '4px 8px',
+                          }}
+                        >
+                          {removida
+                            ? '↺ Desfazer exclusão'
+                            : '✕ Excluir'}
+                        </button>
+                      </div>
+
+                      {removida && (
+                        <div
+                          style={{
+                            padding: '0 14px 12px 42px',
+                            fontSize: 12,
+                            color: '#a7a49c',
+                          }}
+                        >
+                          Esta atualização será excluída ao salvar.
+                        </div>
+                      )}
+
+                      {!removida && aberta && (
+                        <div
+                          style={{
+                            borderTop: '1px solid #eeeae3',
+                            padding: 16,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 12,
+                          }}
+                        >
+                          <div style={{ width: 200 }}>
+                            <label
+                              style={{
+                                fontWeight: 600,
+                                fontSize: 13,
+                                color: '#4b4e54',
+                              }}
+                            >
+                              Data
+                            </label>
+
+                            <input
+                              style={inputStyle}
+                              type="date"
+                              disabled={salvando}
+                              value={item.data || ''}
+                              onChange={(e) =>
+                                atualizarCampoAtualizacao(
+                                  index,
+                                  'data',
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              style={{
+                                fontWeight: 600,
+                                fontSize: 13,
+                                color: '#4b4e54',
+                              }}
+                            >
+                              O que foi feito?
+                            </label>
+
+                            <textarea
+                              style={{
+                                ...inputStyle,
+                                resize: 'vertical',
+                                fontFamily: 'inherit',
+                              }}
+                              rows={2}
+                              maxLength={500}
+                              disabled={salvando}
+                              value={item.descricao || ''}
+                              onChange={(e) =>
+                                atualizarCampoAtualizacao(
+                                  index,
+                                  'descricao',
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              style={{
+                                fontWeight: 600,
+                                fontSize: 13,
+                                color: '#4b4e54',
+                              }}
+                            >
+                              Fotos
+                            </label>
+
+                            <S.GridImagensExistentes
+                              style={{ marginTop: 6 }}
+                            >
+                              {(item.urls || []).map((url) => {
+                                const marcada =
+                                  fotoDaAtualizacaoMarcada(
+                                    index,
+                                    url
+                                  );
+
+                                return (
+                                  <S.MiniaturaExistente
+                                    key={url}
+                                    $src={url}
+                                    $marcada={marcada}
+                                  >
+                                    <S.BotaoRemoverImagem
+                                      type="button"
+                                      $marcada={marcada}
+                                      disabled={salvando}
+                                      onClick={() =>
+                                        alternarRemocaoFotoAtualizacao(
+                                          index,
+                                          url
+                                        )
+                                      }
+                                    >
+                                      {marcada
+                                        ? 'Desfazer'
+                                        : 'Remover'}
+                                    </S.BotaoRemoverImagem>
+                                  </S.MiniaturaExistente>
+                                );
+                              })}
+                            </S.GridImagensExistentes>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </>
-                )}
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
+
+              <div
+                style={{
+                  marginTop: 16,
+                  paddingTop: 16,
+                  borderTop: '1px dashed #d9d6cf',
+                }}
+              >
+                {novasAtualizacoes.map((item, index) => {
+                  const chave = `nova-${index}`;
+
+                  const aberta =
+                    atualizacoesAbertas[chave] !== false;
+
+                  return (
+                    <div
+                      key={`nova-atualizacao-${index}`}
+                      style={{
+                        marginTop: 10,
+                        border: '1px solid #d9d6cf',
+                        borderRadius: 10,
+                        background: '#fbfaf8',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          padding: '12px 14px',
+                        }}
+                      >
+                        <button
+                          type="button"
+                          disabled={salvando}
+                          onClick={() =>
+                            alternarAtualizacaoAberta(chave)
+                          }
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            border: 'none',
+                            background: aberta
+                              ? '#f5f4f0'
+                              : 'transparent',
+                            borderRadius: 7,
+                            padding: '7px 8px',
+                            margin: '-7px 0 -7px -8px',
+                            textAlign: 'left',
+                            cursor: salvando
+                              ? 'default'
+                              : 'pointer',
+                            color: '#23262b',
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 15,
+                              fontWeight: 700,
+                              width: 18,
+                              flex: '0 0 18px',
+                              textAlign: 'center',
+                              color: '#6e7178',
+                            }}
+                          >
+                            {aberta ? '▼' : '▶'}
+                          </span>
+
+                          <strong
+                            style={{
+                              fontSize: 13,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            Atualização{' '}
+                            {(formEdicao.atualizacoes || []).length +
+                              index +
+                              1}
+                          </strong>
+
+                          <span
+                            style={{
+                              fontSize: 12,
+                              color: '#6e7178',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {item.data
+                              ? new Date(
+                                  `${item.data}T12:00:00`
+                                ).toLocaleDateString('pt-BR')
+                              : 'Nova atualização'}
+                          </span>
+
+                          {item.descricao?.trim() && (
+                            <span
+                              style={{
+                                minWidth: 0,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                fontSize: 12,
+                                color: '#8a8780',
+                              }}
+                            >
+                              — {item.descricao.trim()}
+                            </span>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={salvando}
+                          onClick={() =>
+                            removerNovaAtualizacao(index)
+                          }
+                          style={{
+                            border: 'none',
+                            background: 'transparent',
+                            color: '#c1473c',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            cursor: salvando
+                              ? 'default'
+                              : 'pointer',
+                            padding: '4px 8px',
+                          }}
+                        >
+                          ✕ Remover
+                        </button>
+                      </div>
+
+                      {aberta && (
+                        <div
+                          style={{
+                            borderTop: '1px solid #e4e1db',
+                            padding: 16,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 12,
+                            }}
+                          >
+                            <div style={{ width: 200 }}>
+                              <label
+                                style={{
+                                  fontWeight: 600,
+                                  fontSize: 13,
+                                  color: '#4b4e54',
+                                }}
+                              >
+                                Data
+                              </label>
+
+                              <input
+                                style={inputStyle}
+                                type="date"
+                                disabled={salvando}
+                                value={item.data || ''}
+                                onChange={(e) =>
+                                  atualizarNovaAtualizacao(
+                                    index,
+                                    'data',
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </div>
+
+                            <div>
+                              <label
+                                style={{
+                                  fontWeight: 600,
+                                  fontSize: 13,
+                                  color: '#4b4e54',
+                                }}
+                              >
+                                O que foi feito?
+                              </label>
+
+                              <textarea
+                                style={{
+                                  ...inputStyle,
+                                  resize: 'vertical',
+                                  fontFamily: 'inherit',
+                                }}
+                                rows={3}
+                                maxLength={500}
+                                disabled={salvando}
+                                value={item.descricao || ''}
+                                onChange={(e) =>
+                                  atualizarNovaAtualizacao(
+                                    index,
+                                    'descricao',
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Descreva o andamento da obra..."
+                              />
+                            </div>
+
+                            <div>
+                              <label
+                                style={{
+                                  fontWeight: 600,
+                                  fontSize: 13,
+                                  color: '#4b4e54',
+                                }}
+                              >
+                                Fotos
+                              </label>
+
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                disabled={salvando}
+                                style={{
+                                  ...inputStyle,
+                                  padding: 8,
+                                }}
+                                onChange={(e) => {
+                                  adicionarFotosNovaAtualizacao(
+                                    index,
+                                    e.target.files
+                                  );
+                                  e.target.value = '';
+                                }}
+                              />
+
+                              {(item.arquivos || []).length > 0 && (
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 7,
+                                    marginTop: 8,
+                                  }}
+                                >
+                                  {item.arquivos.map(
+                                    (arquivo, fotoIndex) => (
+                                      <div
+                                        key={`${arquivo.name}-${arquivo.lastModified}-${fotoIndex}`}
+                                        style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent:
+                                            'space-between',
+                                          gap: 10,
+                                          padding: '7px 9px',
+                                          background: '#fff',
+                                          border:
+                                            '1px solid #e4e1db',
+                                          borderRadius: 6,
+                                          fontSize: 12,
+                                        }}
+                                      >
+                                        <span
+                                          style={{
+                                            overflow: 'hidden',
+                                            textOverflow:
+                                              'ellipsis',
+                                          }}
+                                        >
+                                          📎 {arquivo.name}
+                                        </span>
+
+                                        <button
+                                          type="button"
+                                          disabled={salvando}
+                                          onClick={() =>
+                                            removerFotoNovaAtualizacao(
+                                              index,
+                                              fotoIndex
+                                            )
+                                          }
+                                          style={{
+                                            border: 'none',
+                                            background:
+                                              'transparent',
+                                            color: '#c1473c',
+                                            cursor: salvando
+                                              ? 'default'
+                                              : 'pointer',
+                                          }}
+                                        >
+                                          Remover
+                                        </button>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  disabled={salvando}
+                  onClick={adicionarNovaAtualizacao}
+                  style={{
+                    border: '1px solid #c9c5bb',
+                    background: '#fbfaf8',
+                    color: '#23262b',
+                    borderRadius: 7,
+                    padding: '9px 14px',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: salvando
+                      ? 'default'
+                      : 'pointer',
+                    marginTop: 10,
+                  }}
+                >
+                  + Adicionar atualização
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <S.LinhaBotoesEdicao>
-        <S.BotaoCancelar type="button" onClick={onCancelar} disabled={salvando}>
+        <S.BotaoCancelar
+          type="button"
+          onClick={onCancelar}
+          disabled={salvando}
+        >
           Cancelar
         </S.BotaoCancelar>
-        <S.BotaoSalvar type="button" onClick={onSalvar} disabled={salvando}>
-          {salvando ? 'Salvando...' : 'Salvar alterações'}
+
+        <S.BotaoSalvar
+          type="button"
+          onClick={onSalvar}
+          disabled={salvando}
+        >
+          {salvando
+            ? 'Salvando...'
+            : 'Salvar alterações'}
         </S.BotaoSalvar>
       </S.LinhaBotoesEdicao>
     </S.PainelEdicao>

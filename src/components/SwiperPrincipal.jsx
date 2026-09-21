@@ -1,7 +1,6 @@
-import { Navigation, Autoplay } from 'swiper/modules';
+import { Autoplay } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
-import 'swiper/css/navigation';
 import * as S from './SwiperPrincipal.styles';
 
 const PLACEHOLDER = 'https://placehold.co/800x400/aaaaaa/ffffff?text=Imagem';
@@ -18,7 +17,7 @@ const SwiperMod = ({ slides = [] }) => {
   return (
     <S.Container>
       <Swiper
-        modules={[Navigation, Autoplay]}
+        modules={[Autoplay]}
         spaceBetween={0}
         breakpoints={{
           768: { slidesPerView: 1 },
@@ -28,7 +27,6 @@ const SwiperMod = ({ slides = [] }) => {
         loop={true}
         grabCursor={true}
         speed={800}
-        navigation={true}
         autoplay={{
           delay: 4000, // Intervalo de 4 segundos entre as trocas
           disableOnInteraction: false, // Continua rodando mesmo após interação manual

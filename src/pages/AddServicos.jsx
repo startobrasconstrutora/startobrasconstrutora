@@ -114,7 +114,7 @@ export default function AddServicos() {
         .from('servicos_colaborador')
         .insert({
           colaborador_id: colaboradorId,
-          codigo_obra: obraId,
+          obra_id: obraId, // Corrigido de codigo_obra para obra_id
           descricao_servico: descricaoServico,
           data_inicio: dataInicio,
           data_fim: dataFim,
@@ -216,7 +216,7 @@ export default function AddServicos() {
               >
                 <option value="">Selecione uma obra...</option>
                 {obras.map((obra) => (
-                  <option key={obra.id} value={obra.codigo_obra}>
+                  <option key={obra.id} value={obra.id}>
                     {obra.codigo_obra} - {obra.nome_obra}
                   </option>
                 ))}
