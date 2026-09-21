@@ -117,16 +117,7 @@ const Footer = () => {
                   Obras Concluídas
                 </Link>
               </li>
-              <li>
-                <Link to="/subpagina" title="Terrenos disponíveis">
-                  Terrenos à Venda
-                </Link>
-              </li>
-              <li>
-                <Link to="/subpagina" title="Casas disponíveis">
-                  Casas à Venda
-                </Link>
-              </li>
+           
             </S.FooterMenu>
           </S.Mapasite>
 

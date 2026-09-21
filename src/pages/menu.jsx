@@ -138,12 +138,7 @@ function MenuPrincipal() {
           <S.ListaSubMenuLi>
             <Link to="/obras-concluidas" onClick={fecharMenu}>Obras Concluídas</Link>
           </S.ListaSubMenuLi>
-          <S.ListaSubMenuLi>
-            <Link to="/subpagina" onClick={fecharMenu}>Terrenos à Venda</Link>
-          </S.ListaSubMenuLi>
-          <S.ListaSubMenuLi>
-            <Link to="/subpagina" onClick={fecharMenu}>Casas à Venda</Link>
-          </S.ListaSubMenuLi>
+      
         </S.ListaSubMenu>
       </S.SubMenu>
 
