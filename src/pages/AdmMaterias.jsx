@@ -211,7 +211,7 @@ export default function AdmMaterias() {
             disabled={selecionados.length === 0 || excluindoSelecao}
             onClick={excluirSelecionados}
           >
-            🗑️ Excluir seleção ({selecionados.length})
+            🗑️ Excluir Itens Selecionados ({selecionados.length})
           </S.BotaoPequeno>
         </S.AcoesLista>
       </S.CabecalhoLista>
