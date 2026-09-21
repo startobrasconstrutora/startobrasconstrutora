@@ -35,17 +35,20 @@ export const MenuInner = styled.div`
 export const DivLogo = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   height: 100%;
-  margin-right: 30px; /* Afasta a logo dos itens do menu */
+  margin-right: 30px;
 
   img {
     height: 65px;
     width: auto;
+    display: block;
   }
 
   @media (max-width: ${BREAKPOINT_MOBILE}) {
     margin-right: 0;
+    justify-content: flex-start;
+
     img {
       height: 50px;
       width: auto;
@@ -200,9 +203,12 @@ export const Hamburger = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 28px;
-  height: 20px;
+  align-items: flex-end;
+  width: 30px;
+  height: 22px;
   cursor: pointer;
+  margin-left: auto;
+  flex-shrink: 0;
 
   @media (min-width: calc(${BREAKPOINT_MOBILE} + 1px)) {
     display: none;
@@ -275,9 +281,12 @@ export const LiMenuMobile = styled.li`
   transition: 0.3s;
   cursor: pointer;
 
-  a {
+  a,
+  a:visited,
+  a:hover,
+  a:active {
     text-decoration: none;
-    color: #000000;
+    color: #000000 !important;
   }
 
   &:hover {
