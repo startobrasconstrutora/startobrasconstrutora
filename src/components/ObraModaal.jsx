@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../supabaseClient'
-import * as S from './ObraModal.styles.jsx'
+import { supabase } from '../supabaseClient.js'
+import * as S from './ObraModaal.styles.jsx'
 
 const rotuloTipoObra = {
   construcao: 'Construção',
