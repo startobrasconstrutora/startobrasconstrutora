@@ -38,37 +38,10 @@ body, html {
 .Subpagina {
   min-height: 100vh;
   height: auto;
-
   width: 100%;
 }
 
 h1, p, span {
   color: var(--font);
   font-family: Verdana, Geneva, Tahoma, sans-serif;
-}
-
-/* Bloqueia a visualização em mobile enquanto a versão responsiva não fica pronta */
-@media (max-width: 768px) {
-  body {
-    overflow: hidden;
-    height: 100vh;
-  }
-
-  body::before {
-    content: "🚧\A Estamos preparando a versão mobile.\A Volte em breve!";
-    white-space: pre-line;
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    color: var(--font);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 24px;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
-    font-size: 18px;
-    line-height: 1.5;
-    z-index: 9999;
-  }
 }

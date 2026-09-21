@@ -17,6 +17,16 @@ export const Container = styled.div`
   height: auto;
   gap: 30px;
   padding: 10px 0px 150px;
+
+  @media (max-width: 768px) {
+    gap: 20px;
+    padding: 10px 0px 100px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 15px;
+    padding: 10px 0px 80px;
+  }
 `
 
 export const ContainerSwiper = styled.div`
@@ -36,6 +46,14 @@ export const DivCentro = styled.div`
   width: 100%;
   padding: 60px 10%;
   background: #D9D6CD;
+
+  @media (max-width: 768px) {
+    padding: 40px 5%;
+  }
+
+  @media (max-width: 480px) {
+    padding: 30px 4%;
+  }
 `
 
 export const CardsRow = styled.div`
@@ -45,6 +63,11 @@ export const CardsRow = styled.div`
 
   @media (max-width: 900px) {
     flex-direction: column;
+    gap: 30px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 20px;
   }
 `
 
@@ -73,6 +96,11 @@ export const CardImg = styled.div`
 
   @media (max-width: 900px) {
     height: 240px;
+  }
+
+  @media (max-width: 480px) {
+    height: 200px;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 20px 100%, 0 calc(100% - 20px));
   }
 `
 
@@ -117,6 +145,24 @@ export const CardTexto = styled.div`
       font-size: 16px;
     }
   }
+
+  @media (max-width: 480px) {
+    h2 {
+      font-size: 1.1rem;
+      padding-bottom: 12px;
+    }
+
+    li {
+      font-size: 14px;
+      padding: 5px 0 5px 20px;
+    }
+
+    li::before {
+      width: 7px;
+      height: 7px;
+      top: 11px;
+    }
+  }
 `
 
 export const SvgOverlay = styled.div`
@@ -131,6 +177,13 @@ export const SvgOverlay = styled.div`
     width: 100%;
     height: auto;
     display: block;
+  }
+
+  @media (max-width: 480px) {
+    svg {
+      height: auto;
+      min-height: 60px;
+    }
   }
 `
 
@@ -185,6 +238,18 @@ export const DivCentroTexto = styled.div`
       font-size: 21px;
     }
   }
+
+  @media (max-width: 480px) {
+    li {
+      font-size: 15px;
+      padding: 6px 0 6px 20px;
+    }
+
+    h1, h2 {
+      font-size: 18px;
+      padding-bottom: 15px;
+    }
+  }
 `
 
 export const Ofertas = styled.div`
@@ -224,9 +289,19 @@ export const Ofertas = styled.div`
   @media (max-width: 768px) {
     margin-top: 0px;
     padding: 0px;
+    height: 150px;
 
     p {
       font-size: 3vw;
+    }
+  }
+
+  @media (max-width: 480px) {
+    height: 120px;
+    margin-bottom: 5px;
+
+    p {
+      font-size: 2.5vw;
     }
   }
 `
@@ -248,6 +323,16 @@ export const DivCentroImg = styled.div`
     height: 300px;
     max-height: 300px;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 250px;
+  }
+
+  @media (max-width: 480px) {
+    height: 200px;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 25px 100%, 0 calc(100% - 25px));
+  }
 `
 
 export const Banner3 = styled.div`
@@ -258,6 +343,14 @@ export const Banner3 = styled.div`
 
   @media (max-width: 1500px) {
     width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    padding-bottom: 30px;
+  }
+
+  @media (max-width: 480px) {
+    padding-bottom: 20px;
   }
 `
 
@@ -278,7 +371,17 @@ export const ObrasSection = styled.div`
       font-size: 1.3rem;
     }
   }
+
+  @media (max-width: 480px) {
+    padding: 15px 4% 25px;
+
+    h2 {
+      font-size: 1.1rem;
+      padding-bottom: 18px;
+    }
+  }
 `
+
 export const StatsBar = styled.div`
   display: flex;
   justify-content: center;
@@ -306,6 +409,18 @@ export const StatsBar = styled.div`
     background-position: center;
     pointer-events: none;
     z-index: 1;
+  }
+
+  @media (max-width: 768px) {
+    padding: 30px 5%;
+    border-top: 4px double #e0e0e0;
+    border-bottom: 4px double #e0e0e0;
+  }
+
+  @media (max-width: 480px) {
+    padding: 20px 4%;
+    border-top: 3px double #e0e0e0;
+    border-bottom: 3px double #e0e0e0;
   }
 `
 
@@ -349,10 +464,36 @@ export const StatItem = styled.div`
   @media (max-width: 768px) {
     strong {
       font-size: 1.5rem;
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+    }
+
+    strong::after {
+      width: 50px;
+      height: 2px;
     }
 
     span {
       font-size: 0.9rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    strong {
+      font-size: 1.1rem;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    strong::after {
+      width: 35px;
+      height: 2px;
+    }
+
+    span {
+      font-size: 0.8rem;
+      line-height: 1.5;
+      padding: 0 10px;
     }
   }
 `

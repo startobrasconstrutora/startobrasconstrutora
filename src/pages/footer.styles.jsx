@@ -12,6 +12,14 @@ export const Container = styled.footer`
   position: relative;
   overflow: hidden;
 
+  @media (max-width: 768px) {
+    padding: 0 5%;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0 4%;
+  }
+
   /* Textura de telhado em marca d'água sutil */
   &::before {
     content: '';
@@ -48,6 +56,18 @@ export const FooterEmbaixo = styled.div`
     text-align: center;
     gap: 36px;
   }
+
+  @media (max-width: 768px) {
+    padding-top: 30px;
+    padding-bottom: 1.5rem;
+    gap: 28px;
+  }
+
+  @media (max-width: 480px) {
+    padding-top: 20px;
+    padding-bottom: 1rem;
+    gap: 20px;
+  }
 `
 
 export const Endereco = styled.div`
@@ -59,12 +79,21 @@ export const Endereco = styled.div`
   max-width: 320px;
   width: 100%;
 
+  @media (max-width: 480px) {
+    max-width: 100%;
+  }
+
   p {
     color: #1a1a1a;
     font-size: clamp(13px, 1vw, 0.95rem);
     line-height: 1.6;
     margin: 0;
     text-align: center;
+
+    @media (max-width: 480px) {
+      font-size: 12px;
+      line-height: 1.4;
+    }
   }
 
   a {
@@ -89,6 +118,14 @@ export const LogoFooter = styled.div`
     height: 75px;
     width: auto;
     object-fit: contain;
+
+    @media (max-width: 768px) {
+      height: 60px;
+    }
+
+    @media (max-width: 480px) {
+      height: 50px;
+    }
   }
 `
 
@@ -100,10 +137,19 @@ export const Social = styled.div`
   gap: 12px;
   width: 100%;
 
+  @media (max-width: 480px) {
+    padding-top: 18px;
+    gap: 10px;
+  }
+
   p {
     font-size: 13px;
     color: #555;
     text-align: center;
+
+    @media (max-width: 480px) {
+      font-size: 11px;
+    }
   }
 `
 
@@ -115,6 +161,14 @@ export const LogoSocial = styled(FontAwesomeIcon)`
 
   &:hover {
     transform: scale(1.25);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 18px;
   }
 `
 
@@ -133,7 +187,8 @@ export const FooterLinks = styled.div`
   @media (max-width: 480px) {
     flex-direction: column;
     align-items: center;
-    gap: 24px;
+    gap: 20px;
+    width: 100%;
   }
 `
 
@@ -146,6 +201,11 @@ export const Mapasite = styled.div`
   @media (max-width: 868px) {
     align-items: center;
   }
+
+  @media (max-width: 480px) {
+    min-width: 100px;
+    align-items: center;
+  }
 `
 
 export const FooterLabel = styled.span`
@@ -155,6 +215,17 @@ export const FooterLabel = styled.span`
   text-transform: uppercase;
   letter-spacing: 1.2px;
   margin-bottom: 0.75rem;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    letter-spacing: 0.8px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    letter-spacing: 0.6px;
+    margin-bottom: 0.5rem;
+  }
 `
 
 export const FooterMenu = styled.ul`
@@ -164,6 +235,10 @@ export const FooterMenu = styled.ul`
   list-style: none;
   padding: 0;
   margin: 0;
+
+  @media (max-width: 480px) {
+    gap: 0.4rem;
+  }
 
   li {
     margin: 0;
@@ -182,6 +257,14 @@ export const FooterMenu = styled.ul`
       color: #000;
       text-shadow: 0 0 0.65px #000, 0 0 0.65px #000;
     }
+
+    @media (max-width: 768px) {
+      font-size: 12px;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 11px;
+    }
   }
 `
 
@@ -189,6 +272,11 @@ export const LinhaHorizontal = styled.div`
   width: 100%;
   height: 1px;
   background: rgba(88, 88, 88, 0.15);
+
+  @media (max-width: 480px) {
+    height: 1px;
+    background: rgba(88, 88, 88, 0.1);
+  }
 `
 
 export const FooterCopy = styled.div`
@@ -199,4 +287,16 @@ export const FooterCopy = styled.div`
   padding-bottom: 30px;
   position: relative;
   z-index: 1;
+
+  @media (max-width: 768px) {
+    font-size: 11px;
+    margin-top: 1rem;
+    padding-bottom: 20px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 10px;
+    margin-top: 0.8rem;
+    padding-bottom: 15px;
+  }
 `
