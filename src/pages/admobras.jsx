@@ -1348,6 +1348,200 @@ function FormularioEdicao({
       </div>
 
       <div style={{ marginBottom: 10 }}>
+  <button
+    type="button"
+    disabled={salvando}
+    onClick={() => alternarSecao('imagens')}
+    style={{
+      width: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 10,
+      padding: '12px 14px',
+      border: '1px solid #e4e1db',
+      borderRadius: secoesAbertas.imagens
+        ? '8px 8px 0 0'
+        : 8,
+      background: '#f5f4f0',
+      color: '#23262b',
+      cursor: salvando ? 'default' : 'pointer',
+      textAlign: 'left',
+    }}
+  >
+    <span>
+      {secoesAbertas.imagens ? '▼' : '▶'}
+    </span>
+
+    <strong style={{ flex: 1, fontSize: 13 }}>
+      Fotos da Obra
+    </strong>
+
+    {!secoesAbertas.imagens && (
+      <span
+        style={{
+          fontSize: 12,
+          color: '#8a8780',
+        }}
+      >
+        {(formEdicao.imagens || []).length} foto(s)
+      </span>
+    )}
+  </button>
+
+  {secoesAbertas.imagens && (
+    <div
+      style={{
+        border: '1px solid #e4e1db',
+        borderTop: 'none',
+        borderRadius: '0 0 8px 8px',
+        padding: 14,
+      }}
+    >
+      <div
+  style={{
+    fontSize: 12,
+    color: '#6e7178',
+    marginBottom: 12,
+  }}
+>
+  A primeira foto é usada como capa da obra.
+  Arraste as fotos para reorganizar e coloque a foto desejada na primeira posição.
+</div>
+
+      <S.GridImagensExistentes>
+        {(formEdicao.imagens || []).map((url, index) => {
+          const marcada = imagensParaRemover.includes(url);
+          const ehCapa = index === 0;
+
+          return (
+            <div
+              key={url}
+              draggable={!salvando && !marcada}
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDrop={() => handleDrop(index)}
+              onDragEnd={handleDragEnd}
+              style={{
+                position: 'relative',
+                border: ehCapa
+                  ? '2px solid #ffb83c'
+                  : '1px solid #e4e1db',
+                borderRadius: 8,
+                padding: 5,
+                background: '#fff',
+                opacity: marcada ? 0.45 : 1,
+                cursor: salvando ? 'default' : 'grab',
+              }}
+            >
+              <S.MiniaturaExistente
+                $src={url}
+                $marcada={marcada}
+              />
+
+              {ehCapa && !marcada && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 8,
+                    left: 8,
+                    background: '#ffb83c',
+                    color: '#fff',
+                    padding: '4px 7px',
+                    borderRadius: 5,
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}
+                >
+                  ★ CAPA
+                </div>
+              )}
+
+            
+
+              {marcada && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'rgba(255,255,255,0.65)',
+                    borderRadius: 8,
+                  }}
+                >
+                  <button
+                    type="button"
+                    disabled={salvando}
+                    onClick={() =>
+                      alternarRemocaoImagem(url)
+                    }
+                    style={{
+                      border: 'none',
+                      borderRadius: 5,
+                      padding: '6px 10px',
+                      background: '#23262b',
+                      color: '#fff',
+                      fontSize: 11,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Desfazer remoção
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </S.GridImagensExistentes>
+
+      <div style={{ marginTop: 16 }}>
+        <label
+          style={{
+            fontWeight: 600,
+            fontSize: 13,
+            color: '#4b4e54',
+          }}
+        >
+          Adicionar novas fotos
+        </label>
+
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          disabled={salvando}
+          style={{
+            ...inputStyle,
+            padding: 8,
+          }}
+          onChange={(e) => {
+            Array.from(e.target.files || []).forEach(
+              (file) => adicionarNovaImagem(file)
+            );
+
+            e.target.value = '';
+          }}
+        />
+      </div>
+
+      {novasImagens.length > 0 && (
+        <div
+          style={{
+            marginTop: 12,
+            fontSize: 12,
+            color: '#6e7178',
+          }}
+        >
+          {novasImagens.length} nova(s) foto(s) aguardando
+          para serem salvas.
+        </div>
+      )}
+    </div>
+  )}
+</div>
+
+      <div style={{ marginBottom: 10 }}>
         <button
           type="button"
           disabled={salvando}
@@ -1367,6 +1561,7 @@ function FormularioEdicao({
             cursor: salvando ? 'default' : 'pointer',
             textAlign: 'left',
           }}
+
         >
           <span>{secoesAbertas.atualizacoes ? '▼' : '▶'}</span>
 

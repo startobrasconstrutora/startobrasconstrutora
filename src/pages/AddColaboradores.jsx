@@ -56,22 +56,10 @@ export default function AddColaboradores({
   }
 
   // Validar formato básico de CPF
-  function validarCPF(cpfFormatado) {
-    // Remove máscara
-    const cpfLimpo = cpfFormatado.replace(/\D/g, '');
-    
-    // Verifica se tem 11 dígitos
-    if (cpfLimpo.length !== 11) {
-      return false;
-    }
-    
-    // Verifica se não é sequência repetida
-    if (/^(\d)\1{10}$/.test(cpfLimpo)) {
-      return false;
-    }
-    
-    return true;
-  }
+ function validarCPF(cpfFormatado) {
+  const cpfLimpo = cpfFormatado.replace(/\D/g, '');
+  return cpfLimpo.length === 11;
+}
 
   async function handleCadastrar() {
     // ============ VALIDAÇÕES ============
@@ -95,12 +83,6 @@ export default function AddColaboradores({
       return;
     }
 
-    // Email agora é opcional, mas se preenchido deve ser válido
-    if (email.trim() && !email.includes('@')) {
-      toastError('Email inválido');
-      return;
-    }
-
     if (funcoesSelecionadas.length === 0) {
       toastWarning('Selecione pelo menos uma função');
       return;
@@ -111,19 +93,27 @@ export default function AddColaboradores({
     showLoading('Cadastrando colaborador...');
 
     try {
-      // Verificar se CPF já existe
-      const { data: cpfExistente, error: erroVerificacao } = await supabase
-        .from('colaboradores')
-        .select('id')
-        .eq('cpf', cpf)
-        .single();
+  // Verificar se CPF já existe
+const { data: cpfExistente, error: erroVerificacao } = await supabase
+  .from('colaboradores')
+  .select('id')
+  .eq('cpf', cpf)
+  .maybeSingle();
 
-      if (!erroVerificacao && cpfExistente) {
-        hideLoading();
-        toastError('Este CPF já está cadastrado no sistema');
-        setCadastrando(false);
-        return;
-      }
+if (erroVerificacao) {
+  console.error('Erro ao verificar CPF:', erroVerificacao);
+  hideLoading();
+  toastError('Não foi possível verificar o CPF.');
+  setCadastrando(false);
+  return;
+}
+
+if (cpfExistente) {
+  hideLoading();
+  toastError('Este CPF já está cadastrado no sistema');
+  setCadastrando(false);
+  return;
+}
 
       // Inserir colaborador
       const { data: colaboradorData, error: erroInsert } = await supabase
@@ -132,19 +122,26 @@ export default function AddColaboradores({
           nome_completo: nomeCompleto,
           cpf,
           telefone,
-          email,
-          data_nascimento: dataNascimento,
+          email: email.trim() || null,
+          data_nascimento: dataNascimento || null,
         })
         .select();
 
       if (erroInsert) {
         hideLoading();
-        if (erroInsert.code === '23505') {
-          toastError('Este CPF já está cadastrado no sistema');
-        } else {
-          showError('Erro ao cadastrar', 'Verifique o console para detalhes');
-          console.error('Erro ao inserir colaborador:', erroInsert);
-        }
+      if (erroInsert.code === '23505') {
+  console.error('ERRO DE DUPLICIDADE:', {
+    code: erroInsert.code,
+    message: erroInsert.message,
+    details: erroInsert.details,
+    hint: erroInsert.hint,
+  });
+
+  toastError('Já existe um registro com um dos dados informados.');
+} else {
+  showError('Erro ao cadastrar', 'Verifique o console para detalhes');
+  console.error('Erro ao inserir colaborador:', erroInsert);
+}
         setCadastrando(false);
         return;
       }
