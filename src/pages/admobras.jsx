@@ -18,9 +18,12 @@ const CAMPOS_VAZIOS = {
   nome_proprietario: '',
   cpf_proprietario: '',
   telefone_proprietario: '',
+  cep: '',
   endereco: '',
+  numero: '',
   bairro: '',
   cidade: '',
+  uf: '',
   descricao: '',
   imagens: [],
   atualizacoes: [],
@@ -119,21 +122,39 @@ export default function PainelGerenciarObras() {
 
   function validarCodigoObra(codigo) {
     const apenasNumeros = codigo.replace(/\D/g, '');
-    if (apenasNumeros.length < 4 || apenasNumeros.length > 10) {
-      setErroCodigoObra('O código deve conter entre 4 e 10 dígitos numéricos');
+    if (apenasNumeros.length !== 10) {
+      setErroCodigoObra('O código deve conter exatamente 10 dígitos (AAAAMMDD + 2 dígitos)');
       return false;
     }
+
+    const ano = parseInt(apenasNumeros.slice(0, 4), 10);
+    const mes = parseInt(apenasNumeros.slice(4, 6), 10);
+    const dia = parseInt(apenasNumeros.slice(6, 8), 10);
+
+    if (mes < 1 || mes > 12) {
+      setErroCodigoObra('Mês inválido no código da obra');
+      return false;
+    }
+
+    const diasNoMes = new Date(ano, mes, 0).getDate();
+    if (dia < 1 || dia > diasNoMes) {
+      setErroCodigoObra('Dia inválido no código da obra');
+      return false;
+    }
+
     setErroCodigoObra('');
     return true;
   }
 
-  function handleCodigoObraChange(valor) {
+ function handleCodigoObraChange(valor) {
     let apenasNumeros = valor.replace(/\D/g, '');
     if (apenasNumeros.length > 10) apenasNumeros = apenasNumeros.slice(0, 10);
 
     setCodigoObraEditando(apenasNumeros);
 
-    if (apenasNumeros.length >= 4 && apenasNumeros.length <= 10) {
+    if (apenasNumeros.length === 10) {
+      validarCodigoObra(apenasNumeros);
+    } else {
       setErroCodigoObra('');
     }
   }
@@ -171,14 +192,21 @@ export default function PainelGerenciarObras() {
     });
   }
 
-  function adicionarNovaImagem(file) {
+ async function adicionarNovaImagem(file) {
     if (!file) return;
-    const LIMITE_MB = 5;
+    const LIMITE_MB = 15;
     if (file.size / (1024 * 1024) > LIMITE_MB) {
-      toastError(`A imagem deve ter no máximo ${LIMITE_MB}MB.`);
+      toastError(`O arquivo deve ter no máximo ${LIMITE_MB}MB.`);
       return;
     }
-    setNovasImagens((prev) => [...prev, file]);
+
+    try {
+      const arquivoProcessado = await otimizarArquivo(file);
+      setNovasImagens((prev) => [...prev, arquivoProcessado]);
+    } catch (err) {
+      console.error('Erro ao processar imagem:', err);
+      toastError('Erro ao processar a imagem selecionada.');
+    }
   }
 
   function removerNovaImagem(index) {
@@ -234,27 +262,33 @@ export default function PainelGerenciarObras() {
     });
   }
 
-  function adicionarFotosNovaAtualizacao(index, files) {
+ async function adicionarFotosNovaAtualizacao(index, files) {
     const arquivos = Array.from(files || []);
     if (arquivos.length === 0) return;
 
-    const LIMITE_MB = 5;
+    const LIMITE_MB = 15;
     const validos = arquivos.filter((arquivo) => {
       if (arquivo.size / (1024 * 1024) > LIMITE_MB) {
-        toastError(`A imagem "${arquivo.name}" deve ter no máximo ${LIMITE_MB}MB.`);
+        toastError(`O arquivo "${arquivo.name}" deve ter no máximo ${LIMITE_MB}MB.`);
         return false;
       }
       return true;
     });
 
-    setNovasAtualizacoes((prev) => {
-      const atualizacoes = [...prev];
-      atualizacoes[index] = {
-        ...atualizacoes[index],
-        arquivos: [...(atualizacoes[index].arquivos || []), ...validos],
-      };
-      return atualizacoes;
-    });
+    try {
+      const processados = await Promise.all(validos.map((arq) => otimizarArquivo(arq)));
+      setNovasAtualizacoes((prev) => {
+        const atualizacoes = [...prev];
+        atualizacoes[index] = {
+          ...atualizacoes[index],
+          arquivos: [...(atualizacoes[index].arquivos || []), ...processados],
+        };
+        return atualizacoes;
+      });
+    } catch (err) {
+      console.error('Erro ao processar arquivos da atualização:', err);
+      toastError('Erro ao processar imagens selecionadas.');
+    }
   }
 
   function removerFotoNovaAtualizacao(atualizacaoIndex, fotoIndex) {
@@ -271,6 +305,29 @@ export default function PainelGerenciarObras() {
   function removerNovaAtualizacao(index) {
     setNovasAtualizacoes((prev) => prev.filter((_, i) => i !== index));
   }
+
+  async function buscarCep(cepDigitado) {
+  const cepLimpo = cepDigitado.replace(/\D/g, '');
+  if (cepLimpo.length !== 8) return;
+
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+    const data = await res.json();
+
+    if (!data.erro) {
+      setFormEdicao((prev) => ({
+        ...prev,
+        cep: cepDigitado,
+        endereco: data.logradouro || prev.endereco,
+        bairro: data.bairro || prev.bairro,
+        cidade: data.localidade || prev.cidade,
+        uf: data.uf || prev.uf,
+      }));
+    }
+  } catch (err) {
+    console.error("Erro ao procurar CEP:", err);
+  }
+}
 
   async function salvarEdicao(id) {
     const atualizacoesInvalidas = (formEdicao.atualizacoes || []).some((item, index) => {
@@ -392,21 +449,24 @@ export default function PainelGerenciarObras() {
 
       const { error: erroUpdate } = await supabase
         .from('obras')
-        .update({
-          codigo_obra: formEdicao.codigo_obra,
-          nome_obra: formEdicao.nome_obra,
-          tipo_obra: formEdicao.tipo_obra,
-          nome_proprietario: formEdicao.nome_proprietario,
-          cpf_proprietario: formEdicao.cpf_proprietario,
-          telefone_proprietario: formEdicao.telefone_proprietario,
-          endereco: formEdicao.endereco,
-          bairro: formEdicao.bairro,
-          cidade: formEdicao.cidade,
-          descricao: formEdicao.descricao,
-          imagens: imagensFinal,
-          atualizacoes: atualizacoesFinal,
-        })
-        .eq('id', id);
+  .update({
+    codigo_obra: formEdicao.codigo_obra,
+    nome_obra: formEdicao.nome_obra,
+    tipo_obra: formEdicao.tipo_obra,
+    nome_proprietario: formEdicao.nome_proprietario,
+    cpf_proprietario: formEdicao.cpf_proprietario,
+    telefone_proprietario: formEdicao.telefone_proprietario,
+    cep: formEdicao.cep,
+    endereco: formEdicao.endereco,
+    numero: formEdicao.numero,
+    bairro: formEdicao.bairro,
+    cidade: formEdicao.cidade,
+    uf: formEdicao.uf,
+    descricao: formEdicao.descricao,
+    imagens: imagensFinal,
+    atualizacoes: atualizacoesFinal,
+  })
+  .eq('id', id);
 
       if (erroUpdate) throw erroUpdate;
 
@@ -539,6 +599,7 @@ export default function PainelGerenciarObras() {
           alternarRemocaoImagem={alternarRemocaoImagem}
           reordenarImagens={reordenarImagens}
           novasImagens={novasImagens}
+          buscarCep={buscarCep}
           adicionarNovaImagem={adicionarNovaImagem}
           removerNovaImagem={removerNovaImagem}
           atualizacoesParaRemover={atualizacoesParaRemover}
@@ -772,7 +833,7 @@ function FormularioEdicao({
                     color: '#4b4e54',
                   }}
                 >
-                  Código da Obra (10 dígitos)
+                  Código da Obra (10 dígitos: AAAAMMDD + 2 dígitos)
                 </label>
 
                 <div
@@ -798,7 +859,7 @@ function FormularioEdicao({
                       onChange={(e) =>
                         handleCodigoObraChange(e.target.value)
                       }
-                      placeholder="1234567890"
+                      placeholder="Ex: 2026040101"
                     />
 
                     {erroCodigoObra && (
@@ -1074,6 +1135,8 @@ function FormularioEdicao({
         )}
       </div>
 
+   
+
       <div style={{ marginBottom: 10 }}>
         <button
           type="button"
@@ -1112,7 +1175,7 @@ function FormularioEdicao({
                 maxWidth: '55%',
               }}
             >
-              {[formEdicao.bairro, formEdicao.cidade]
+              {[formEdicao.endereco, formEdicao.numero, formEdicao.bairro, formEdicao.cidade]
                 .filter(Boolean)
                 .join(' - ') || 'Endereço da obra'}
             </span>
@@ -1135,7 +1198,8 @@ function FormularioEdicao({
                 gap: 16,
               }}
             >
-              <div style={{ gridColumn: 'span 2' }}>
+              {/* CEP */}
+              <div>
                 <label
                   style={{
                     fontWeight: 600,
@@ -1143,20 +1207,72 @@ function FormularioEdicao({
                     color: '#4b4e54',
                   }}
                 >
-                  Endereço
+                  CEP
+                </label>
+
+                <input
+                  style={inputStyle}
+                  type="text"
+                  maxLength={9}
+                  disabled={salvando}
+                  value={formEdicao.cep || ''}
+                  onChange={(e) =>
+                    atualizarCampo('cep', e.target.value)
+                  }
+                  onBlur={(e) => buscarCep(e.target.value)}
+                  placeholder="00000-000"
+                />
+              </div>
+
+              {/* Rua / Endereço */}
+              <div>
+                <label
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 13,
+                    color: '#4b4e54',
+                  }}
+                >
+                  Rua / Logradouro
                 </label>
 
                 <input
                   style={inputStyle}
                   type="text"
                   disabled={salvando}
-                  value={formEdicao.endereco}
+                  value={formEdicao.endereco || ''}
                   onChange={(e) =>
                     atualizarCampo('endereco', e.target.value)
                   }
+                  placeholder="Rua, Avenida, etc."
                 />
               </div>
 
+              {/* Número */}
+              <div>
+                <label
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 13,
+                    color: '#4b4e54',
+                  }}
+                >
+                  Número
+                </label>
+
+                <input
+                  style={inputStyle}
+                  type="text"
+                  disabled={salvando}
+                  value={formEdicao.numero || ''}
+                  onChange={(e) =>
+                    atualizarCampo('numero', e.target.value)
+                  }
+                  placeholder="Ex: 123 ou S/N"
+                />
+              </div>
+
+              {/* Bairro */}
               <div>
                 <label
                   style={{
@@ -1172,13 +1288,14 @@ function FormularioEdicao({
                   style={inputStyle}
                   type="text"
                   disabled={salvando}
-                  value={formEdicao.bairro}
+                  value={formEdicao.bairro || ''}
                   onChange={(e) =>
                     atualizarCampo('bairro', e.target.value)
                   }
                 />
               </div>
 
+              {/* Cidade */}
               <div>
                 <label
                   style={{
@@ -1194,225 +1311,37 @@ function FormularioEdicao({
                   style={inputStyle}
                   type="text"
                   disabled={salvando}
-                  value={formEdicao.cidade}
+                  value={formEdicao.cidade || ''}
                   onChange={(e) =>
                     atualizarCampo('cidade', e.target.value)
                   }
                 />
               </div>
-            </div>
-          </div>
-        )}
-      </div>
 
-      <div style={{ marginBottom: 10 }}>
-        <button
-          type="button"
-          disabled={salvando}
-          onClick={() => alternarSecao('descricao')}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '12px 14px',
-            border: '1px solid #e4e1db',
-            borderRadius: secoesAbertas.descricao
-              ? '8px 8px 0 0'
-              : 8,
-            background: '#f5f4f0',
-            color: '#23262b',
-            cursor: salvando ? 'default' : 'pointer',
-            textAlign: 'left',
-          }}
-        >
-          <span>{secoesAbertas.descricao ? '▼' : '▶'}</span>
-
-          <strong style={{ flex: 1, fontSize: 13 }}>
-            Descrição
-          </strong>
-
-          {!secoesAbertas.descricao && (
-            <span
-              style={{
-                fontSize: 12,
-                color: '#8a8780',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: '55%',
-              }}
-            >
-              {formEdicao.descricao?.trim() || 'Descrição da obra'}
-            </span>
-          )}
-        </button>
-
-        {secoesAbertas.descricao && (
-          <div
-            style={{
-              border: '1px solid #e4e1db',
-              borderTop: 'none',
-              borderRadius: '0 0 8px 8px',
-              padding: 14,
-            }}
-          >
-            <textarea
-              style={{
-                ...inputStyle,
-                resize: 'vertical',
-                fontFamily: 'inherit',
-              }}
-              rows={5}
-              maxLength={2000}
-              disabled={salvando}
-              value={formEdicao.descricao}
-              onChange={(e) =>
-                atualizarCampo('descricao', e.target.value)
-              }
-            />
-          </div>
-        )}
-      </div>
-
-      <div style={{ marginBottom: 10 }}>
-        <button
-          type="button"
-          disabled={salvando}
-          onClick={() => alternarSecao('imagens')}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '12px 14px',
-            border: '1px solid #e4e1db',
-            borderRadius: secoesAbertas.imagens
-              ? '8px 8px 0 0'
-              : 8,
-            background: '#f5f4f0',
-            color: '#23262b',
-            cursor: salvando ? 'default' : 'pointer',
-            textAlign: 'left',
-          }}
-        >
-          <span>{secoesAbertas.imagens ? '▼' : '▶'}</span>
-
-          <strong style={{ flex: 1, fontSize: 13 }}>
-            Imagens
-          </strong>
-
-          {!secoesAbertas.imagens && (
-            <span
-              style={{
-                fontSize: 12,
-                color: '#8a8780',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: '55%',
-              }}
-            >
-              {`${(formEdicao.imagens || []).length} imagem(ns) cadastrada(s)`}
-            </span>
-          )}
-        </button>
-
-        {secoesAbertas.imagens && (
-          <div
-            style={{
-              border: '1px solid #e4e1db',
-              borderTop: 'none',
-              borderRadius: '0 0 8px 8px',
-              padding: 14,
-            }}
-          >
-            <S.GridImagensExistentes style={{ marginBottom: 14 }}>
-              {(formEdicao.imagens || []).map((url, index) => {
-                const marcada = imagensParaRemover.includes(url);
-                const ehPrincipal = index === 0 && !marcada;
-
-                return (
-                  <S.MiniaturaExistente
-                    key={url}
-                    $src={url}
-                    $marcada={marcada}
-                    $arrastando={indiceArrastando === index}
-                    $sobre={
-                      indiceSobre === index &&
-                      indiceArrastando !== index
-                    }
-                    draggable={!marcada && !salvando}
-                    onDragStart={() => handleDragStart(index)}
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDrop={() => handleDrop(index)}
-                    onDragEnd={handleDragEnd}
-                  >
-                    {ehPrincipal && (
-                      <S.EtiquetaPrincipal>
-                        Principal
-                      </S.EtiquetaPrincipal>
-                    )}
-
-                    {!marcada && (
-                      <S.AlcaArrastar>⠿</S.AlcaArrastar>
-                    )}
-
-                    <S.BotaoRemoverImagem
-                      type="button"
-                      $marcada={marcada}
-                      disabled={salvando}
-                      onClick={() =>
-                        alternarRemocaoImagem(url)
-                      }
-                    >
-                      {marcada ? 'Desfazer' : 'Remover'}
-                    </S.BotaoRemoverImagem>
-                  </S.MiniaturaExistente>
-                );
-              })}
-            </S.GridImagensExistentes>
-
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-              }}
-            >
-              {novasImagens.map((arquivo, index) => (
-                <div
-                  key={index}
+              {/* UF */}
+              <div>
+                <label
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
+                    fontWeight: 600,
                     fontSize: 13,
+                    color: '#4b4e54',
                   }}
                 >
-                  <span>📎 {arquivo.name}</span>
+                  UF
+                </label>
 
-                  <button
-                    type="button"
-                    disabled={salvando}
-                    onClick={() =>
-                      removerNovaImagem(index)
-                    }
-                  >
-                    Remover
-                  </button>
-                </div>
-              ))}
-
-              <input
-                type="file"
-                accept="image/*"
-                disabled={salvando}
-                onChange={(e) => {
-                  adicionarNovaImagem(e.target.files[0]);
-                  e.target.value = '';
-                }}
-              />
+                <input
+                  style={inputStyle}
+                  type="text"
+                  maxLength={2}
+                  disabled={salvando}
+                  value={formEdicao.uf || ''}
+                  onChange={(e) =>
+                    atualizarCampo('uf', e.target.value.toUpperCase())
+                  }
+                  placeholder="SP"
+                />
+              </div>
             </div>
           </div>
         )}
