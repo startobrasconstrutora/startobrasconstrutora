@@ -2,6 +2,7 @@ import styled from "styled-components";
 
 export const Page = styled.main`
   padding-top: 50px;
+  padding-bottom: clamp(2rem, 4vw, 3rem);
   width: 100%;
   background: #ffffff;
   color: #1e1e1e;
@@ -121,6 +122,7 @@ export const GridSection = styled.section`
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.8rem;
   padding: 0 1.5rem;
+  justify-items: center;
 `;
 
 export const ObraCard = styled.div`
@@ -131,6 +133,8 @@ export const ObraCard = styled.div`
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  width: 100%;
+  max-width: 280px;
 
   &:hover {
     transform: translateY(-4px);
@@ -154,7 +158,7 @@ export const ObraCardImg = styled.div`
 
 export const SeloTipo = styled.span`
   position: absolute;
-  top: 12px;
+  top: 16px;
   left: 12px;
   background: #ffb83c;
   color: #1e1e1e;
@@ -162,7 +166,7 @@ export const SeloTipo = styled.span`
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 0.3rem 0.7rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 999px;
 `;
 

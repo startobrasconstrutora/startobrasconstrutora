@@ -17,6 +17,8 @@ function ObraModal({ id, onFechar }) {
   const [obra, setObra] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [imagemAtiva, setImagemAtiva] = useState(0)
+  const [imagemZoomAtiva, setImagemZoomAtiva] = useState(null)
+  const [nivelZoom, setNivelZoom] = useState(100)
 
   useEffect(() => {
     if (!id) return
@@ -53,6 +55,18 @@ function ObraModal({ id, onFechar }) {
     if (e.target === e.currentTarget) onFechar()
   }
 
+  const handleZoomOverlayClick = (e) => {
+    if (e.target === e.currentTarget) setImagemZoomAtiva(null)
+  }
+
+  const aumentarZoom = () => {
+    setNivelZoom((prev) => Math.min(prev + 25, 300))
+  }
+
+  const diminuirZoom = () => {
+    setNivelZoom((prev) => Math.max(prev - 25, 100))
+  }
+
   const fotos = obra
     ? (obra.galeria_fotos && obra.galeria_fotos.length > 0
         ? obra.galeria_fotos
@@ -75,7 +89,7 @@ function ObraModal({ id, onFechar }) {
 
             {fotos.length > 0 && (
               <>
-                <S.ImagemPrincipal onClick={() => setImagemAtiva((prev) => (prev + 1) % fotos.length)}>
+                <S.ImagemPrincipal onClick={() => setImagemZoomAtiva(imagemAtiva)}>
                   <img src={fotos[imagemAtiva]} alt={obra.nome_obra} />
                 </S.ImagemPrincipal>
 
@@ -113,7 +127,7 @@ function ObraModal({ id, onFechar }) {
                 )}
 
                 {obra.depoimento_cliente && (
-                  <S.Depoimento>“{obra.depoimento_cliente}”</S.Depoimento>
+                  <S.Depoimento>"{obra.depoimento_cliente}"</S.Depoimento>
                 )}
               </S.Descricao>
 
@@ -166,6 +180,68 @@ function ObraModal({ id, onFechar }) {
           </>
         )}
       </S.Modal>
+
+   {imagemZoomAtiva !== null && (
+  <S.OverlayZoom onClick={handleZoomOverlayClick}>
+    <S.BotaoFecharZoom onClick={() => setImagemZoomAtiva(null)} aria-label="Fechar zoom">
+      ✕
+    </S.BotaoFecharZoom>
+
+    <S.ContainerImagemZoom>
+      {fotos.length > 1 && (
+        <S.BotaoNavegacao
+          $esquerda
+          onClick={() => setImagemZoomAtiva((prev) => (prev - 1 + fotos.length) % fotos.length)}
+          aria-label="Foto anterior"
+        >
+          ‹
+        </S.BotaoNavegacao>
+      )}
+
+      <S.ImagemZoom 
+        src={fotos[imagemZoomAtiva]} 
+        alt={obra.nome_obra}
+        style={{ scale: `${nivelZoom}%` }}
+      />
+
+      {fotos.length > 1 && (
+        <S.BotaoNavegacao
+          $direita
+          onClick={() => setImagemZoomAtiva((prev) => (prev + 1) % fotos.length)}
+          aria-label="Próxima foto"
+        >
+          ›
+        </S.BotaoNavegacao>
+      )}
+    </S.ContainerImagemZoom>
+
+    <S.BarraControlesZoom>
+      <S.BotaoZoomMenos
+        onClick={diminuirZoom}
+        disabled={nivelZoom <= 100}
+        aria-label="Diminuir zoom"
+      >
+        −
+      </S.BotaoZoomMenos>
+
+      <S.ContadorNivelZoom>{nivelZoom}%</S.ContadorNivelZoom>
+
+      <S.BotaoZoomMais
+        onClick={aumentarZoom}
+        disabled={nivelZoom >= 300}
+        aria-label="Aumentar zoom"
+      >
+        +
+      </S.BotaoZoomMais>
+    </S.BarraControlesZoom>
+
+    {fotos.length > 1 && (
+      <S.ContadorZoom>
+        {imagemZoomAtiva + 1} / {fotos.length}
+      </S.ContadorZoom>
+    )}
+  </S.OverlayZoom>
+)}
     </S.Overlay>
   )
 }
