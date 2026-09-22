@@ -14,7 +14,7 @@ import AddServicos from './AddServicos.jsx'
 import AdmServicos from './AdmServicos.jsx'
 
 function Add() {
-  const [tela, setTela] = useState('gerenciar-obra')
+  const [tela, setTela] = useState('')
   
   // Criamos a referência para a seção de conteúdo
   const conteudoRef = useRef(null)
