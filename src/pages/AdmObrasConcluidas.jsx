@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { redimensionarEComprimirImagem } from '../utils/imageUtils.js';
 import {
   Wrapper,
   CabecalhoLista,
@@ -127,6 +128,29 @@ export default function AdmObrasConcluidas() {
     }
   };
 
+  const handleNovasFotosChange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    showLoading('Otimizando imagem(ns)...');
+
+    try {
+      const fotosOtimizadas = [];
+      for (const file of files) {
+        // Redimensiona (max 2000px) e comprime (max 1MB)
+        const fileOtimizado = await redimensionarEComprimirImagem(file, 2000, 1024 * 1024);
+        fotosOtimizadas.push(fileOtimizado);
+      }
+      setNovosArquivos((prev) => [...prev, ...fotosOtimizadas]);
+    } catch (err) {
+      console.error('Erro ao otimizar foto:', err);
+      toastError('Erro ao processar as imagens.');
+    } finally {
+      hideLoading();
+      e.target.value = '';
+    }
+  };
+
   const handleDragStart = (index) => setArrastandoIndex(index);
   const handleDragOver = (e, index) => {
     e.preventDefault();
@@ -156,8 +180,7 @@ export default function AdmObrasConcluidas() {
 
       if (novosArquivos.length > 0) {
         for (const file of novosArquivos) {
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+          const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
           const filePath = `obras_concluidas/${fileName}`;
 
           const { error: uploadError } = await supabase.storage
@@ -293,10 +316,8 @@ export default function AdmObrasConcluidas() {
                         return (
                           <MiniaturaExistente
                             key={url}
-                            $src={url}
-                            $marcada={marcada}
-                            $sobre={sobreIndex === idx}
-                            $arrastando={arrastandoIndex === idx}
+                            $src={url}$marcada={marcada}
+                            $sobre={sobreIndex === idx}$arrastando={arrastandoIndex === idx}
                             draggable={!marcada}
                             onDragStart={() => handleDragStart(idx)}
                             onDragOver={(e) => handleDragOver(e, idx)}
@@ -323,9 +344,14 @@ export default function AdmObrasConcluidas() {
                       type="file"
                       multiple
                       accept="image/*"
-                      onChange={(e) => setNovosArquivos(Array.from(e.target.files))}
+                      onChange={handleNovasFotosChange}
                       style={{ display: 'block', marginTop: '6px' }}
                     />
+                    {novosArquivos.length > 0 && (
+                      <span style={{ fontSize: '12px', color: '#2e7d32', marginTop: '4px', display: 'block' }}>
+                        ✓ {novosArquivos.length} foto(s) otimizada(s) pronta(s) para envio.
+                      </span>
+                    )}
                   </label>
 
                   <LinhaBotoesEdicao>

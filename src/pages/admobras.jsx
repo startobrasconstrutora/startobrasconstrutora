@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as S from './admobras.styles.jsx';
 import { supabase } from '../supabaseClient';
+import { otimizarArquivo } from '../utils/otimizarImagem.js';
 import { mascaraCPF, mascaraTelefone, caminhoDoStorage } from './mascaras';
 import {
   toastSuccess,

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
+import { redimensionarEComprimirImagem } from '../utils/imageUtils.js';
 import {
   Wrapper,
   Formulario,
@@ -11,7 +12,6 @@ import {
   CardFotoPreview,
   BotaoRemoverFoto,
   BotaoSubmit,
-  Aviso
 } from './Addobras.styles';
 import {
   toastSuccess,
@@ -31,23 +31,32 @@ export default function AddObraConcluida() {
   const [previews, setPreviews] = useState([]);
   const [enviando, setEnviando] = useState(false);
 
-  const handleFotosChange = (e) => {
+  const handleFotosChange = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
-    const LIMITE_MB = 5;
-    for (const file of files) {
-      if (file.size / (1024 * 1024) > LIMITE_MB) {
-        toastError(`${file.name} excede ${LIMITE_MB}MB`);
-        return;
+    showLoading('Otimizando imagem(ns)...');
+
+    try {
+      const fotosOtimizadas = [];
+
+      for (const file of files) {
+        // Otimiza a imagem (máx 2000px de largura/altura e até 1MB)
+        const fileOtimizado = await redimensionarEComprimirImagem(file, 2000, 1024 * 1024);
+        fotosOtimizadas.push(fileOtimizado);
       }
+
+      setArquivos((prev) => [...prev, ...fotosOtimizadas]);
+
+      const novosPreviews = fotosOtimizadas.map((file) => URL.createObjectURL(file));
+      setPreviews((prev) => [...prev, ...novosPreviews]);
+    } catch (err) {
+      console.error('Erro ao otimizar foto:', err);
+      toastError('Erro ao processar as imagens.');
+    } finally {
+      hideLoading();
+      e.target.value = ''; // Limpa o valor do input para permitir re-seleção se necessário
     }
-
-    const novosArquivos = [...arquivos, ...files];
-    setArquivos(novosArquivos);
-
-    const novosPreviews = files.map((file) => URL.createObjectURL(file));
-    setPreviews((prev) => [...prev, ...novosPreviews]);
   };
 
   const removerFoto = (index) => {
@@ -82,8 +91,8 @@ export default function AddObraConcluida() {
       const fotosUrls = [];
 
       for (const file of arquivos) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        // Garantir extensão .jpg após a otimização
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
         const filePath = `obras_concluidas/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
