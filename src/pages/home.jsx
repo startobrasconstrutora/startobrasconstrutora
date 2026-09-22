@@ -9,6 +9,8 @@ import ObraModal from '../components/ObraModal.jsx'
 import { supabase } from '../supabaseClient'
 import slide1 from "../assets/img/slide1.png"
 import slide2 from "../assets/img/slide2.png"
+import slide1mob from "../assets/img/slide1mob.png"
+import slide2mob from "../assets/img/slide2mob.png"
 import texto_imagem from "../assets/img/capacete.png"
 import texto_imagem2 from "../assets/img/caixa.png"
 import { Content } from '../components/DivComum.styles.jsx'
@@ -55,8 +57,8 @@ function Home() {
       <S.ContainerSwiper>
         <SwiperMod
           slides={[
-            { src: slide1, titulo: '', descricao: '' },
-             { src: slide2, titulo: '', descricao: '' },
+            { src: slide1, srcMobile: slide1mob, titulo: '', descricao: '' },
+            { src: slide2, srcMobile: slide2mob, titulo: '', descricao: '' },
           ]}
         />
 

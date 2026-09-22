@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import { Link } from 'react-router-dom'
 
-const BREAKPOINT_MOBILE = '1200px'
+const BREAKPOINT_MOBILE = '900px'
 
 export const Container = styled.div`
   position: fixed;

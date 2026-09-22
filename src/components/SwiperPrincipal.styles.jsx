@@ -4,7 +4,6 @@ export const Container = styled.div`
   width: 100%;
   padding: 0px;
   
-  /* Margem negativa reduzida para descer um pouco o banner */
   margin-top: -110px; 
   position: relative;
   z-index: 1;
@@ -14,17 +13,11 @@ export const Container = styled.div`
   overflow: hidden;
 
   @media (max-width: 768px) {
-    margin-top: -80px;
-    aspect-ratio: 16 / 8.5;
+    margin-top: -85px;
+    aspect-ratio: 1 / 1; 
   }
 
-  @media (max-width: 480px) {
-    margin-top: -60px;
-    aspect-ratio: 16 / 9;
-  }
-
-  /* ---------- SLIDES ---------- */
-
+  
   .swiper {
     width: 100%;
     height: 100%;
@@ -41,8 +34,6 @@ export const Container = styled.div`
     transform: scale(1);
   }
 
-  /* ---------- SETAS ---------- */
-
   .swiper-button-next,
   .swiper-button-prev {
     color: white;
@@ -57,8 +48,6 @@ export const Container = styled.div`
       transform: scale(0.4);
     }
   }
-
-  /* ---------- PAGINAÇÃO ---------- */
 
   .swiper-pagination-bullet {
     background: white;
@@ -85,8 +74,14 @@ export const SlideBox = styled.div`
   position: relative;
   width: 100%;
   height: 100%;
+`;
 
-  /* Mantido o corte de 10% total (5% topo, 5% base) */
+export const ImageContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
   clip-path: inset(5% 0 5% 0);
 
   img {

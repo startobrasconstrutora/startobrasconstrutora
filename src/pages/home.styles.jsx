@@ -36,7 +36,7 @@ export const ContainerSwiper = styled.div`
   overflow: hidden;
 
   @media (max-width: 900px) {
-    padding-top: 70px;
+    padding-top: 130px;  /* Adiciona espaço só no mobile */
   }
 `
 
