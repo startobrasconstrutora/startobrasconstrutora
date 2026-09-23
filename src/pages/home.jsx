@@ -17,17 +17,20 @@ import { Content } from '../components/DivComum.styles.jsx'
 import { Faixa } from '../components/faixa.jsx'
 import { Reveal } from '../components/Reveal.jsx'
 import MateriasHome from '../components/MateriasHome.jsx'
-import { Link } from 'react-router-dom'
+import cardcontr from "../assets/img/cardcontr.png"
+import cardreform from "../assets/img/cardreform.png"
+import cardregula from "../assets/img/cardregula.png"
 
-// Array com os 3 cards + ícones exclusivos
+// Array com os 3 cards + ícones exclusivos com dimensões maiores (width="52" height="52" e strokeWidth="1.8")
 const CARDS_SERVICOS = [
   {
     id: 'construcao',
     titulo: 'Construção do Zero',
     descricao: 'Construímos sua casa no modelo chave na mão. Cuidamos do financiamento Caixa, projeto, terreno e execução completa da obra.',
     link: '/servicos/construcao',
+    bgImage: cardcontr,
     icon: (
-      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 21h18" />
         <path d="M5 21V7l7-4 7 4v14" />
         <path d="M9 10h6" />
@@ -41,8 +44,9 @@ const CARDS_SERVICOS = [
     titulo: 'Reformas e Ampliações',
     descricao: 'Transforme seu ambiente residencial ou comercial com planejamento técnico, equipe especializada e execução dentro do prazo.',
     link: '/servicos/reformas',
+    bgImage: cardreform,
     icon: (
-      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="m14 6 7 7-4 4-7-7" />
         <path d="m3 21 8-8" />
         <path d="m3 13 8 8" />
@@ -54,8 +58,9 @@ const CARDS_SERVICOS = [
     titulo: 'Regularização de Imóveis',
     descricao: 'Aprovação de Habite-se, averbação em cartório e consultoria técnica com chancela COFECI para valorizar e legalizar seu patrimônio.',
     link: '/servicos/regularizacao',
+    bgImage: cardregula,
     icon: (
-      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <polyline points="14 2 14 8 20 8" />
         <path d="m9 15 2 2 4-4" />
@@ -121,36 +126,38 @@ function Home() {
 
           <S.DivCentro>
             <Reveal>
-            <S.CardsRow>
-              <S.Card>
-                <S.CardImg>
-                  <img src={texto_imagem} alt="Obra em andamento" />
-                </S.CardImg>
-                <S.CardTexto>
-                  <h2>Construção civil em Bauru e Região</h2>
-                  <ul>
-                    <li>Construção residencial</li>
-                    <li>Construção comercial</li>
-                    <li>Reformas e ampliações</li>
-                    <li>Gerenciamento de obras</li>
-                  </ul>
-                </S.CardTexto>
-              </S.Card>
+           <S.CardsRow>
+  <S.Card>
+    <S.CardImg>
+      <img src={texto_imagem} alt="Construção e Obras em Bauru" />
+    </S.CardImg>
+    <S.CardTexto>
+       <S.CardBadgeHighlight>Bauru e Região</S.CardBadgeHighlight>
+      <h2>Soluções Completas em Construção Civil</h2>
+      <ul>
+        <li>Construção e projetos residenciais de alto padrão</li>
+        <li>Obras comerciais com foco em desempenho e prazo</li>
+        <li>Reformas, estruturações e ampliações planejadas</li>
+        <li>Gerenciamento e gestão técnica de ponta a ponta</li>
+      </ul>
+    </S.CardTexto>
+  </S.Card>
 
-              <S.Card>
-                <S.CardImg>
-                  <img src={texto_imagem2} alt="Obra em andamento" />
-                </S.CardImg>
-                <S.CardTexto>
-                  <h2>Do terreno às chaves da sua casa</h2>
-                  <ul>
-                    Escolha seu terreno e Cuidamos da documentação, do financiamento habitacional <br/>
-                    e da construção para você.
-                    <strong> Financiamento pela Caixa econômica Federal</strong>
-                  </ul>
-                </S.CardTexto>
-              </S.Card>
-            </S.CardsRow>
+  <S.Card>
+    <S.CardImg>
+      <img src={texto_imagem2} alt="Financiamento habitacional e chave na mão" />
+    </S.CardImg>
+    <S.CardTexto>
+      <S.CardBadgeHighlight>Financiamento Caixa</S.CardBadgeHighlight>
+      <h2>Modalidade Chave na Mão: Do Terreno às Chaves</h2>
+      <ul>
+        <li>Apoio na escolha do terreno: Encontramos o local ideal para sua obra.</li>
+        <li>Burocracia Zero: Cuidamos de todos os projetos, alvarás e habite-se.</li>
+        <li>Financiamento Caixa Econômica: Processo simplificado e assessoria técnica completa.</li>
+      </ul>
+    </S.CardTexto>
+  </S.Card>
+</S.CardsRow>
             </Reveal>
           </S.DivCentro>
 
@@ -160,7 +167,7 @@ function Home() {
               <S.ServicosSectionTitle>Nossos Serviços</S.ServicosSectionTitle>
               <S.ServicosGrid>
                 {CARDS_SERVICOS.map((card) => (
-                  <S.ServicoCardLink key={card.id} to={card.link}>
+                  <S.ServicoCardLink key={card.id} to={card.link} $bgImage={card.bgImage}>
                     <S.ServicoCardContent>
                       <div>
                         <S.ServicoIconWrapper>
@@ -192,18 +199,23 @@ function Home() {
 
           <br />
 
-          {obrasConcluidas.length > 0 && (
-            <Reveal delay={0.2}>
-              <S.ObrasSection>
-                <h2>Obras prontas</h2>
-                <SwiperObras obras={obrasConcluidas} onSelecionar={setObraSelecionadaId} />
-              </S.ObrasSection>
-            </Reveal>
-          )}
+{obrasConcluidas.length > 0 && (
+  <S.ObrasSection>
+    <Reveal delay={0.2}>
+      <div style={{ width: '100%', overflow: 'hidden' }}>
+        <h2>Obras prontas</h2>
+        <SwiperObras obras={obrasConcluidas} onSelecionar={setObraSelecionadaId} />
+      </div>
+    </Reveal>
+  </S.ObrasSection>
+)}
 
-          <Reveal delay={0.3}>
-            <MateriasHome />
-          </Reveal>
+          {/* Seção de Notícias / Matérias */}
+          <S.MateriasSection>
+            <Reveal delay={0.3}>
+              <MateriasHome />
+            </Reveal>
+          </S.MateriasSection>
 
         </S.Container>
       </div>

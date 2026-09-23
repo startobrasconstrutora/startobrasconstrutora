@@ -9,17 +9,16 @@ export const Container = styled.div`
   margin: 0px;
   width: 100%;
   height: auto;
-  gap: 30px;
-  padding: 10px 0px 150px;
+  gap: 0px;
+  padding: 0;
 
   @media (max-width: 768px) {
-    gap: 20px;
-    padding: 10px 0px 100px;
+    gap: 0px;
   }
 
   @media (max-width: 480px) {
-    gap: 15px;
-    padding: 10px 0px 80px;
+    gap: 0px;
+    padding: 0;
   }
 `
 
@@ -53,15 +52,11 @@ export const DivCentro = styled.div`
 export const CardsRow = styled.div`
   display: flex;
   width: 100%;
-  gap: 40px;
+  gap: 32px;
 
   @media (max-width: 900px) {
     flex-direction: column;
-    gap: 30px;
-  }
-
-  @media (max-width: 480px) {
-    gap: 20px;
+    gap: 28px;
   }
 `
 
@@ -69,92 +64,112 @@ export const Card = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  width: 50%;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 
-  @media (max-width: 900px) {
-    width: 100%;
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
   }
 `
 
 export const CardImg = styled.div`
   width: 100%;
-  height: 280px;
+  height: 240px;
   overflow: hidden;
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 36px 100%, 0 calc(100% - 36px));
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.5s ease;
   }
 
-  @media (max-width: 900px) {
-    height: 240px;
+  ${Card}:hover & img {
+    transform: scale(1.04);
   }
 
   @media (max-width: 480px) {
-    height: 200px;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+    height: 180px;
   }
+`
+export const CardBadge = styled.span`
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #24231F;
+  background: #EAE8E1;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+`
+
+export const CardBadgeHighlight = styled(CardBadge)`
+  color: #24231F;
+  background: #F0A23A;
 `
 
 export const CardTexto = styled.div`
-  padding-top: 24px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 
   h2 {
-    color: var(--principaldarker, #24231F);
-    padding-bottom: 16px;
-    font-size: 1.6rem;
+    color: #24231F;
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 16px;
   }
 
   ul {
     list-style: none;
     margin: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
   li {
     position: relative;
-    font-size: 18px;
-    color: #24231F;
-    padding: 6px 0 6px 24px;
+    font-size: 0.98rem;
+    color: #4a4840;
+    line-height: 1.5;
+    padding-left: 20px;
 
     &::before {
       content: '';
       position: absolute;
       left: 0;
-      top: 14px;
-      width: 9px;
-      height: 9px;
+      top: 8px;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
       background: #F0A23A;
     }
-  }
 
-  @media (max-width: 768px) {
-    h2 {
-      font-size: 1.3rem;
-    }
-
-    li {
-      font-size: 16px;
+    strong {
+      color: #24231F;
     }
   }
 
   @media (max-width: 480px) {
+    padding: 20px 18px;
+
     h2 {
-      font-size: 1.1rem;
-      padding-bottom: 12px;
+      font-size: 1.25rem;
     }
 
     li {
-      font-size: 14px;
-      padding: 5px 0 5px 20px;
-
-      &::before {
-        width: 7px;
-        height: 7px;
-        top: 11px;
-      }
+      font-size: 0.9rem;
     }
   }
 `
@@ -174,29 +189,32 @@ export const SvgOverlay = styled.div`
   }
 `
 
-export const ObrasSection = styled.div`
+export const ObrasSection = styled.section`
   width: 100%;
-  padding: 20px 10% 40px;
+  padding: 60px 10%;
+  background-color: #f8f8f7;
+  border-bottom: 1px solid #e0e0e0;
 
   h2 {
     color: var(--principaldarker, #24231F);
     padding-bottom: 24px;
-    font-size: 1.6rem;
+    font-size: 1.8rem;
+    font-weight: 700;
   }
 
   @media (max-width: 768px) {
-    padding: 20px 6% 30px;
+    padding: 40px 5%;
 
     h2 {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
     }
   }
 
   @media (max-width: 480px) {
-    padding: 15px 4% 25px;
+    padding: 30px 4%;
 
     h2 {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       padding-bottom: 18px;
     }
   }
@@ -268,7 +286,6 @@ export const StatItem = styled.div`
   }
 `
 
-/* Seção de Cards de Serviços Laranjas e com Ícones */
 export const ServicosCardsSection = styled.div`
   display: flex;
   flex-direction: column;
@@ -312,8 +329,8 @@ export const ServicoCardLink = styled(Link)`
   color: inherit;
   display: flex;
   flex-direction: column;
+  position: relative;
   
-  /* CARTÕES LARANJAS CONFORME SOLICITADO */
   background: #F0A23A; 
   border-radius: 12px;
   overflow: hidden;
@@ -321,12 +338,32 @@ export const ServicoCardLink = styled(Link)`
   border: 1px solid #e0932c;
   transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url(${props => props.$bgImage});
+    background-size: cover;
+    background-position: center;
+    filter: grayscale(100%);
+    opacity: 0.10;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 0;
+  }
+
   &:hover {
     transform: translateY(-8px);
     box-shadow: 0 12px 30px rgba(240, 162, 58, 0.4);
     background: #e8992e;
 
-    /* Destaca o ícone ao passar o mouse */
+    &::before {
+      opacity: 0.12;
+      transform: scale(1.05);
+    }
+
     div svg {
       transform: scale(1.1);
     }
@@ -342,11 +379,11 @@ export const ServicoIconWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: 100px; 
+  height: 100px;    
   background: rgba(36, 35, 31, 0.12);
-  border-radius: 12px;
-  margin-bottom: 20px;
+  border-radius: 16px;  
+  margin: 0 auto 20px; 
   color: #24231F;
 
   svg {
@@ -360,17 +397,20 @@ export const ServicoCardContent = styled.div`
   padding: 32px 28px;
   height: 100%;
   justify-content: space-between;
+  text-align: center;
+  position: relative;
+  z-index: 1; 
 
   h3 {
     font-size: 1.4rem;
-    color: #24231F;
+    color: #070707;
     margin-bottom: 12px;
     font-weight: 700;
   }
 
   p {
     font-size: 0.98rem;
-    color: #2c2921; /* Tom escuro para excelente legibilidade sobre o fundo laranja */
+    color: #070707;
     line-height: 1.6;
     margin-bottom: 24px;
     flex-grow: 1;
@@ -383,12 +423,26 @@ export const ServicoCardFooter = styled.div`
   justify-content: space-between;
   font-weight: 700;
   font-size: 0.95rem;
-  color: #24231F;
+  color: #080808;
   border-top: 1px solid rgba(36, 35, 31, 0.15);
   padding-top: 16px;
 
   .card-arrow {
     font-size: 1.2rem;
     transition: transform 0.3s ease, color 0.3s ease;
+  }
+`
+
+export const MateriasSection = styled.section`
+  width: 100%;
+  padding: 60px 10%;
+  background-color: #ffffff;
+
+  @media (max-width: 768px) {
+    padding: 40px 5%;
+  }
+
+  @media (max-width: 480px) {
+    padding: 30px 4%;
   }
 `

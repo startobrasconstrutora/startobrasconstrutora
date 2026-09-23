@@ -94,7 +94,8 @@ function Regularizacao() {
         ))}
       </S.ServicosSection>
 
-      <S.ValoresSection>
+    <S.ValoresSection>
+        <S.ValoresSectionTitle>Nossos Diferenciais</S.ValoresSectionTitle>
         {DIFERENCIAIS.map((d) => (
           <S.ValorRow key={d.id} $align={d.align}>
             <S.ValorImg>

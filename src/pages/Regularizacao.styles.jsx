@@ -235,3 +235,24 @@ export const ValorTexto = styled.div`
     line-height: 1.7;
   }
 `;
+
+export const ValoresSectionTitle = styled.h2`
+  color: #1e1e1e;
+  font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  position: relative;
+
+  &::after {
+    content: "";
+    display: block;
+    width: 50px;
+    height: 3px;
+    background: #ffb83c;
+    margin: 8px auto 0;
+    border-radius: 2px;
+  }
+`;
