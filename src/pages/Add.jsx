@@ -1,7 +1,7 @@
 import * as S from './Add.styles.jsx'
 import { useState, useRef } from 'react'
 
-import heroImg from "../assets/img/capacete.png"
+import heroImg from "../assets/img/capacete.jpg"
 import AddObras from './Addobras.jsx'
 import AdmObras from './admobras.jsx'
 import AddMateria from './AddMateria.jsx'

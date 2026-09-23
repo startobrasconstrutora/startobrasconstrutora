@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import ObraModal from '../components/ObraModal.jsx'
-import heroImg from '../assets/img/capacete.png'
+import heroImg from '../assets/img/capacete.jpg'
 import * as S from './ObrasConcluidas.styles.jsx'
 
 const rotuloTipoObra = {

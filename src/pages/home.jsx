@@ -7,19 +7,19 @@ import BannerImagemFull from '../components/BannerImagemFull.jsx'
 import SwiperObras from '../components/SwiperObras.jsx'
 import ObraModal from '../components/ObraModal.jsx'
 import { supabase } from '../supabaseClient'
-import slide1 from "../assets/img/slide1.png"
-import slide2 from "../assets/img/slide2.png"
+import slide1 from "../assets/img/slide1.jpg"
+import slide2 from "../assets/img/slide2.jpg"
 import slide1mob from "../assets/img/slide1mob.png"
 import slide2mob from "../assets/img/slide2mob.png"
-import texto_imagem from "../assets/img/capacete.png"
+import texto_imagem from "../assets/img/capacete.jpg"
 import texto_imagem2 from "../assets/img/caixa.png"
 import { Content } from '../components/DivComum.styles.jsx'
 import { Faixa } from '../components/faixa.jsx'
 import { Reveal } from '../components/Reveal.jsx'
 import MateriasHome from '../components/MateriasHome.jsx'
-import cardcontr from "../assets/img/cardcontr.png"
-import cardreform from "../assets/img/cardreform.png"
-import cardregula from "../assets/img/cardregula.png"
+import cardcontr from "../assets/img/cardcontr.jpg"
+import cardreform from "../assets/img/cardreform.jpg"
+import cardregula from "../assets/img/cardregula.jpg"
 
 // Array com os 3 cards + ícones exclusivos com dimensões maiores (width="52" height="52" e strokeWidth="1.8")
 const CARDS_SERVICOS = [

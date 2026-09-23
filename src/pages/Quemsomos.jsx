@@ -1,5 +1,5 @@
 import * as S from './Quemsomos.styles.jsx'
-import heroImg from "../assets/img/capacete.png"
+import heroImg from "../assets/img/capacete.jpg"
 
 const VALORES = [
   {

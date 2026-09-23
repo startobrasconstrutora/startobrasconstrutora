@@ -1,6 +1,6 @@
 import React from 'react'
 import * as S from './Regularizacao.styles.jsx'
-import heroImg from "../assets/img/regu.png"
+import heroImg from "../assets/img/regu.jpg"
 
 const SERVICOS = [
   {

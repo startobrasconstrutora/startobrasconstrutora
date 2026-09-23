@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import heroImg from "../assets/img/capacete.png";
+import heroImg from "../assets/img/capacete.jpg";
 import * as S from './Consultaobra.styles';
 import {
   formatarCodigoObra,

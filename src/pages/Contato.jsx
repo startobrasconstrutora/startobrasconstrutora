@@ -1,5 +1,5 @@
 import * as S from './Contato.styles.jsx'
-import heroImg from "../assets/img/capacete.png"
+import heroImg from "../assets/img/capacete.jpg"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPhone, faMobileScreenButton, faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import { faWhatsapp, faInstagram, faFacebookF } from '@fortawesome/free-brands-svg-icons'

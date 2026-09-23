@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import heroImg from "../assets/img/capacete.png";
+import heroImg from "../assets/img/capacete.jpg";
 import * as S from './Materia.styles.jsx';
 
 function formatarData(dataISO) {

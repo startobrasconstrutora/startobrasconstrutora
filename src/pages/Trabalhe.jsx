@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import * as S from './Trabalhe.styles.jsx' // ou TrabalheConosco.styles.jsx
-import heroImg from "../assets/img/capacete.png"
+import heroImg from "../assets/img/capacete.jpg"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaperPlane, faUser, faEnvelope, faPhone, faBriefcase, faFileText } from '@fortawesome/free-solid-svg-icons'
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons'
