@@ -21,7 +21,7 @@ import cardcontr from "../assets/img/cardcontr.jpg"
 import cardreform from "../assets/img/cardreform.jpg"
 import cardregula from "../assets/img/cardregula.jpg"
 
-// Array com os 3 cards + ícones exclusivos com dimensões maiores (width="52" height="52" e strokeWidth="1.8")
+
 const CARDS_SERVICOS = [
   {
     id: 'construcao',
@@ -161,7 +161,7 @@ function Home() {
             </Reveal>
           </S.DivCentro>
 
-          {/* Cards de Serviços com Ícones e Destaque Laranja */}
+          {}
           <Reveal delay={0.1}>
             <S.ServicosCardsSection>
               <S.ServicosSectionTitle>Nossos Serviços</S.ServicosSectionTitle>
@@ -210,7 +210,7 @@ function Home() {
   </S.ObrasSection>
 )}
 
-          {/* Seção de Notícias / Matérias */}
+          {}
           <S.MateriasSection>
             <Reveal delay={0.3}>
               <MateriasHome />

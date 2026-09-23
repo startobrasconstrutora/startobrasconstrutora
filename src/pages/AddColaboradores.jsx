@@ -55,14 +55,12 @@ export default function AddColaboradores({
     );
   }
 
-  // Validar formato básico de CPF
- function validarCPF(cpfFormatado) {
-  const cpfLimpo = cpfFormatado.replace(/\D/g, '');
-  return cpfLimpo.length === 11;
-}
+  function validarCPF(cpfFormatado) {
+    const cpfLimpo = cpfFormatado.replace(/\D/g, '');
+    return cpfLimpo.length === 11;
+  }
 
   async function handleCadastrar() {
-    // ============ VALIDAÇÕES ============
     if (!nomeCompleto.trim()) {
       toastError('Preencha o nome completo');
       return;
@@ -88,34 +86,31 @@ export default function AddColaboradores({
       return;
     }
 
-    // ============ CADASTRO ============
     setCadastrando(true);
     showLoading('Cadastrando colaborador...');
 
     try {
-  // Verificar se CPF já existe
-const { data: cpfExistente, error: erroVerificacao } = await supabase
-  .from('colaboradores')
-  .select('id')
-  .eq('cpf', cpf)
-  .maybeSingle();
+      const { data: cpfExistente, error: erroVerificacao } = await supabase
+        .from('colaboradores')
+        .select('id')
+        .eq('cpf', cpf)
+        .maybeSingle();
 
-if (erroVerificacao) {
-  console.error('Erro ao verificar CPF:', erroVerificacao);
-  hideLoading();
-  toastError('Não foi possível verificar o CPF.');
-  setCadastrando(false);
-  return;
-}
+      if (erroVerificacao) {
+        console.error('Erro ao verificar CPF:', erroVerificacao);
+        hideLoading();
+        toastError('Não foi possível verificar o CPF.');
+        setCadastrando(false);
+        return;
+      }
 
-if (cpfExistente) {
-  hideLoading();
-  toastError('Este CPF já está cadastrado no sistema');
-  setCadastrando(false);
-  return;
-}
+      if (cpfExistente) {
+        hideLoading();
+        toastError('Este CPF já está cadastrado no sistema');
+        setCadastrando(false);
+        return;
+      }
 
-      // Inserir colaborador
       const { data: colaboradorData, error: erroInsert } = await supabase
         .from('colaboradores')
         .insert({
@@ -129,26 +124,25 @@ if (cpfExistente) {
 
       if (erroInsert) {
         hideLoading();
-      if (erroInsert.code === '23505') {
-  console.error('ERRO DE DUPLICIDADE:', {
-    code: erroInsert.code,
-    message: erroInsert.message,
-    details: erroInsert.details,
-    hint: erroInsert.hint,
-  });
+        if (erroInsert.code === '23505') {
+          console.error('ERRO DE DUPLICIDADE:', {
+            code: erroInsert.code,
+            message: erroInsert.message,
+            details: erroInsert.details,
+            hint: erroInsert.hint,
+          });
 
-  toastError('Já existe um registro com um dos dados informados.');
-} else {
-  showError('Erro ao cadastrar', 'Verifique o console para detalhes');
-  console.error('Erro ao inserir colaborador:', erroInsert);
-}
+          toastError('Já existe um registro com um dos dados informados.');
+        } else {
+          showError('Erro ao cadastrar', 'Verifique o console para detalhes');
+          console.error('Erro ao inserir colaborador:', erroInsert);
+        }
         setCadastrando(false);
         return;
       }
 
       const colaboradorId = colaboradorData[0].id;
 
-      // Inserir as funções selecionadas
       const funcoes_para_inserir = funcoesSelecionadas.map((funcaoId) => ({
         colaborador_id: colaboradorId,
         funcao_id: funcaoId,
@@ -171,7 +165,6 @@ if (cpfExistente) {
 
       onCadastrar?.(colaboradorData);
 
-      // Limpar formulário
       setNomeCompleto('');
       setCpf('');
       setTelefone('');

@@ -34,7 +34,6 @@ export default function AddServicos() {
     try {
       setCarregando(true);
 
-      // Carregar colaboradores
       const { data: colabData, error: colabError } = await supabase
         .from('colaboradores')
         .select('id, nome_completo')
@@ -42,7 +41,6 @@ export default function AddServicos() {
 
       if (colabError) throw colabError;
 
-      // Carregar obras
       const { data: obrasData, error: obrasError } = await supabase
         .from('obras')
         .select('id, codigo_obra, nome_obra')
@@ -60,7 +58,6 @@ export default function AddServicos() {
     }
   }
 
-  // Calcular quantidade de dias
   function calcularDias() {
     if (!dataInicio || !dataFim) return 0;
     const inicio = new Date(dataInicio);
@@ -69,7 +66,6 @@ export default function AddServicos() {
     return diff > 0 ? diff : 0;
   }
 
-  // Auto-calcular valor total quando muda diária ou datas
   useEffect(() => {
     if (valorDiaria && dataInicio && dataFim) {
       const dias = calcularDias();
@@ -79,7 +75,6 @@ export default function AddServicos() {
   }, [valorDiaria, dataInicio, dataFim]);
 
   async function handleCadastrar() {
-    // ============ VALIDAÇÕES ============
     if (!colaboradorId) {
       toastError('Selecione um colaborador');
       return;
@@ -105,7 +100,6 @@ export default function AddServicos() {
       return;
     }
 
-    // ============ CADASTRO ============
     setCadastrando(true);
     showLoading('Registrando serviço...');
 
@@ -114,7 +108,7 @@ export default function AddServicos() {
         .from('servicos_colaborador')
         .insert({
           colaborador_id: colaboradorId,
-          obra_id: obraId, // Corrigido de codigo_obra para obra_id
+          obra_id: obraId,
           descricao_servico: descricaoServico,
           data_inicio: dataInicio,
           data_fim: dataFim,
@@ -129,7 +123,6 @@ export default function AddServicos() {
       hideLoading();
       toastSuccess('Serviço registrado com sucesso!');
 
-      // Limpar formulário
       setColaboradorId('');
       setObraId('');
       setDescricaoServico('');

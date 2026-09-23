@@ -51,10 +51,6 @@ export const HeroBadge = styled.div`
   white-space: nowrap;
 `;
 
-// =============================================================
-//  INTRO / VISÃO GERAL
-// =============================================================
-
 export const IntroSection = styled.section`
   width: 100%;
   display: flex;
@@ -81,10 +77,6 @@ export const IntroContent = styled.div`
     margin-bottom: 1.4rem;
   }
 `;
-
-// =============================================================
-//  PASSO A PASSO / FLUXO DE CONSTRUÇÃO
-// =============================================================
 
 export const EtapasSection = styled.section`
   width: 100%;
@@ -138,10 +130,6 @@ export const EtapaCard = styled.div`
     line-height: 1.6;
   }
 `;
-
-// =============================================================
-//  BENEFÍCIOS E FACILIDADES
-// =============================================================
 
 export const DiferenciaisSection = styled.section`
   width: min(1200px, 92%);

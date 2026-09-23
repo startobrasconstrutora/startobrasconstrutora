@@ -35,23 +35,8 @@ function novaAtualizacaoVazia() {
   };
 }
 
-/*
- * ============================================================
- * COMPRESSÃO AUTOMÁTICA DE IMAGENS
- * ============================================================
- *
- * Regras:
- * - Máximo de 2000px no maior lado
- * - Mantém a proporção original
- * - Converte para JPEG
- * - Tamanho máximo de 1 MB
- * - Reduz a qualidade automaticamente se necessário
- * - Se mesmo assim passar de 1 MB, reduz as dimensões
- *
- * O usuário não precisa fazer nada.
- */
 const MAX_DIMENSAO = 2000;
-const MAX_TAMANHO_BYTES = 1024 * 1024; // 1 MB
+const MAX_TAMANHO_BYTES = 1024 * 1024;
 
 function carregarImagem(file) {
   return new Promise((resolve, reject) => {
@@ -98,10 +83,6 @@ async function comprimirImagem(file) {
   let largura = imagem.naturalWidth || imagem.width;
   let altura = imagem.naturalHeight || imagem.height;
 
-  /*
-   * Mantém a proporção original.
-   * Só reduz se alguma dimensão passar de 2000px.
-   */
   if (largura > MAX_DIMENSAO || altura > MAX_DIMENSAO) {
     const escala = Math.min(
       MAX_DIMENSAO / largura,
@@ -112,12 +93,6 @@ async function comprimirImagem(file) {
     altura = Math.round(altura * escala);
   }
 
-  /*
-   * Canvas com fundo branco.
-   *
-   * Isso evita que imagens PNG com transparência
-   * fiquem com fundo preto ao serem convertidas para JPEG.
-   */
   const canvas = document.createElement('canvas');
   const contexto = canvas.getContext('2d');
 
@@ -125,10 +100,6 @@ async function comprimirImagem(file) {
     throw new Error('Seu navegador não conseguiu preparar a imagem.');
   }
 
-  /*
-   * Faz várias tentativas de qualidade.
-   * Primeiro tenta uma qualidade alta.
-   */
   let qualidade = 0.88;
   let blob = null;
 
@@ -166,12 +137,6 @@ async function comprimirImagem(file) {
     }
   }
 
-  /*
-   * Se ainda estiver acima de 1 MB, reduz as dimensões
-   * gradualmente até conseguir atingir o limite.
-   *
-   * Isso garante que o arquivo final não ultrapasse 1 MB.
-   */
   while (blob && blob.size > MAX_TAMANHO_BYTES) {
     const novaLargura = Math.max(
       800,
@@ -214,11 +179,6 @@ async function comprimirImagem(file) {
 
     blob = await canvasParaBlob(canvas, qualidade);
 
-    /*
-     * Se ainda estiver grande, continua reduzindo.
-     * A qualidade também pode cair um pouco para garantir
-     * que o arquivo fique dentro do limite.
-     */
     if (blob.size > MAX_TAMANHO_BYTES && qualidade > 0.28) {
       qualidade = Math.max(0.28, qualidade - 0.04);
     }
@@ -228,22 +188,12 @@ async function comprimirImagem(file) {
     throw new Error('Não foi possível comprimir a imagem.');
   }
 
-  /*
-   * Segurança extra:
-   * se por algum motivo ainda passar de 1 MB,
-   * fazemos uma última compressão.
-   */
   if (blob.size > MAX_TAMANHO_BYTES) {
     const qualidadeFinal = 0.22;
 
     blob = await canvasParaBlob(canvas, qualidadeFinal);
   }
 
-  /*
-   * Cria um novo File.
-   *
-   * O nome termina em .jpg porque o conteúdo agora é JPEG.
-   */
   const nomeOriginal = file.name
     .replace(/\.[^/.]+$/, '')
     .replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -257,12 +207,6 @@ async function comprimirImagem(file) {
     }
   );
 
-  /*
-   * Verificação final.
-   *
-   * Em condições normais, nunca deve chegar aqui.
-   * Mas evita mandar algo maior que 1 MB para o Storage.
-   */
   if (arquivoComprimido.size > MAX_TAMANHO_BYTES) {
     throw new Error(
       'Não foi possível reduzir a imagem para menos de 1 MB.'
@@ -290,7 +234,6 @@ export default function PainelProdutos({
   const [cpfProprietario, setCpfProprietario] = useState('');
   const [telefoneProprietario, setTelefoneProprietario] = useState('');
 
-  // Localização
   const [cep, setCep] = useState('');
   const [carregandoCep, setCarregandoCep] = useState(false);
   const [endereco, setEndereco] = useState('');
@@ -299,7 +242,6 @@ export default function PainelProdutos({
   const [bairro, setBairro] = useState('');
   const [cidade, setCidade] = useState('Bauru');
 
-  // Autocomplete de Ruas (Nominatim / OSM)
   const [sugestoesRuas, setSugestoesRuas] = useState([]);
   const [carregandoRuas, setCarregandoRuas] = useState(false);
   const [mostrarSugestoes, setMostrarSugestoes] = useState(false);
@@ -318,7 +260,6 @@ export default function PainelProdutos({
   const [selecionados, setSelecionados] = useState([]);
   const [cadastrando, setCadastrando] = useState(false);
 
-  // Fecha o menu de sugestões de rua se o usuário clicar fora dele
   useEffect(() => {
     function handleClickFora(event) {
       if (
@@ -335,7 +276,6 @@ export default function PainelProdutos({
       document.removeEventListener('mousedown', handleClickFora);
   }, []);
 
-  // Busca automática via ViaCEP
   async function buscarCep(valorCep) {
     const cepLimpo = valorCep.replace(/\D/g, '');
 
@@ -391,7 +331,6 @@ export default function PainelProdutos({
     }
   }
 
-  // Effect para buscar logradouros via Nominatim com Debounce (400ms)
   useEffect(() => {
     if (
       !endereco ||
@@ -553,14 +492,6 @@ export default function PainelProdutos({
     );
   }
 
-  /*
-   * ============================================================
-   * ADICIONAR FOTO
-   * ============================================================
-   *
-   * Agora a imagem passa pela compressão antes de ser colocada
-   * no estado.
-   */
   async function adicionarFotoAtualizacao(id, file) {
     if (!file) return;
 
@@ -572,14 +503,6 @@ export default function PainelProdutos({
     try {
       showLoading('Preparando imagem...');
 
-      /*
-       * Aqui acontece toda a mágica:
-       *
-       * - máximo 2000px
-       * - mantém proporção
-       * - máximo 1 MB
-       * - JPEG otimizado
-       */
       const arquivoComprimido =
         await comprimirImagem(file);
 
@@ -719,11 +642,6 @@ export default function PainelProdutos({
         const urlsDaAtualizacao = [];
 
         for (const foto of item.fotos) {
-          /*
-           * O arquivo já foi comprimido no momento da seleção.
-           * Portanto, aqui estamos enviando diretamente o JPEG
-           * otimizado para o Supabase.
-           */
           const nomeArquivo =
             `${crypto.randomUUID()}.jpg`;
 
@@ -827,7 +745,6 @@ export default function PainelProdutos({
 
       onCadastrar?.(data);
 
-      // Reseta os campos do formulário
       setCodigoObraPersonalizado('');
       setNomeObra('');
       setTipoObra('construcao');
@@ -1091,11 +1008,11 @@ export default function PainelProdutos({
                 value={
                   cpfProprietario
                 }
-               onChange={(e) =>
-  setCpfProprietario(
-    mascaraCPF(e.target.value)
-  )
-}
+                onChange={(e) =>
+                  setCpfProprietario(
+                    mascaraCPF(e.target.value)
+                  )
+                }
               />
             </S.Campo>
 
@@ -1113,11 +1030,11 @@ export default function PainelProdutos({
                 value={
                   telefoneProprietario
                 }
-              onChange={(e) =>
-  setTelefoneProprietario(
-    mascaraTelefone(e.target.value)
-  )
-}
+                onChange={(e) =>
+                  setTelefoneProprietario(
+                    mascaraTelefone(e.target.value)
+                  )
+                }
               />
             </S.Campo>
           </S.Info>
@@ -1159,7 +1076,6 @@ export default function PainelProdutos({
               )}
             </S.Campo>
 
-            {/* Campo Endereço com Autocomplete OSM e Wrapper Ref */}
             <S.Camponomeobra
               style={{
                 position: 'relative',
@@ -1204,7 +1120,6 @@ export default function PainelProdutos({
                 </div>
               )}
 
-              {/* Lista Flutuante de Sugestões */}
               {mostrarSugestoes &&
                 sugestoesRuas.length >
                   0 && (
@@ -1711,188 +1626,18 @@ export default function PainelProdutos({
                                 right: 4,
                                 background:
                                   'rgba(0,0,0,0.6)',
-                                color:
-                                  '#fff',
-                                border:
-                                  'none',
-                                borderRadius:
-                                  '50%',
-                                width: 22,
-                                height: 22,
-                                cursor:
-                                  'pointer',
-                                display:
-                                  'flex',
-                                alignItems:
-                                  'center',
-                                justifyContent:
-                                  'center',
-                                fontSize: 12,
                               }}
-                            >
-                              ✕
-                            </button>
+                            />
                           </div>
                         )
                       )}
-
-                      <label
-                        style={{
-                          width: 110,
-                          height: 110,
-                          border:
-                            '2px dashed #d9d6cf',
-                          borderRadius: 8,
-                          display:
-                            'flex',
-                          flexDirection:
-                            'column',
-                          alignItems:
-                            'center',
-                          justifyContent:
-                            'center',
-                          cursor:
-                            'pointer',
-                          fontSize: 12,
-                          color:
-                            '#6e7178',
-                          background:
-                            '#fff',
-                        }}
-                      >
-                        📷 Adicionar
-
-                        <input
-                          type="file"
-                          accept="image/*"
-                          style={{
-                            display:
-                              'none',
-                          }}
-                          onChange={(
-                            e
-                          ) => {
-                            const file =
-                              e.target
-                                .files?.[0];
-
-                            if (file) {
-                              adicionarFotoAtualizacao(
-                                item.id,
-                                file
-                              );
-                            }
-
-                            e.target.value =
-                              '';
-                          }}
-                        />
-                      </label>
                     </div>
                   </div>
-
-                  <S.Campo>
-                    <S.Label>
-                      Data da Atualização
-                    </S.Label>
-
-                    <S.Input
-                      type="date"
-                      value={
-                        item.data
-                      }
-                      onChange={(e) =>
-                        atualizarCampoAtualizacao(
-                          item.id,
-                          'data',
-                          e.target.value
-                        )
-                      }
-                    />
-                  </S.Campo>
-
-                  <S.Campo>
-                    <S.Label>
-                      Descrição do que foi
-                      realizado
-                    </S.Label>
-
-                    <S.TextArea
-                      rows={3}
-                      placeholder="Ex: Finalizada a concretagem da laje e iniciado o alvenaria..."
-                      value={
-                        item.descricao
-                      }
-                      onChange={(e) =>
-                        atualizarCampoAtualizacao(
-                          item.id,
-                          'descricao',
-                          e.target.value
-                        )
-                      }
-                    />
-                  </S.Campo>
                 </div>
               )
             )}
-
-            <button
-              type="button"
-              onClick={
-                adicionarAtualizacao
-              }
-              style={{
-                padding: '12px 16px',
-                border:
-                  '1px dashed #ffb83c',
-                borderRadius: 8,
-                background:
-                  '#fff8ea',
-                color: '#b37700',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontSize: 14,
-              }}
-            >
-              + Adicionar Nova Atualização
-            </button>
           </div>
         </S.Secao>
-
-        <div
-          style={{
-            display: 'flex',
-            gap: 12,
-            marginTop: 24,
-            justifyContent:
-              'flex-end',
-          }}
-        >
-          {onFechar && (
-            <S.BotaoAcao
-              type="button"
-              onClick={onFechar}
-            >
-              Cancelar
-            </S.BotaoAcao>
-          )}
-
-          <S.BotaoAcao
-            type="button"
-            disabled={cadastrando}
-            onClick={handleCadastrar}
-            style={{
-              background: '#ffb83c',
-              borderColor: '#e69d19',
-              color: '#23262b',
-              fontWeight: 'bold',
-            }}
-          >
-            {cadastrando
-              ? 'Cadastrando...'
-              : 'Cadastrar Obra'}
-          </S.BotaoAcao>
-        </div>
       </S.Formulario>
     </S.Painel>
   );

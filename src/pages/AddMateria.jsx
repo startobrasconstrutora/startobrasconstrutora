@@ -39,7 +39,6 @@ export default function AddMateria({ onCadastrar }) {
   }
 
   async function handleCadastrar() {
-    // ============ VALIDAÇÕES ============
     if (!titulo.trim()) {
       toastError('Preencha o título da matéria');
       return;
@@ -55,7 +54,6 @@ export default function AddMateria({ onCadastrar }) {
       return;
     }
 
-    // ============ CADASTRO ============
     setCadastrando(true);
     showLoading('Cadastrando matéria...');
 
@@ -90,7 +88,6 @@ export default function AddMateria({ onCadastrar }) {
 
       onCadastrar?.();
 
-      // Limpar formulário
       setTitulo('');
       setTexto('');
       setDataPublicacao(hojeISO());

@@ -1,15 +1,5 @@
 import styled from 'styled-components';
 
-/* Reaproveita a mesma paleta de Addobras.styles.jsx
-   fundo:      #F6F4F1
-   painel:     #FFFFFF
-   borda:      #E4E1DB
-   texto:      #23262B
-   texto sec.: #6E7178
-   destaque:   #E8871E
-   perigo:     #C1473C
-*/
-
 export const Wrapper = styled.div`
   width: 100%;
   max-width: 1100px;

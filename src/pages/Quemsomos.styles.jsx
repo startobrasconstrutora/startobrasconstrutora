@@ -51,9 +51,7 @@ export const HeroBadge = styled.div`
   white-space: nowrap;
 `;
 
-// =============================================================
-//  INTRO / TEXTO
-// =============================================================
+
 
 export const IntroSection = styled.section`
   width: 100%;
@@ -108,9 +106,7 @@ export const CtaButton = styled.button`
   }
 `;
 
-// =============================================================
-//  DESTAQUES / MÉTRICAS
-// =============================================================
+
 
 export const DestaquesSection = styled.section`
   width: min(1200px, 92%);
@@ -158,9 +154,7 @@ export const DestaqueCard = styled.div`
   }
 `;
 
-// =============================================================
-//  MISSÃO / VISÃO / VALORES
-// =============================================================
+
 
 export const ValoresSection = styled.section`
   width: 100%;

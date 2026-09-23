@@ -105,7 +105,7 @@ function MenuPrincipal() {
         </S.MenuInner>
       </S.Container>
 
-      {/* Submenu Serviços (Desktop) */}
+      {}
       <S.SubMenu 
         $scrolled={scrolled} 
         $aberto={subMenuAtivo === 'servicos'} 
@@ -126,7 +126,7 @@ function MenuPrincipal() {
         </S.ListaSubMenu>
       </S.SubMenu>
 
-      {/* Submenu Obras (Desktop) */}
+      {}
       <S.SubMenu 
         $scrolled={scrolled} 
         $aberto={subMenuAtivo === 'obras'} 
@@ -142,7 +142,7 @@ function MenuPrincipal() {
         </S.ListaSubMenu>
       </S.SubMenu>
 
-      {/* Menu Mobile Organizado */}
+      {}
       {aberto && (
         <>
           <S.MenuMobile>

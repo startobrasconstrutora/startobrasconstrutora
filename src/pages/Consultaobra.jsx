@@ -30,18 +30,11 @@ function formatarData(dataISO) {
 }
 
 export default function ConsultaObra() {
-  // Quando a rota é /obra/:codigo, esse parâmetro vem preenchido
-  // (sempre só os dígitos, ex: "2606001"). Quando a rota é
-  // /consultaobra (busca "do zero"), vem undefined.
+
   const { codigo: codigoDaUrl } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Se chegamos aqui logo depois de uma busca bem-sucedida (via navigate),
-  // a obra já vem pronta no state, evitando bater no banco de novo.
-  // Se a pessoa abriu o link direto (compartilhado), location.state é null
-  // e o CPF precisa ser digitado normalmente — o código sozinho na URL
-  // nunca é suficiente para ver os dados.
   const obraViaNavegacao = location.state?.obra || null;
 
   const modoLink = Boolean(codigoDaUrl);
@@ -51,7 +44,7 @@ export default function ConsultaObra() {
   const [buscando, setBuscando] = useState(false);
   const [erro, setErro] = useState(null);
   const [obra, setObra] = useState(obraViaNavegacao);
-  const [visualizacao, setVisualizacao] = useState(null); // { urls: string[], index: number }
+  const [visualizacao, setVisualizacao] = useState(null); 
 
   async function handleConsultar(e) {
     e.preventDefault();
@@ -96,8 +89,6 @@ export default function ConsultaObra() {
 
       setObra(data);
 
-      // Só atualiza a URL quando a busca partiu do formulário genérico
-      // (/consultaobra). Se já estava em /obra/:codigo, a URL já está certa.
       if (!modoLink) {
         navigate(`/obra/${digitosCodigo}`, { state: { obra: data } });
       }
@@ -117,7 +108,7 @@ export default function ConsultaObra() {
     setErro(null);
     setCpf('');
     if (modoLink) {
-      // Sai do link direto e volta pro formulário "do zero"
+      
       navigate('/consultaobra');
     } else {
       setCodigo('');

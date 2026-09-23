@@ -55,10 +55,6 @@ export const HeroBadge = styled.div`
   white-space: nowrap;
 `;
 
-// =============================================================
-//   INTRO / TEXTO
-// =============================================================
-
 export const IntroSection = styled.section`
   width: 100%;
   display: flex;
@@ -77,10 +73,6 @@ export const IntroContent = styled.div`
     margin-bottom: 1.4rem;
   }
 `;
-
-// =============================================================
-//   ALTERNADOR DE TELA (Adicionar / Gerenciar)
-// =============================================================
 
 export const ToggleWrapper = styled.div`
   width: 100%;

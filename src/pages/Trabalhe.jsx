@@ -43,7 +43,6 @@ function TrabalheConosco() {
       `Experiência / Mensagem:\n${formData.mensagem}`
     )
 
-    // Abre o cliente de e-mail padrão já preenchido
     window.location.href = `mailto:${emailDestino}?subject=${assunto}&body=${corpo}`
   }
 

@@ -51,9 +51,6 @@ export const HeroBadge = styled.div`
   white-space: nowrap;
 `;
 
-// =============================================================
-// INTRO / TEXTO
-// =============================================================
 
 export const IntroSection = styled.section`
   width: 100%;
@@ -74,9 +71,6 @@ export const IntroContent = styled.div`
   }
 `;
 
-// =============================================================
-// FORMULÁRIO TRABALHE CONOSCO
-// =============================================================
 
 export const ContatoSection = styled.section`
   width: 100%;

@@ -52,9 +52,7 @@ export const HeroBadge = styled.div`
   white-space: nowrap;
 `;
 
-// =============================================================
-//  INTRO / TEXTO
-// =============================================================
+
 
 export const IntroSection = styled.section`
   width: 100%;
@@ -111,9 +109,7 @@ export const CtaButton = styled.a`
   }
 `;
 
-// =============================================================
-//  SERVIÇOS / CARDS (ESTILO DESTAQUES)
-// =============================================================
+
 
 export const ServicosSection = styled.section`
   width: min(1200px, 92%);
@@ -154,9 +150,7 @@ export const ServicoCard = styled.div`
   }
 `;
 
-// =============================================================
-//  DIFERENCIAIS / LINHAS (ESTILO VALORES)
-// =============================================================
+
 
 export const ValoresSection = styled.section`
   width: 100%;
@@ -237,9 +231,7 @@ export const ValorTexto = styled.div`
   }
 `;
 
-// =============================================================
-// SEÇÃO EXCLUSIVA: ESPECIALIDADES / PROFISSIONAIS
-// =============================================================
+
 
 export const EspecialidadesSection = styled.section`
   width: 100%;

@@ -9,7 +9,7 @@ const Footer = () => {
   return (
     <S.Container>
       <S.FooterEmbaixo>
-        {/* Identidade e Contato Centralizados */}
+        {}
         <S.Endereco>
           <S.LogoFooter>
             <Link to="/" aria-label="Voltar para a página inicial da Start Obras">
@@ -62,9 +62,9 @@ const Footer = () => {
           </S.Social>
         </S.Endereco>
 
-        {/* Colunas de Navegação alinhadas ao Menu Principal */}
+        {}
         <S.FooterLinks>
-          {/* Navegação Institucional */}
+          {}
           <S.Mapasite>
             <S.FooterLabel>NAVEGAÇÃO</S.FooterLabel>
             <S.FooterMenu>
@@ -86,7 +86,7 @@ const Footer = () => {
             </S.FooterMenu>
           </S.Mapasite>
 
-          {/* Categoria Serviços */}
+          {}
           <S.Mapasite>
             <S.FooterLabel>SERVIÇOS</S.FooterLabel>
             <S.FooterMenu>
@@ -108,7 +108,7 @@ const Footer = () => {
             </S.FooterMenu>
           </S.Mapasite>
 
-          {/* Categoria Obras e Imóveis */}
+          {}
           <S.Mapasite>
             <S.FooterLabel>OBRAS E IMÓVEIS</S.FooterLabel>
             <S.FooterMenu>
@@ -121,7 +121,7 @@ const Footer = () => {
             </S.FooterMenu>
           </S.Mapasite>
 
-          {/* Área Restrita / ADM */}
+          {}
           <S.Mapasite>
             <S.FooterLabel>ÁREA RESTRITA</S.FooterLabel>
             <S.FooterMenu>

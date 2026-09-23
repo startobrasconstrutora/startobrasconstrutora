@@ -148,7 +148,7 @@ export default function AdmMaterias() {
 
   async function excluirMateria(materia) {
     const result = await confirmDelete(`a matéria "${materia.titulo}"`);
-    
+
     if (!result.isConfirmed) {
       return;
     }
@@ -180,9 +180,9 @@ export default function AdmMaterias() {
 
   async function excluirSelecionados() {
     if (selecionados.length === 0) return;
-    
+
     const result = await confirmDelete(`${selecionados.length} matéria(s)`);
-    
+
     if (!result.isConfirmed) {
       return;
     }

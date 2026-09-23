@@ -15,14 +15,10 @@ import AdmServicos from './AdmServicos.jsx'
 
 function Add() {
   const [tela, setTela] = useState('')
-  
-  // Criamos a referência para a seção de conteúdo
   const conteudoRef = useRef(null)
 
-  // Função auxiliar para mudar a tela e fazer o scroll suave
   function mudarTela(novaTela) {
     setTela(novaTela)
-    // Pequeno timeout para garantir que o DOM já atualizou antes de rolar
     setTimeout(() => {
       conteudoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 50)
@@ -217,7 +213,6 @@ function Add() {
         </S.ToggleGroup>
       </S.ToggleWrapper>
 
-      {/* Anexamos a ref aqui */}
       <S.DevSection ref={conteudoRef}>
         {renderTela()}
         <br />

@@ -31,7 +31,6 @@ export default function AdmColaboradores() {
   const [editando, setEditando] = useState(null);
   const [selecionados, setSelecionados] = useState([]);
 
-  // Estados de edição
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [cpf, setCpf] = useState('');
   const [telefone, setTelefone] = useState('');

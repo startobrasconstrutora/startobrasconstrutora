@@ -61,7 +61,6 @@ export default function PainelGerenciarObras() {
 
   const [salvando, setSalvando] = useState(false);
 
-  // Estado para controlar a mudança de código_obra
   const [codigoObraAntigo, setCodigoObraAntigo] = useState('');
   const [codigoObraEditando, setCodigoObraEditando] = useState('');
   const [erroCodigoObra, setErroCodigoObra] = useState('');
@@ -716,7 +715,6 @@ function FormularioEdicao({
   const [indiceArrastando, setIndiceArrastando] = useState(null);
   const [indiceSobre, setIndiceSobre] = useState(null);
 
-  // Controla quais atualizações estão abertas no acordeão.
   const [atualizacoesAbertas, setAtualizacoesAbertas] = useState({});
 
   function alternarAtualizacaoAberta(chave) {
@@ -726,7 +724,6 @@ function FormularioEdicao({
     }));
   }
 
-  // Controla quais seções principais estão abertas.
   const [secoesAbertas, setSecoesAbertas] = useState({
     identificacao: true,
     proprietario: false,
@@ -1136,8 +1133,6 @@ function FormularioEdicao({
         )}
       </div>
 
-   
-
       <div style={{ marginBottom: 10 }}>
         <button
           type="button"
@@ -1199,7 +1194,7 @@ function FormularioEdicao({
                 gap: 16,
               }}
             >
-              {/* CEP */}
+              {}
               <div>
                 <label
                   style={{
@@ -1225,7 +1220,7 @@ function FormularioEdicao({
                 />
               </div>
 
-              {/* Rua / Endereço */}
+              {}
               <div>
                 <label
                   style={{
@@ -1249,7 +1244,7 @@ function FormularioEdicao({
                 />
               </div>
 
-              {/* Número */}
+              {}
               <div>
                 <label
                   style={{
@@ -1273,7 +1268,7 @@ function FormularioEdicao({
                 />
               </div>
 
-              {/* Bairro */}
+              {}
               <div>
                 <label
                   style={{
@@ -1296,7 +1291,7 @@ function FormularioEdicao({
                 />
               </div>
 
-              {/* Cidade */}
+              {}
               <div>
                 <label
                   style={{
@@ -1319,7 +1314,7 @@ function FormularioEdicao({
                 />
               </div>
 
-              {/* UF */}
+              {}
               <div>
                 <label
                   style={{
@@ -1456,8 +1451,6 @@ function FormularioEdicao({
                   ★ CAPA
                 </div>
               )}
-
-            
 
               {marcada && (
                 <div

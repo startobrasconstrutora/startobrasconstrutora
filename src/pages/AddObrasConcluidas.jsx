@@ -41,7 +41,6 @@ export default function AddObraConcluida() {
       const fotosOtimizadas = [];
 
       for (const file of files) {
-        // Otimiza a imagem (máx 2000px de largura/altura e até 1MB)
         const fileOtimizado = await redimensionarEComprimirImagem(file, 2000, 1024 * 1024);
         fotosOtimizadas.push(fileOtimizado);
       }
@@ -55,7 +54,7 @@ export default function AddObraConcluida() {
       toastError('Erro ao processar as imagens.');
     } finally {
       hideLoading();
-      e.target.value = ''; // Limpa o valor do input para permitir re-seleção se necessário
+      e.target.value = '';
     }
   };
 
@@ -67,7 +66,6 @@ export default function AddObraConcluida() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ============ VALIDAÇÕES ============
     if (!titulo.trim()) {
       toastError('Preencha o título da obra');
       return;
@@ -83,7 +81,6 @@ export default function AddObraConcluida() {
       return;
     }
 
-    // ============ CADASTRO ============
     setEnviando(true);
     showLoading('Cadastrando obra concluída...');
 
@@ -91,7 +88,6 @@ export default function AddObraConcluida() {
       const fotosUrls = [];
 
       for (const file of arquivos) {
-        // Garantir extensão .jpg após a otimização
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
         const filePath = `obras_concluidas/${fileName}`;
 
@@ -126,7 +122,6 @@ export default function AddObraConcluida() {
       hideLoading();
       toastSuccess('Obra concluída cadastrada com sucesso!');
 
-      // Limpar formulário
       setTitulo('');
       setCategoria('');
       setLocalizacao('');

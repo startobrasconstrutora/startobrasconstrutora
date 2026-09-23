@@ -137,7 +137,7 @@ export default function AdmObrasConcluidas() {
     try {
       const fotosOtimizadas = [];
       for (const file of files) {
-        // Redimensiona (max 2000px) e comprime (max 1MB)
+        
         const fileOtimizado = await redimensionarEComprimirImagem(file, 2000, 1024 * 1024);
         fotosOtimizadas.push(fileOtimizado);
       }

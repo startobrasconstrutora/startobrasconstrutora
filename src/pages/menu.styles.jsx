@@ -323,6 +323,14 @@ export const LiSubMobile = styled.li`
   color: #171717;
   cursor: pointer;
 
+  a,
+  a:visited,
+  a:hover,
+  a:active {
+    text-decoration: none;
+    color: #171717 !important;
+  }
+
   &:hover {
     transform: scale(1.02);
   }

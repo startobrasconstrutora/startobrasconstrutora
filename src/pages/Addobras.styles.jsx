@@ -1,19 +1,5 @@
 import styled from 'styled-components';
 
-/* Paleta
-   fundo:       #F6F4F1 (concreto claro)
-   painel:      #FFFFFF
-   borda:       #E4E1DB
-   texto:       #23262B
-   texto sec.:  #6E7178
-   destaque:    #E8871E (amarelo segurança / construção)
-   perigo:      #C1473C
-*/
-
-// =============================================================
-//  CONTAINER PRINCIPAL E CABEÇALHO
-// =============================================================
-
 export const Wrapper = styled.div`
   width: 100%;
   max-width: 880px;
@@ -25,7 +11,7 @@ export const Wrapper = styled.div`
   font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
 `;
 
-export const Painel = styled(Wrapper)``; // Alias para compatibilidade
+export const Painel = styled(Wrapper)``;
 
 export const TituloPainel = styled.h2`
   font-size: 26px;
@@ -81,10 +67,6 @@ export const BotaoAcao = styled.button`
   }
 `;
 
-// =============================================================
-//  ESTRUTURA DO FORMULÁRIO E SEÇÕES
-// =============================================================
-
 export const Formulario = styled.form`
   display: flex;
   flex-direction: column;
@@ -124,7 +106,7 @@ export const Campo = styled.div`
   gap: 6px;
 `;
 
-export const GrupoInput = styled(Campo)``; // Alias para compatibilidade
+export const GrupoInput = styled(Campo)``;
 
 export const Camponomeobra = styled(Campo)`
   grid-column: span 2;
@@ -142,7 +124,7 @@ export const Label = styled.label`
   color: #4b4e54;
 `;
 
-export const Rotulo = styled(Label)``; // Alias para compatibilidade
+export const Rotulo = styled(Label)``;
 
 export const Input = styled.input`
   background: #fbfaf8;
@@ -172,7 +154,7 @@ export const Input = styled.input`
   }
 `;
 
-export const InputText = styled(Input)``; // Alias para compatibilidade
+export const InputText = styled(Input)``;
 
 export const TextArea = styled.textarea`
   width: 100%;
@@ -197,10 +179,6 @@ export const TextArea = styled.textarea`
     background: #fff;
   }
 `;
-
-// =============================================================
-//  CONFIGURAÇÕES / CHECKBOXES
-// =============================================================
 
 export const BlocoConfiguracoes = styled.div`
   background: #fff;
@@ -240,10 +218,6 @@ export const LinhaOpcoes = styled.div`
   padding-top: 4px;
 `;
 
-// =============================================================
-//  BLOCO DE IMAGENS E UPLOADS
-// =============================================================
-
 export const AreaDrop = styled.div`
   border: 2px dashed #d9d6cf;
   border-radius: 8px;
@@ -276,7 +250,7 @@ export const BlocoImagens = styled.div`
   gap: 12px;
 `;
 
-export const GradeFotos = styled(BlocoImagens)``; // Alias para compatibilidade
+export const GradeFotos = styled(BlocoImagens)``;
 
 export const LinhaImagem = styled.div`
   display: flex;
@@ -338,10 +312,6 @@ export const DicaImagem = styled.span`
   margin: -8px 0 4px;
 `;
 
-// =============================================================
-//  VALORES / PREÇOS E CONTADORES
-// =============================================================
-
 export const LinhaPreco = styled.div`
   display: flex;
   gap: 12px;
@@ -362,10 +332,6 @@ export const ContadorTexto = styled.span`
   color: #a7a49c;
   align-self: flex-end;
 `;
-
-// =============================================================
-//  BOTÕES E AVISOS
-// =============================================================
 
 export const BotaoEnviar = styled.button`
   align-self: flex-start;
@@ -389,7 +355,7 @@ export const BotaoEnviar = styled.button`
   }
 `;
 
-export const BotaoSubmit = styled(BotaoEnviar)``; // Alias para compatibilidade
+export const BotaoSubmit = styled(BotaoEnviar)``;
 
 export const Aviso = styled.div`
   padding: 12px 16px;

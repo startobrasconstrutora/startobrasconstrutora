@@ -54,9 +54,9 @@ export const HeroBadge = styled.div`
   white-space: nowrap;
 `;
 
-// =============================================================
-//  INTRO / TEXTO
-// =============================================================
+
+
+
 
 export const IntroSection = styled.section`
   width: 100%;
@@ -104,9 +104,9 @@ export const CtaButton = styled.button`
   }
 `;
 
-// =============================================================
-//  CONTATO / CARDS
-// =============================================================
+
+
+
 
 export const ContatoSection = styled.section`
   width: 100%;
