@@ -1,5 +1,6 @@
 import styled from "styled-components";
 
+
 export const Page = styled.main`
   padding-top: 50px;
   width: 100%;
@@ -234,4 +235,100 @@ export const ValorTexto = styled.div`
     font-size: clamp(0.85rem, 1vw, 0.95rem);
     line-height: 1.7;
   }
+`;
+
+// =============================================================
+// SEÇÃO EXCLUSIVA: ESPECIALIDADES / PROFISSIONAIS
+// =============================================================
+
+export const EspecialidadesSection = styled.section`
+  width: 100%;
+  background: #fafafa;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  padding: clamp(3rem, 5vw, 4.5rem) 1.5rem;
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+`;
+
+export const EspecialidadesContainer = styled.div`
+  width: min(1200px, 92%);
+  margin: 0 auto;
+  text-align: center;
+
+  h2 {
+    font-size: clamp(1.3rem, 2vw, 1.75rem);
+    color: #1e1e1e;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+  }
+
+  p.subtitulo {
+    font-size: clamp(0.9rem, 1.1vw, 1.05rem);
+    color: #555;
+    max-width: 720px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.6;
+
+    strong {
+      color: #1e1e1e;
+    }
+  }
+`;
+
+export const EspecialidadesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+`;
+
+export const EspecialidadeCard = styled.div`
+  background: #ffffff;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  padding: 1.8rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: #ffb83c;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  h3 {
+    font-size: 1.05rem;
+    color: #1e1e1e;
+    font-weight: 700;
+    margin: 1rem 0 0.5rem;
+  }
+
+  p {
+    font-size: 0.85rem;
+    color: #666;
+    line-height: 1.45;
+  }
+`;
+
+export const EspecialidadeIcon = styled.div`
+  width: 64px;
+  height: 64px;
+  background: #fff8eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ffe1a8;
+  color: #d98200;
+`;
+
+export const ValoresTitle = styled.h2`
+  font-size: clamp(1.3rem, 2vw, 1.75rem);
+  color: #1e1e1e;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: clamp(1rem, 3vw, 2rem);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 `;

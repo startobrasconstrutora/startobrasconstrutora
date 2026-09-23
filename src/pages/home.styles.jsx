@@ -1,11 +1,5 @@
 import styled from 'styled-components'
-
-/* Tokens
-   --concreto        #D9D6CD  fundo neutro (substitui o cinza chapado)
-   --grafite          #24231F  texto forte / títulos
-   --ambar-seguranca  #F0A23A  acento único (usado com moderação, não como bg de bloco inteiro)
-   --aco              #6B675C  texto secundário
-*/
+import { Link } from 'react-router-dom'
 
 export const Container = styled.div`
   display: flex;
@@ -36,7 +30,7 @@ export const ContainerSwiper = styled.div`
   overflow: hidden;
 
   @media (max-width: 900px) {
-    padding-top: 130px;  /* Adiciona espaço só no mobile */
+    padding-top: 130px;
   }
 `
 
@@ -108,7 +102,7 @@ export const CardTexto = styled.div`
   padding-top: 24px;
 
   h2 {
-    color: var(--principaldarker);
+    color: var(--principaldarker, #24231F);
     padding-bottom: 16px;
     font-size: 1.6rem;
   }
@@ -155,12 +149,12 @@ export const CardTexto = styled.div`
     li {
       font-size: 14px;
       padding: 5px 0 5px 20px;
-    }
 
-    li::before {
-      width: 7px;
-      height: 7px;
-      top: 11px;
+      &::before {
+        width: 7px;
+        height: 7px;
+        top: 11px;
+      }
     }
   }
 `
@@ -178,180 +172,6 @@ export const SvgOverlay = styled.div`
     height: auto;
     display: block;
   }
-
-  @media (max-width: 480px) {
-    svg {
-      height: auto;
-      min-height: 60px;
-    }
-  }
-`
-
-export const DivCentroTexto = styled.div`
-  flex: 1;
-  width: 100%;
-  align-items: center;
-  text-align: left;
-
-  h1, h2 {
-    color: var(--principaldarker);
-    padding-bottom: 20px;
-  }
-
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  li {
-    position: relative;
-    font-size: 24px;
-    color: #24231F;
-    padding: 8px 0 8px 26px;
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 17px;
-      width: 10px;
-      height: 10px;
-      background: #F0A23A;
-    }
-  }
-
-  @media (max-width: 1500px) {
-    width: 100%;
-
-    li {
-      font-size: 22px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    li {
-      font-size: 18px;
-    }
-
-    h1, h2 {
-      font-size: 21px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    li {
-      font-size: 15px;
-      padding: 6px 0 6px 20px;
-    }
-
-    h1, h2 {
-      font-size: 18px;
-      padding-bottom: 15px;
-    }
-  }
-`
-
-export const Ofertas = styled.div`
-  width: 100%;
-  height: 200px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  margin-top: 50px;
-  margin-bottom: 10px;
-  background-size: cover;
-  background-position: center;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--bg);
-    opacity: 0.85;
-  }
-
-  p {
-    font-size: 1vw;
-    font-weight: 600;
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    color: var(--principaldarker);
-    text-shadow: 2px 8px 17px rgba(0, 0, 0, 0.274);
-  }
-
-  a {
-    text-decoration: none;
-  }
-
-  @media (max-width: 768px) {
-    margin-top: 0px;
-    padding: 0px;
-    height: 150px;
-
-    p {
-      font-size: 3vw;
-    }
-  }
-
-  @media (max-width: 480px) {
-    height: 120px;
-    margin-bottom: 5px;
-
-    p {
-      font-size: 2.5vw;
-    }
-  }
-`
-
-export const DivCentroImg = styled.div`
-  flex: 1;
-  overflow: hidden;
-  height: 400px;
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 44px 100%, 0 calc(100% - 44px));
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  @media (max-width: 1500px) {
-    width: 80%;
-    height: 300px;
-    max-height: 300px;
-  }
-
-  @media (max-width: 768px) {
-    width: 100%;
-    height: 250px;
-  }
-
-  @media (max-width: 480px) {
-    height: 200px;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 25px 100%, 0 calc(100% - 25px));
-  }
-`
-
-export const Banner3 = styled.div`
-  display: flex;
-  justify-content: center;
-  width: 70%;
-  padding-bottom: 40px;
-
-  @media (max-width: 1500px) {
-    width: 100%;
-  }
-
-  @media (max-width: 768px) {
-    padding-bottom: 30px;
-  }
-
-  @media (max-width: 480px) {
-    padding-bottom: 20px;
-  }
 `
 
 export const ObrasSection = styled.div`
@@ -359,7 +179,7 @@ export const ObrasSection = styled.div`
   padding: 20px 10% 40px;
 
   h2 {
-    color: var(--principaldarker);
+    color: var(--principaldarker, #24231F);
     padding-bottom: 24px;
     font-size: 1.6rem;
   }
@@ -391,11 +211,9 @@ export const StatsBar = styled.div`
   position: relative;
   overflow: hidden;
 
-  /* Borda dupla estilizada no topo e na base */
   border-top: 6px double #e0e0e0;
   border-bottom: 6px double #e0e0e0;
 
-  /* Mantém a textura de fundo */
   &::before {
     content: '';
     position: absolute;
@@ -403,24 +221,12 @@ export const StatsBar = styled.div`
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M-80 240 L210 -10 L500 240' fill='none' stroke='%2324231F' stroke-width='16' stroke-linecap='round' stroke-linejoin='round' opacity='0.08'/%3E%3Cpath d='M110 240 L310 50 L580 240' fill='none' stroke='%2324231F' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' opacity='0.06'/%3E%3Cpath d='M480 240 L780 70 L1080 240' fill='none' stroke='%2324231F' stroke-width='8' stroke-linecap='round' stroke-linejoin='round' opacity='0.05'/%3E%3Cpath d='M820 240 L1020 120 L1220 240' fill='none' stroke='%2324231F' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' opacity='0.07'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' preserveAspectRatio='none'%3E%3Cpath d='M-80 240 L210 -10 L500 240' fill='none' stroke='%2324231F' stroke-width='16' stroke-linecap='round' stroke-linejoin='round' opacity='0.08'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
     pointer-events: none;
     z-index: 1;
-  }
-
-  @media (max-width: 768px) {
-    padding: 30px 5%;
-    border-top: 4px double #e0e0e0;
-    border-bottom: 4px double #e0e0e0;
-  }
-
-  @media (max-width: 480px) {
-    padding: 20px 4%;
-    border-top: 3px double #e0e0e0;
-    border-bottom: 3px double #e0e0e0;
   }
 `
 
@@ -431,7 +237,7 @@ export const StatItem = styled.div`
   text-align: center;
   max-width: 700px;
   position: relative;
-  z-index: 2; /* Garante que o texto fique por cima do grafismo */
+  z-index: 2;
 
   strong {
     font-size: 1.9rem;
@@ -460,40 +266,129 @@ export const StatItem = styled.div`
     line-height: 1.6;
     color: #3a3729;
   }
+`
+
+/* Seção de Cards de Serviços Laranjas e com Ícones */
+export const ServicosCardsSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 50px 10%;
+  align-items: center;
+  background: #fcfbfa;
 
   @media (max-width: 768px) {
-    strong {
-      font-size: 1.5rem;
-      padding-bottom: 14px;
-      margin-bottom: 14px;
+    padding: 35px 5%;
+  }
+`
+
+export const ServicosSectionTitle = styled.h2`
+  color: var(--principaldarker, #24231F);
+  font-size: 2rem;
+  margin-bottom: 40px;
+  text-align: center;
+  font-weight: 800;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+  }
+`
+
+export const ServicosGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  width: 100%;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+`
+
+export const ServicoCardLink = styled(Link)`
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  
+  /* CARTÕES LARANJAS CONFORME SOLICITADO */
+  background: #F0A23A; 
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(240, 162, 58, 0.25);
+  border: 1px solid #e0932c;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(240, 162, 58, 0.4);
+    background: #e8992e;
+
+    /* Destaca o ícone ao passar o mouse */
+    div svg {
+      transform: scale(1.1);
     }
 
-    strong::after {
-      width: 50px;
-      height: 2px;
-    }
-
-    span {
-      font-size: 0.9rem;
+    .card-arrow {
+      transform: translateX(6px);
+      color: #ffffff;
     }
   }
+`
 
-  @media (max-width: 480px) {
-    strong {
-      font-size: 1.1rem;
-      padding-bottom: 10px;
-      margin-bottom: 10px;
-    }
+export const ServicoIconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: rgba(36, 35, 31, 0.12);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  color: #24231F;
 
-    strong::after {
-      width: 35px;
-      height: 2px;
-    }
+  svg {
+    transition: transform 0.3s ease;
+  }
+`
 
-    span {
-      font-size: 0.8rem;
-      line-height: 1.5;
-      padding: 0 10px;
-    }
+export const ServicoCardContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 32px 28px;
+  height: 100%;
+  justify-content: space-between;
+
+  h3 {
+    font-size: 1.4rem;
+    color: #24231F;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+
+  p {
+    font-size: 0.98rem;
+    color: #2c2921; /* Tom escuro para excelente legibilidade sobre o fundo laranja */
+    line-height: 1.6;
+    margin-bottom: 24px;
+    flex-grow: 1;
+  }
+`
+
+export const ServicoCardFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #24231F;
+  border-top: 1px solid rgba(36, 35, 31, 0.15);
+  padding-top: 16px;
+
+  .card-arrow {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease, color 0.3s ease;
   }
 `

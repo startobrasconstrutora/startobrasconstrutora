@@ -14,10 +14,55 @@ import slide2mob from "../assets/img/slide2mob.png"
 import texto_imagem from "../assets/img/capacete.png"
 import texto_imagem2 from "../assets/img/caixa.png"
 import { Content } from '../components/DivComum.styles.jsx'
-import { Link } from 'react-router-dom'
 import { Faixa } from '../components/faixa.jsx'
 import { Reveal } from '../components/Reveal.jsx'
 import MateriasHome from '../components/MateriasHome.jsx'
+import { Link } from 'react-router-dom'
+
+// Array com os 3 cards + ícones exclusivos
+const CARDS_SERVICOS = [
+  {
+    id: 'construcao',
+    titulo: 'Construção do Zero',
+    descricao: 'Construímos sua casa no modelo chave na mão. Cuidamos do financiamento Caixa, projeto, terreno e execução completa da obra.',
+    link: '/servicos/construcao',
+    icon: (
+      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 21h18" />
+        <path d="M5 21V7l7-4 7 4v14" />
+        <path d="M9 10h6" />
+        <path d="M9 14h6" />
+        <path d="M9 18h6" />
+      </svg>
+    )
+  },
+  {
+    id: 'reformas',
+    titulo: 'Reformas e Ampliações',
+    descricao: 'Transforme seu ambiente residencial ou comercial com planejamento técnico, equipe especializada e execução dentro do prazo.',
+    link: '/servicos/reformas',
+    icon: (
+      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m14 6 7 7-4 4-7-7" />
+        <path d="m3 21 8-8" />
+        <path d="m3 13 8 8" />
+      </svg>
+    )
+  },
+  {
+    id: 'regularizacao',
+    titulo: 'Regularização de Imóveis',
+    descricao: 'Aprovação de Habite-se, averbação em cartório e consultoria técnica com chancela COFECI para valorizar e legalizar seu patrimônio.',
+    link: '/servicos/regularizacao',
+    icon: (
+      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <path d="m9 15 2 2 4-4" />
+      </svg>
+    )
+  }
+]
 
 function Home() {
   const [obrasConcluidas, setObrasConcluidas] = useState([])
@@ -109,30 +154,56 @@ function Home() {
             </Reveal>
           </S.DivCentro>
 
-<Reveal delay={0.1}>
-          <S.StatsBar>
-            <S.StatItem>
-              <strong>Confiança que se constrói</strong>
-              <span>Construir é um compromisso que não aceita atalhos. Nossa equipe própria acompanha sua obra do início ao fim, garantindo qualidade, 
-                segurança e o cuidado que sua família e seu investimento merecem.</span>
-            </S.StatItem>
-          </S.StatsBar>
+          {/* Cards de Serviços com Ícones e Destaque Laranja */}
+          <Reveal delay={0.1}>
+            <S.ServicosCardsSection>
+              <S.ServicosSectionTitle>Nossos Serviços</S.ServicosSectionTitle>
+              <S.ServicosGrid>
+                {CARDS_SERVICOS.map((card) => (
+                  <S.ServicoCardLink key={card.id} to={card.link}>
+                    <S.ServicoCardContent>
+                      <div>
+                        <S.ServicoIconWrapper>
+                          {card.icon}
+                        </S.ServicoIconWrapper>
+                        <h3>{card.titulo}</h3>
+                        <p>{card.descricao}</p>
+                      </div>
+                      <S.ServicoCardFooter>
+                        <span>Saiba mais</span>
+                        <span className="card-arrow">➔</span>
+                      </S.ServicoCardFooter>
+                    </S.ServicoCardContent>
+                  </S.ServicoCardLink>
+                ))}
+              </S.ServicosGrid>
+            </S.ServicosCardsSection>
+          </Reveal>
+
+          <Reveal delay={0.15}>
+            <S.StatsBar>
+              <S.StatItem>
+                <strong>Confiança que se constrói</strong>
+                <span>Construir é um compromisso que não aceita atalhos. Nossa equipe própria acompanha sua obra do início ao fim, garantindo qualidade, 
+                  segurança e o cuidado que sua família e seu investimento merecem.</span>
+              </S.StatItem>
+            </S.StatsBar>
           </Reveal>
 
           <br />
 
-{obrasConcluidas.length > 0 && (
-<Reveal delay={0.2}>
-          <S.ObrasSection>
-            <h2>Obras prontas</h2>
-            <SwiperObras obras={obrasConcluidas} onSelecionar={setObraSelecionadaId} />
-          </S.ObrasSection>
-</Reveal>
-)}
+          {obrasConcluidas.length > 0 && (
+            <Reveal delay={0.2}>
+              <S.ObrasSection>
+                <h2>Obras prontas</h2>
+                <SwiperObras obras={obrasConcluidas} onSelecionar={setObraSelecionadaId} />
+              </S.ObrasSection>
+            </Reveal>
+          )}
 
-<Reveal delay={0.3}>
-          <MateriasHome />
-</Reveal>
+          <Reveal delay={0.3}>
+            <MateriasHome />
+          </Reveal>
 
         </S.Container>
       </div>
