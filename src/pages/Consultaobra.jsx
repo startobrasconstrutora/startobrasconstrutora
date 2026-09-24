@@ -162,7 +162,7 @@ export default function ConsultaObra() {
         <S.HeroImage>
           <img src={heroImg} alt="Obra Start Obras" />
         </S.HeroImage>
-        <S.HeroBadge>CONSULTAR OBRA</S.HeroBadge>
+        <S.HeroBadge>ÁREA DO CLIENTE</S.HeroBadge>
       </S.HeroWrapper>
 
       <S.Container>
