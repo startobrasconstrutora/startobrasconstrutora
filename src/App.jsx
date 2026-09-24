@@ -14,6 +14,7 @@ import ScrollToTop from "./components/ScrollToTop.jsx"
 import SocialBar from "./components/SocialBar.jsx"
 import Materia from './pages/Materia.jsx'
 import ObrasConcluidas from './pages/ObrasConcluidas.jsx'
+import ObrasAndamento from './pages/ObrasAndamento.jsx'
 
 import Construcao from './pages/Construcao.jsx'
 import Reformas from './pages/Reformas.jsx'
@@ -35,7 +36,7 @@ function App() {
           <Route path="/obra/:codigo" element={<ConsultaObra />} />
           <Route path="/materia/:id" element={<Materia />} />
           <Route path="/obras-concluidas" element={<ObrasConcluidas />} />
-<Route path="/obras-andamento" element={<ObrasConcluidas />} />
+<Route path="/obras-andamento" element={<ObrasAndamento />} />
         
           <Route path="/servicos/construcao" element={<Construcao />} />
           <Route path="/servicos/reformas" element={<Reformas />} />

@@ -171,7 +171,7 @@ export default function ConsultaObra() {
             <S.Subtitulo>
               {modoLink
                 ? `Confirme o CPF do proprietário para acompanhar a obra ${codigoDaUrl.replace(/\D/g, '')}.`
-                : 'Digite o código da obra e o CPF do proprietário para acompanhar o andamento.'}
+                : 'Digite o código da obra e o CPF do proprietário para acompanhar o andamento da obra ou projeto.'}
             </S.Subtitulo>
 
             <S.Formulario onSubmit={handleConsultar}>
