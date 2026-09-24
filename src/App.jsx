@@ -30,8 +30,9 @@ import AreaColaborador from './pages/AreaColaborador.jsx'
 
 // Importação das rotas da Área de Administradores
 import AuthAdmins from './pages/AuthAdmins.jsx'
-import AdminResetarSenha from './pages/AdminResetarSenha.jsx' // <--- Certifique-se de que o arquivo existe nesta pasta
+import AdminResetarSenha from './pages/AdminResetarSenha.jsx'
 import CadastroAdminSecreto from "./pages/CadastroAdminSecreto.jsx"
+import GerenciarAdmins from "./pages/GerenciarAdmins.jsx"
 
 // Componente para proteger rotas exclusivas de Administradores
 function RotaProtegidaAdmin({ children }) {
@@ -40,6 +41,14 @@ function RotaProtegidaAdmin({ children }) {
 
   useEffect(() => {
     async function verificarPermissaoAdmin() {
+      // VERIFICAÇÃO DO PASSE MASTER: Se veio direto da senha master, libera na hora!
+      const bypassMaster = sessionStorage.getItem('master_bypass')
+      if (bypassMaster === 'true') {
+        setEAdmin(true)
+        setCarregando(false)
+        return
+      }
+
       const { data: { session } } = await supabase.auth.getSession()
 
       if (!session) {
@@ -70,7 +79,8 @@ function RotaProtegidaAdmin({ children }) {
     )
   }
 
-  return eAdmin ? children : <Navigate to="/admin-login" replace />
+  // Alterado de /admin-login para /admreg
+  return eAdmin ? children : <Navigate to="/admreg" replace />
 }
 
 function App() {
@@ -102,10 +112,18 @@ function App() {
 
           {/* Rotas de Autenticação e Painel dos Administradores */}
           <Route path="/admin-login" element={<AuthAdmins />} />
-          <Route path="/admin-resetar-senha" element={<AdminResetarSenha />} /> {/* <--- Adicionado aqui */}
+          <Route path="/admin-resetar-senha" element={<AdminResetarSenha />} />
           
-          {/* Rota Oculta de Cadastro para Administradores */}
-          <Route path="/secret-admin-register-start2026" element={<CadastroAdminSecreto />} />
+          {/* Rotas Secretas / Restritas de Admin */}
+          <Route path="/admreg" element={<CadastroAdminSecreto />} />
+          <Route 
+            path="/gerenciar-admins" 
+            element={
+              <RotaProtegidaAdmin>
+                <GerenciarAdmins />
+              </RotaProtegidaAdmin>
+            } 
+          />
 
           <Route 
             path="/Add" 
