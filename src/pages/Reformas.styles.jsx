@@ -1,6 +1,5 @@
 import styled from "styled-components";
 
-
 export const Page = styled.main`
   padding-top: 50px;
   width: 100%;
@@ -52,8 +51,6 @@ export const HeroBadge = styled.div`
   white-space: nowrap;
 `;
 
-
-
 export const IntroSection = styled.section`
   width: 100%;
   display: flex;
@@ -78,6 +75,7 @@ export const IntroContent = styled.div`
     font-size: clamp(0.85rem, 1vw, 0.95rem);
     line-height: 1.8;
     margin-bottom: 1.4rem;
+    text-align: justify;
   }
 `;
 
@@ -108,8 +106,6 @@ export const CtaButton = styled.a`
     font-size: 0.6rem;
   }
 `;
-
-
 
 export const ServicosSection = styled.section`
   width: min(1200px, 92%);
@@ -149,8 +145,6 @@ export const ServicoCard = styled.div`
     line-height: 1.5;
   }
 `;
-
-
 
 export const ValoresSection = styled.section`
   width: 100%;
@@ -231,8 +225,6 @@ export const ValorTexto = styled.div`
   }
 `;
 
-
-
 export const EspecialidadesSection = styled.section`
   width: 100%;
   background: #fafafa;
@@ -269,8 +261,16 @@ export const EspecialidadesContainer = styled.div`
 
 export const EspecialidadesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const EspecialidadeCard = styled.div`

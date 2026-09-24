@@ -85,7 +85,7 @@ function MenuPrincipal() {
               onMouseEnter={() => abrirSub('obras', obrasRef)}
               onMouseLeave={fecharSub}
             >
-              Obras e Imóveis ▾
+              Obras ▾
             </S.LiMenu>
             <S.LinhaVer />
 
@@ -94,7 +94,7 @@ function MenuPrincipal() {
 
           {/* Botão de Destaque para Clientes */}
           <S.CtaButton to="/consultaobra" onClick={() => setSubMenuAtivo(null)}>
-            Consulte sua Obra
+            Área do Cliente
           </S.CtaButton>
 
           <S.Hamburger onClick={() => setAberto(!aberto)}>
@@ -135,7 +135,12 @@ function MenuPrincipal() {
         onMouseLeave={fecharSub}
       >
         <S.ListaSubMenu>
+              <S.ListaSubMenuLi>
+                 <Link to="/obras-andamento" onClick={fecharMenu}>Obras em Andamento</Link>
+          
+          </S.ListaSubMenuLi>
           <S.ListaSubMenuLi>
+           
             <Link to="/obras-concluidas" onClick={fecharMenu}>Obras Concluídas</Link>
           </S.ListaSubMenuLi>
       
@@ -163,12 +168,11 @@ function MenuPrincipal() {
             <S.LinhaHor />
 
             <S.LiMenuMobile onClick={() => setSubObrasMobile(!subObrasMobile)}>
-              Obras e Imóveis <S.SetaIcon $aberto={subObrasMobile}>▼</S.SetaIcon>
+              Obras <S.SetaIcon $aberto={subObrasMobile}>▼</S.SetaIcon>
             </S.LiMenuMobile>
             <S.SubMobile $aberto={subObrasMobile}>
+<S.LiSubMobile><Link to="/obras-andamento" onClick={fecharMenu}>Obras em Andamento</Link></S.LiSubMobile>
               <S.LiSubMobile><Link to="/obras-concluidas" onClick={fecharMenu}>Obras Concluídas</Link></S.LiSubMobile>
-              <S.LiSubMobile><Link to="/subpagina" onClick={fecharMenu}>Terrenos à Venda</Link></S.LiSubMobile>
-              <S.LiSubMobile><Link to="/subpagina" onClick={fecharMenu}>Casas à Venda</Link></S.LiSubMobile>
             </S.SubMobile>
             <S.LinhaHor />
 
@@ -179,7 +183,7 @@ function MenuPrincipal() {
             <S.LinhaHor />
 
             <S.CtaButtonMobile to="/consultaobra" onClick={fecharMenu}>
-              Consulte sua Obra
+              Área do Cliente
             </S.CtaButtonMobile>
           </S.MenuMobile>
 

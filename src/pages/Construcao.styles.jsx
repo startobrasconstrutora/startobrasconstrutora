@@ -51,11 +51,37 @@ export const HeroBadge = styled.div`
   white-space: nowrap;
 `;
 
+export const TabNavWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: clamp(3rem, 5vw, 4rem);
+  padding: 0 1.5rem;
+  flex-wrap: wrap;
+`;
+
+export const TabButton = styled.button`
+  background: ${(props) => (props.$active ? "#ffb83c" : "#f4f4f4")};
+  color: ${(props) => (props.$active ? "#1e1e1e" : "#555555")};
+  border: 1px solid ${(props) => (props.$active ? "#ffb83c" : "#e0e0e0")};
+  padding: 0.8rem 1.8rem;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: clamp(0.85rem, 1.1vw, 1rem);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: ${(props) => (props.$active ? "0 4px 12px rgba(255, 184, 60, 0.3)" : "none")};
+
+  &:hover {
+    background: ${(props) => (props.$active ? "#ffa200" : "#e8e8e8")};
+  }
+`;
+
 export const IntroSection = styled.section`
   width: 100%;
   display: flex;
   justify-content: center;
-  padding: clamp(3.5rem, 6vw, 4rem) 1.5rem clamp(1.5rem, 3vw, 2rem);
+  padding: clamp(2rem, 4vw, 3rem) 1.5rem clamp(1.5rem, 3vw, 2rem);
 `;
 
 export const IntroContent = styled.div`

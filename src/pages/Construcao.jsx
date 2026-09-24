@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import * as S from './Construcao.styles.jsx'
 import heroImg from "../assets/img/construcao.jpg"
 
-const ETAPAS = [
+const ETAPAS_CAIXA = [
   {
     passo: "01",
     titulo: "Aprovação de Crédito",
@@ -19,7 +20,7 @@ const ETAPAS = [
   },
   {
     passo: "04",
-    titulo: "Burocracia & Prefeitura",
+    titulo: "Burocracia Documental",
     texto: "Resolvemos todas as etapas burocráticas: aprovação do projeto na prefeitura, alvarás de construção e trâmites de cartório."
   },
   {
@@ -31,6 +32,39 @@ const ETAPAS = [
     passo: "06",
     titulo: "Entrega do Habite-se",
     texto: "Entregamos a casa pronta para morar com a documentação 100% regularizada e o Habite-se finalizado."
+  }
+]
+
+const ETAPAS_PROPRIOS = [
+  {
+    passo: "01",
+    titulo: "Alinhamento & Orçamento",
+    texto: "Entendemos suas necessidades e definimos o escopo do projeto de acordo com o seu planejamento financeiro."
+  },
+  {
+    passo: "02",
+    titulo: "Escolha do Terreno & Projeto",
+    texto: "Auxiliamos na escolha do lote ideal (caso ainda não possua) e criamos um projeto arquitetônico 100% personalizado."
+  },
+  {
+    passo: "03",
+    titulo: "Burocracia Documental",
+    texto: "Cuidamos de toda a documentação, incluindo aprovações na prefeitura, alvarás de construção e procedimentos de cartório."
+  },
+  {
+    passo: "04",
+    titulo: "Cronograma de Pagamento",
+    texto: "Estruturamos um plano de pagamentos personalizado por etapas da obra, aceitando dinheiro e/ou permutas."
+  },
+  {
+    passo: "05",
+    titulo: "Execução da Obra",
+    texto: "Executamos a construção com acompanhamento técnico contínuo, mantendo alto padrão e respeito aos prazos combinados."
+  },
+  {
+    passo: "06",
+    titulo: "Chave na Mão",
+    texto: "Finalizamos o imóvel com habite-se e regularização completa, pronto para você morar ou investir."
   }
 ]
 
@@ -54,6 +88,8 @@ const DIFERENCIAIS = [
 ]
 
 function Construcao() {
+  const [opcaoSelecionada, setOpcaoSelecionada] = useState('caixa')
+
   return (
     <S.Page>
       <S.HeroWrapper>
@@ -63,22 +99,55 @@ function Construcao() {
         <S.HeroBadge>CONSTRUÇÃO DO ZERO</S.HeroBadge>
       </S.HeroWrapper>
 
+      <S.TabNavWrapper>
+        <S.TabButton 
+          $active={opcaoSelecionada === 'caixa'} 
+          onClick={() => setOpcaoSelecionada('caixa')}
+        >
+          Construção Financiamento Caixa
+        </S.TabButton>
+        <S.TabButton 
+          $active={opcaoSelecionada === 'proprios'} 
+          onClick={() => setOpcaoSelecionada('proprios')}
+        >
+          Construção com Recursos Próprios
+        </S.TabButton>
+      </S.TabNavWrapper>
+
       <S.IntroSection>
         <S.IntroContent>
-          <h2>Construímos a sua casa própria do jeito que você sempre sonhou</h2>
-          <p>
-            Na <strong>Start Obras</strong>, nosso foco principal é a <strong>construção residencial do zero</strong>. Especialistas no programa <strong>Minha Casa Minha Vida</strong>, oferecemos a solução no modelo "chave na mão": cuidamos de absolutamente tudo, desde a aprovação do seu crédito até a entrega da casa pronta para morar.
-          </p>
-          <p>
-            Você não precisa nem ter um terreno comprado. Financiamos a aquisição do lote junto com a construção na mesma operação com a Caixa Econômica Federal, garantindo taxas acessíveis e facilidade no pagamento.
-          </p>
+          {opcaoSelecionada === 'caixa' ? (
+            <>
+              <h2>Construímos a sua casa própria pelo Financiamento Caixa</h2>
+              <p>
+                Na <strong>Start Obras</strong>, nosso foco principal é a <strong>construção residencial do zero</strong>. Especialistas no programa <strong>Minha Casa Minha Vida</strong>, oferecemos a solução no modelo "chave na mão": cuidamos de absolutamente tudo, desde a aprovação do seu crédito até a entrega da casa pronta para morar.
+              </p>
+              <p>
+                Você não precisa nem ter um terreno comprado. Financiamos a aquisição do lote junto com a construção na mesma operação com a Caixa Econômica Federal, garantindo taxas acessíveis e facilidade no pagamento.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2>Construção sob medida com Recursos Próprios</h2>
+              <p>
+                Se você opta por não utilizar recursos de financiamento bancário, a <strong>Start Obras</strong> oferece condições flexíveis e totalmente personalizadas para tirar a sua obra do papel.
+              </p>
+              <p>
+                Nesta modalidade, você paga conforme o avanço das etapas negociadas na contratação. Além do pagamento em dinheiro, oferecemos facilidades exclusivas: aceitamos <strong>permutas</strong> em negociação, incluindo <strong>outros imóveis, veículos, equipamentos</strong> e diversos bens como parte do pagamento. Cuidamos do seu projeto com a mesma qualidade e agilidade, garantindo total transparência e entrega no prazo.
+              </p>
+            </>
+          )}
         </S.IntroContent>
       </S.IntroSection>
 
       <S.EtapasSection>
-        <S.SectionTitle>Como funciona o processo de construção</S.SectionTitle>
+        <S.SectionTitle>
+          {opcaoSelecionada === 'caixa' 
+            ? "Como funciona o processo de construção (Caixa)" 
+            : "Como funciona o processo de construção (Recursos Próprios)"}
+        </S.SectionTitle>
         <S.GridEtapas>
-          {ETAPAS.map((item) => (
+          {(opcaoSelecionada === 'caixa' ? ETAPAS_CAIXA : ETAPAS_PROPRIOS).map((item) => (
             <S.EtapaCard key={item.passo}>
               <span className="numero">{item.passo}</span>
               <h3>{item.titulo}</h3>
@@ -101,7 +170,7 @@ function Construcao() {
 
         <S.CtaWrapper>
           <S.CtaButton href="https://wa.me/5500000000000" target="_blank" rel="noopener noreferrer">
-            Solicitar Simulação Gratuita
+            {opcaoSelecionada === 'caixa' ? "Solicitar Simulação Gratuita" : "Fazer um Orçamento Personalizado"}
           </S.CtaButton>
         </S.CtaWrapper>
       </S.DiferenciaisSection>

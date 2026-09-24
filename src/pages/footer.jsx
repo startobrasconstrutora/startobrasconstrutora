@@ -81,7 +81,7 @@ const Footer = () => {
                 <Link to="/trabalheconosco" title="Faça parte do nosso time">Trabalhe Conosco</Link>
               </li>
               <li>
-                <Link to="/consultaobra" title="Área de acompanhamento">Consulte sua Obra</Link>
+                <Link to="/consultaobra" title="Área de acompanhamento">Área do Cliente</Link>
               </li>
             </S.FooterMenu>
           </S.Mapasite>

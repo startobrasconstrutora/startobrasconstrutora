@@ -15,7 +15,6 @@ import SocialBar from "./components/SocialBar.jsx"
 import Materia from './pages/Materia.jsx'
 import ObrasConcluidas from './pages/ObrasConcluidas.jsx'
 
-// Páginas de Serviços
 import Construcao from './pages/Construcao.jsx'
 import Reformas from './pages/Reformas.jsx'
 import Regularizacao from './pages/Regularizacao.jsx'
@@ -36,18 +35,13 @@ function App() {
           <Route path="/obra/:codigo" element={<ConsultaObra />} />
           <Route path="/materia/:id" element={<Materia />} />
           <Route path="/obras-concluidas" element={<ObrasConcluidas />} />
-
-          {/* Rotas de Serviços */}
+<Route path="/obras-andamento" element={<ObrasConcluidas />} />
+        
           <Route path="/servicos/construcao" element={<Construcao />} />
           <Route path="/servicos/reformas" element={<Reformas />} />
           <Route path="/servicos/regularizacao" element={<Regularizacao />} />
 
-          {/* Rotas de Obras e Imóveis */}
-          {/* <Route path="/obras/concluidas" element={<Subpagina />} /> */}
-          {/* <Route path="/imoveis/terrenos" element={<Subpagina />} /> */}
-          {/* <Route path="/imoveis/casas" element={<Subpagina />} /> */}
-
-          {/* Rotas Administrativas */}
+       
           <Route path="/Add" element={<Add />} />
           <Route path="/Admobras" element={<Admobras />} />
           <Route path="/subpagina" element={<Subpagina />} />
