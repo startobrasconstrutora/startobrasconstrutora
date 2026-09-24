@@ -41,14 +41,7 @@ function RotaProtegidaAdmin({ children }) {
 
   useEffect(() => {
     async function verificarPermissaoAdmin() {
-      // VERIFICAÇÃO DO PASSE MASTER: Se veio direto da senha master, libera na hora!
-      const bypassMaster = sessionStorage.getItem('master_bypass')
-      if (bypassMaster === 'true') {
-        setEAdmin(true)
-        setCarregando(false)
-        return
-      }
-
+      // Verifica a sessão do Supabase
       const { data: { session } } = await supabase.auth.getSession()
 
       if (!session) {
@@ -79,8 +72,7 @@ function RotaProtegidaAdmin({ children }) {
     )
   }
 
-  // Alterado de /admin-login para /admreg
-  return eAdmin ? children : <Navigate to="/admreg" replace />
+  return eAdmin ? children : <Navigate to="/admin-login" replace />
 }
 
 function App() {
