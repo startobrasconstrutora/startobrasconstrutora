@@ -112,6 +112,11 @@ const Footer = () => {
           <S.Mapasite>
             <S.FooterLabel>OBRAS E IMÓVEIS</S.FooterLabel>
             <S.FooterMenu>
+                  <li>
+                <Link to="/obras-andamento" title="Confira nossos projetos entregues">
+                  Obras em Andamento
+                </Link>
+              </li>
               <li>
                 <Link to="/obras-concluidas" title="Confira nossos projetos entregues">
                   Obras Concluídas
