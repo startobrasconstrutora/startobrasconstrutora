@@ -8,6 +8,8 @@ import heroImg from "../assets/img/capacete.jpg";
 export default function AdminResetarSenha() {
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false);
+  const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false);
   const navigate = useNavigate();
 
   async function handleRedefinirSenha(e) {
@@ -56,29 +58,75 @@ export default function AdminResetarSenha() {
           Crie uma nova palavra-passe segura para a sua conta de administrador da Start Obras.
         </S.FormDesc>
 
-        <S.StyledForm onSubmit={handleRedefinirSenha}>
+        <S.StyledForm onSubmit={handleRedefinirSenha} autoComplete="off">
           <S.InputGroup>
             <label>Nova Senha</label>
-            <input 
-              type="password" 
-              required 
-              minLength={6}
-              placeholder="Mínimo 6 caracteres"
-              value={novaSenha} 
-              onChange={(e) => setNovaSenha(e.target.value)} 
-            />
+            <div style={{ position: 'relative' }}>
+              <input 
+                type={mostrarNovaSenha ? "text" : "password"}
+                required 
+                minLength={6}
+                autoComplete="new-password"
+                data-lpignore="true"
+                placeholder="Mínimo 6 caracteres"
+                value={novaSenha} 
+                onChange={(e) => setNovaSenha(e.target.value)} 
+                style={{ width: '100%', paddingRight: '75px', boxSizing: 'border-box' }}
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarNovaSenha(!mostrarNovaSenha)}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  color: '#555'
+                }}
+              >
+                {mostrarNovaSenha ? 'Ocultar' : 'Mostrar'}
+              </button>
+            </div>
           </S.InputGroup>
 
           <S.InputGroup>
             <label>Confirme a Nova Senha</label>
-            <input 
-              type="password" 
-              required 
-              minLength={6}
-              placeholder="Repita a nova senha"
-              value={confirmarSenha} 
-              onChange={(e) => setConfirmarSenha(e.target.value)} 
-            />
+            <div style={{ position: 'relative' }}>
+              <input 
+                type={mostrarConfirmarSenha ? "text" : "password"} 
+                required 
+                minLength={6}
+                autoComplete="new-password"
+                data-lpignore="true"
+                placeholder="Repita a nova senha"
+                value={confirmarSenha} 
+                onChange={(e) => setConfirmarSenha(e.target.value)} 
+                style={{ width: '100%', paddingRight: '75px', boxSizing: 'border-box' }}
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  color: '#555'
+                }}
+              >
+                {mostrarConfirmarSenha ? 'Ocultar' : 'Mostrar'}
+              </button>
+            </div>
           </S.InputGroup>
 
           <S.SubmitButton type="submit">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { mascaraCPF, mascaraTelefone } from './mascaras';
 import { toastSuccess, toastError, showLoading, hideLoading } from '../utils/alert';
 import heroImg from "../assets/img/capacete.jpg";
 import * as S from './AuthColaboradores.styles';
@@ -10,47 +11,37 @@ export default function AuthColaboradores({ onLoginSucesso }) {
   const [modoCadastro, setModoCadastro] = useState(false);
   const [modoEsqueciSenha, setModoEsqueciSenha] = useState(false);
   
+  // Campos de Autenticação
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  
+  // Campos da Tabela de Colaboradores
   const [nome, setNome] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [dataNascimento, setDataNascimento] = useState('');
+
   const [mensagemSucesso, setMensagemSucesso] = useState('');
   const [erroLocal, setErroLocal] = useState('');
 
-  // Tratamento e tradução completa dos erros retornados pelo Supabase
+  function validarCPF(cpfFormatado) {
+    const cpfLimpo = cpfFormatado.replace(/\D/g, '');
+    return cpfLimpo.length === 11;
+  }
+
   function traduzirErroSupabase(mensagem) {
     if (!mensagem) return 'Erro ao processar a solicitação.';
-
     const msg = mensagem.toLowerCase();
 
-    if (msg.includes('invalid login credentials')) {
-      return 'E-mail ou senha incorretos.';
-    }
-    if (msg.includes('email not confirmed')) {
-      return 'Por favor, confirme seu e-mail para continuar.';
-    }
-    if (msg.includes('user not found')) {
-      return 'Usuário não encontrado.';
-    }
-    if (msg.includes('at least 6 characters') || msg.includes('password should be at least')) {
-      return 'A senha deve ter no mínimo 6 caracteres.';
-    }
-    if (msg.includes('rate limit exceeded') || msg.includes('too many requests')) {
-      return 'Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente novamente.';
-    }
-    if (msg.includes('is invalid') || msg.includes('unable to validate email address')) {
-      return 'Endereço de e-mail inválido. Utilize um e-mail válido.';
-    }
-    if (msg.includes('user already registered') || msg.includes('already exists')) {
-      return 'Este e-mail já está cadastrado. Tente fazer login.';
-    }
-    if (msg.includes('signup requires a valid password')) {
-      return 'O cadastro exige uma senha válida.';
-    }
-
+    if (msg.includes('invalid login credentials')) return 'E-mail ou senha incorretos.';
+    if (msg.includes('email not confirmed')) return 'Por favor, confirme seu e-mail para continuar.';
+    if (msg.includes('user not found')) return 'Usuário não encontrado.';
+    if (msg.includes('at least 6 characters')) return 'A senha deve ter no mínimo 6 caracteres.';
+    if (msg.includes('already registered') || msg.includes('already exists')) return 'Este e-mail já está cadastrado.';
+    
     return mensagem;
   }
 
-  // Função para envio de e-mail de redefinição de senha
   async function handleEsqueciSenha(e) {
     e.preventDefault();
     setMensagemSucesso('');
@@ -62,45 +53,67 @@ export default function AuthColaboradores({ onLoginSucesso }) {
     }
 
     try {
-      if (typeof showLoading === 'function') showLoading('Enviando e-mail...');
-
+      showLoading('Enviando e-mail...');
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: `${window.location.origin}/resetar-senha`,
       });
-
       if (error) throw error;
 
-      const msg = 'E-mail de recuperação enviado! Verifique sua caixa de entrada ou spam.';
+      const msg = 'E-mail de recuperação enviado! Verifique sua caixa de entrada.';
       setMensagemSucesso(msg);
-      if (typeof toastSuccess === 'function') toastSuccess(msg);
+      toastSuccess(msg);
     } catch (error) {
-      console.error('Erro ao solicitar recuperação:', error);
-      const mensagemTradução = traduzirErroSupabase(error.message || '');
-      setErroLocal(mensagemTradução);
-      if (typeof toastError === 'function') toastError(mensagemTradução);
+      const msgErro = traduzirErroSupabase(error.message);
+      setErroLocal(msgErro);
+      toastError(msgErro);
     } finally {
-      if (typeof hideLoading === 'function') hideLoading();
+      hideLoading();
     }
   }
 
-  // Função para Login / Cadastro
   async function handleAuth(e) {
     e.preventDefault();
     setMensagemSucesso('');
     setErroLocal('');
 
-    if (modoCadastro && senha.length < 6) {
-      const msg = 'A senha deve conter pelo menos 6 caracteres.';
-      setErroLocal(msg);
-      if (typeof toastError === 'function') toastError(msg);
-      return;
+    if (modoCadastro) {
+      if (!nome.trim()) {
+        toastError('Preencha o nome completo');
+        return;
+      }
+      if (!cpf.trim() || !validarCPF(cpf)) {
+        toastError('CPF inválido ou incompleto');
+        return;
+      }
+      if (!telefone.trim() || telefone.length < 14) {
+        toastError('Telefone inválido');
+        return;
+      }
+      if (senha.length < 6) {
+        toastError('A senha deve conter pelo menos 6 caracteres.');
+        return;
+      }
     }
 
     try {
-      if (typeof showLoading === 'function') showLoading(modoCadastro ? 'Criando conta...' : 'Entrando...');
+      showLoading(modoCadastro ? 'Criando conta...' : 'Entrando...');
 
       if (modoCadastro) {
-        const { data, error } = await supabase.auth.signUp({
+        // 1. Verificar se o CPF já existe na tabela colaboradores antes de criar a auth
+        const { data: cpfExistente } = await supabase
+          .from('colaboradores')
+          .select('id')
+          .eq('cpf', cpf)
+          .maybeSingle();
+
+        if (cpfExistente) {
+          hideLoading();
+          toastError('Este CPF já está cadastrado no sistema.');
+          return;
+        }
+
+        // 2. Criar utilizador no Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
           email: email.trim(),
           password: senha,
           options: {
@@ -108,23 +121,54 @@ export default function AuthColaboradores({ onLoginSucesso }) {
           }
         });
 
-        if (error) throw error;
+        if (authError) throw authError;
 
-        if (data?.session || data?.user) {
-          const msg = 'Conta criada com sucesso! Redirecionando...';
-          setMensagemSucesso(msg);
+        if (authData?.user) {
+          const userId = authData.user.id;
 
-          if (typeof toastSuccess === 'function') toastSuccess('Conta criada com sucesso!');
-          if (onLoginSucesso && data.session) onLoginSucesso(data.session);
+          // 3. Inserir na tabela UNIFICADA `colaboradores`
+          const { error: colabError } = await supabase
+            .from('colaboradores')
+            .insert([
+              {
+                id: userId,
+                nome_completo: nome.trim(),
+                cpf: cpf,
+                telefone: telefone,
+                email: email.trim(),
+                data_nascimento: dataNascimento || null
+              }
+            ]);
+
+          if (colabError) {
+            console.error('Erro ao inserir colaborador:', colabError);
+            throw new Error('Erro ao salvar os dados cadastrais do colaborador.');
+          }
+
+          // 4. BLINDAGEM DE PERFIL: Forçar explicitamente o role para 'colaborador' (nunca admin)
+          const { error: profileError } = await supabase.from('profiles').upsert([
+            { 
+              id: userId, 
+              email: email.trim(), 
+              nome: nome.trim(), 
+              role: 'colaborador' // Garantia estrita de que é colaborador comum
+            }
+          ]);
+
+          if (profileError) {
+            console.error('Erro ao criar perfil:', profileError);
+          }
+
+          toastSuccess('Conta e cadastro criados com sucesso!');
+          if (onLoginSucesso && authData.session) onLoginSucesso(authData.session);
 
           setTimeout(() => {
             navigate('/area-colaborador');
-          }, 1800);
-        } else {
-          setErroLocal('Não foi possível concluir o cadastro.');
+          }, 1500);
         }
 
       } else {
+        // LOGIN DE COLABORADOR
         const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password: senha,
@@ -132,18 +176,42 @@ export default function AuthColaboradores({ onLoginSucesso }) {
 
         if (error) throw error;
 
-        if (typeof toastSuccess === 'function') toastSuccess('Login realizado com sucesso!');
+        // VALIDAÇÃO DE SEGURANÇA: Verificar rigorosamente o perfil na base de dados
+        const { data: profile, error: profileErr } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileErr || !profile) {
+          await supabase.auth.signOut();
+          throw new Error('Erro ao verificar permissões de acesso do usuário.');
+        }
+
+        // Se por acaso a conta for admin, proíbe a entrada por aqui
+        if (profile.role === 'admin') {
+          await supabase.auth.signOut();
+          throw new Error('Acesso negado. Administradores devem usar o painel administrativo.');
+        }
+
+        // Garante que apenas quem tem role 'colaborador' prossegue
+        if (profile.role !== 'colaborador') {
+          await supabase.auth.signOut();
+          throw new Error('Acesso restrito a colaboradores.');
+        }
+
+        toastSuccess('Login realizado com sucesso!');
         if (onLoginSucesso) onLoginSucesso(data.session);
-        
         navigate('/area-colaborador');
       }
+
     } catch (error) {
       console.error('Erro na autenticação:', error);
-      const mensagemTradução = traduzirErroSupabase(error.message || '');
-      setErroLocal(mensagemTradução);
-      if (typeof toastError === 'function') toastError(mensagemTradução);
+      const msgErro = traduzirErroSupabase(error.message);
+      setErroLocal(msgErro);
+      toastError(msgErro);
     } finally {
-      if (typeof hideLoading === 'function') hideLoading();
+      hideLoading();
     }
   }
 
@@ -161,48 +229,27 @@ export default function AuthColaboradores({ onLoginSucesso }) {
           {modoEsqueciSenha
             ? 'Digite seu e-mail para receber as instruções de redefinição de senha.'
             : modoCadastro
-            ? 'Preencha os dados abaixo para solicitar o seu cadastro de colaborador.'
-            : 'Informe seu e-mail e senha para acessar o painel restrito.'}
+            ? 'Preencha seus dados para criar sua conta de colaborador.'
+            : 'Informe seu e-mail e senha para acessar o portal.'}
         </S.Subtitulo>
 
         {mensagemSucesso && (
-          <div style={{
-            background: '#e8f5e9',
-            color: '#2e7d32',
-            padding: '14px 18px',
-            borderRadius: '8px',
-            marginBottom: '20px',
-            fontSize: '14px',
-            border: '1px solid #c8e6c9',
-            textAlign: 'center',
-            fontWeight: '600'
-          }}>
+          <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '14px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center', fontWeight: '600' }}>
             {mensagemSucesso}
           </div>
         )}
 
         {erroLocal && (
-          <div style={{
-            background: '#ffebee',
-            color: '#c62828',
-            padding: '14px 18px',
-            borderRadius: '8px',
-            marginBottom: '20px',
-            fontSize: '14px',
-            border: '1px solid #ffcdd2',
-            textAlign: 'center'
-          }}>
+          <div style={{ background: '#ffebee', color: '#c62828', padding: '14px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center' }}>
             {erroLocal}
           </div>
         )}
 
         {modoEsqueciSenha ? (
-          /* FORMULÁRIO DE ESQUECI MINHA SENHA */
           <S.Formulario onSubmit={handleEsqueciSenha}>
             <div>
-              <S.Label htmlFor="emailEsqueci">E-mail Cadastrado</S.Label>
+              <S.Label>E-mail Cadastrado</S.Label>
               <S.Input
-                id="emailEsqueci"
                 type="email"
                 required
                 placeholder="seuemail@exemplo.com"
@@ -210,45 +257,66 @@ export default function AuthColaboradores({ onLoginSucesso }) {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-
-            <S.Botao type="submit">
-              Enviar link de redefinição
-            </S.Botao>
-
+            <S.Botao type="submit">Enviar link de redefinição</S.Botao>
             <S.AcoesSecundarias>
-              <S.BotaoLink
-                type="button"
-                onClick={() => {
-                  setModoEsqueciSenha(false);
-                  setMensagemSucesso('');
-                  setErroLocal('');
-                }}
-              >
+              <S.BotaoLink type="button" onClick={() => { setModoEsqueciSenha(false); setErroLocal(''); }}>
                 ‹ Voltar para o login
               </S.BotaoLink>
             </S.AcoesSecundarias>
           </S.Formulario>
         ) : (
-          /* FORMULÁRIO DE LOGIN E CADASTRO */
           <S.Formulario onSubmit={handleAuth}>
             {modoCadastro && (
-              <div>
-                <S.Label htmlFor="nomeColaborador">Nome Completo</S.Label>
-                <S.Input
-                  id="nomeColaborador"
-                  type="text"
-                  required
-                  placeholder="Seu nome completo"
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                />
-              </div>
+              <>
+                <div>
+                  <S.Label>Nome Completo</S.Label>
+                  <S.Input
+                    type="text"
+                    required
+                    placeholder="Seu nome completo"
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <S.Label>CPF</S.Label>
+                  <S.Input
+                    type="text"
+                    required
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                    value={cpf}
+                    onChange={(e) => setCpf(mascaraCPF(e.target.value))}
+                  />
+                </div>
+
+                <div>
+                  <S.Label>Telefone</S.Label>
+                  <S.Input
+                    type="text"
+                    required
+                    placeholder="(00) 00000-0000"
+                    maxLength={15}
+                    value={telefone}
+                    onChange={(e) => setTelefone(mascaraTelefone(e.target.value))}
+                  />
+                </div>
+
+                <div>
+                  <S.Label>Data de Nascimento (opcional)</S.Label>
+                  <S.Input
+                    type="date"
+                    value={dataNascimento}
+                    onChange={(e) => setDataNascimento(e.target.value)}
+                  />
+                </div>
+              </>
             )}
 
             <div>
-              <S.Label htmlFor="emailColaborador">E-mail</S.Label>
+              <S.Label>E-mail</S.Label>
               <S.Input
-                id="emailColaborador"
                 type="email"
                 required
                 placeholder="seuemail@exemplo.com"
@@ -258,9 +326,8 @@ export default function AuthColaboradores({ onLoginSucesso }) {
             </div>
 
             <div>
-              <S.Label htmlFor="senhaColaborador">Senha</S.Label>
+              <S.Label>Senha</S.Label>
               <S.Input
-                id="senhaColaborador"
                 type="password"
                 required
                 minLength={6}
@@ -271,7 +338,7 @@ export default function AuthColaboradores({ onLoginSucesso }) {
             </div>
 
             <S.Botao type="submit">
-              {modoCadastro ? 'Cadastrar' : 'Entrar'}
+              {modoCadastro ? 'Concluir Cadastro' : 'Entrar'}
             </S.Botao>
 
             <S.AcoesSecundarias>
@@ -279,21 +346,16 @@ export default function AuthColaboradores({ onLoginSucesso }) {
                 type="button"
                 onClick={() => {
                   setModoCadastro(!modoCadastro);
-                  setMensagemSucesso('');
                   setErroLocal('');
                 }}
               >
-                {modoCadastro ? '‹ Já tem conta? Faça login' : 'Criar nova conta'}
+                {modoCadastro ? '‹ Já tem conta? Faça login' : 'Criar nova conta de colaborador'}
               </S.BotaoLink>
 
               {!modoCadastro && (
                 <S.BotaoLink
                   type="button"
-                  onClick={() => {
-                    setModoEsqueciSenha(true);
-                    setMensagemSucesso('');
-                    setErroLocal('');
-                  }}
+                  onClick={() => { setModoEsqueciSenha(true); setErroLocal(''); }}
                 >
                   Esqueci minha senha
                 </S.BotaoLink>

@@ -27,38 +27,52 @@ import Regularizacao from './pages/Regularizacao.jsx'
 import AuthColaboradores from './pages/AuthColaboradores.jsx'
 import ResetarSenha from './pages/ResetarSenha.jsx'
 import AreaColaborador from './pages/AreaColaborador.jsx'
+import RotaProtegidaColaborador from './components/RotaProtegidaColaborador.jsx'
 
 // Importação das rotas da Área de Administradores
 import AuthAdmins from './pages/AuthAdmins.jsx'
 import AdminResetarSenha from './pages/AdminResetarSenha.jsx'
 import CadastroAdminSecreto from "./pages/CadastroAdminSecreto.jsx"
 import GerenciarAdmins from "./pages/GerenciarAdmins.jsx"
+import RotaProtegidaAdminAuth from './components/RotaProtegidaAdmin.jsx'
 
-// Componente para proteger rotas exclusivas de Administradores
+// ========================================
+// COMPONENTE: Proteção de Rotas de Admin
+// ========================================
+/**
+ * Protege rotas exclusivas de Administradores
+ * Verifica se o usuário está logado e se tem role 'admin'
+ */
 function RotaProtegidaAdmin({ children }) {
   const [carregando, setCarregando] = useState(true)
   const [eAdmin, setEAdmin] = useState(false)
 
   useEffect(() => {
     async function verificarPermissaoAdmin() {
-      // Verifica a sessão do Supabase
-      const { data: { session } } = await supabase.auth.getSession()
+      try {
+        // Verifica a sessão do Supabase
+        const { data: { session } } = await supabase.auth.getSession()
 
-      if (!session) {
+        if (!session) {
+          setEAdmin(false)
+          setCarregando(false)
+          return
+        }
+
+        // Consulta a role na tabela profiles no Supabase
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single()
+
+        setEAdmin(profile?.role === 'admin')
+        setCarregando(false)
+      } catch (error) {
+        console.error('Erro ao verificar permissão de admin:', error)
         setEAdmin(false)
         setCarregando(false)
-        return
       }
-
-      // Consulta a role na tabela profiles no Supabase
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single()
-
-      setEAdmin(profile?.role === 'admin')
-      setCarregando(false)
     }
 
     verificarPermissaoAdmin()
@@ -66,7 +80,15 @@ function RotaProtegidaAdmin({ children }) {
 
   if (carregando) {
     return (
-      <div style={{ padding: '100px', textAlign: 'center', fontWeight: 'bold' }}>
+      <div style={{ 
+        padding: '100px', 
+        textAlign: 'center', 
+        fontWeight: 'bold',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
         Verificando permissões de acesso...
       </div>
     )
@@ -75,6 +97,70 @@ function RotaProtegidaAdmin({ children }) {
   return eAdmin ? children : <Navigate to="/admin-login" replace />
 }
 
+// ========================================
+// COMPONENTE: Proteção de Rotas de Colaborador
+// ========================================
+/**
+ * Protege rotas exclusivas de Colaboradores
+ * Verifica se o usuário está logado e se tem role 'colaborador'
+ */
+function RotaProtegidaColaboradorAutenticado({ children }) {
+  const [carregando, setCarregando] = useState(true)
+  const [eColaborador, setEColaborador] = useState(false)
+
+  useEffect(() => {
+    async function verificarPermissaoColaborador() {
+      try {
+        // Verifica a sessão do Supabase
+        const { data: { session } } = await supabase.auth.getSession()
+
+        if (!session) {
+          setEColaborador(false)
+          setCarregando(false)
+          return
+        }
+
+        // Consulta a role na tabela profiles no Supabase
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single()
+
+        setEColaborador(profile?.role === 'colaborador')
+        setCarregando(false)
+      } catch (error) {
+        console.error('Erro ao verificar permissão de colaborador:', error)
+        setEColaborador(false)
+        setCarregando(false)
+      }
+    }
+
+    verificarPermissaoColaborador()
+  }, [])
+
+  if (carregando) {
+    return (
+      <div style={{ 
+        padding: '100px', 
+        textAlign: 'center', 
+        fontWeight: 'bold',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        Verificando acesso...
+      </div>
+    )
+  }
+
+  return eColaborador ? children : <Navigate to="/colaboradores" replace />
+}
+
+// ========================================
+// APLICAÇÃO PRINCIPAL
+// ========================================
 function App() {
   return (
     <BrowserRouter>
@@ -83,6 +169,7 @@ function App() {
         <MenuPrincipal />
         <SocialBar />
         <Routes>
+          {/* Rotas Públicas */}
           <Route path="/" element={<Home />} />
           <Route path="/Quemsomos" element={<Quemsomos />} />
           <Route path="/Contato" element={<Contato />} />
@@ -97,17 +184,54 @@ function App() {
           <Route path="/servicos/reformas" element={<Reformas />} />
           <Route path="/servicos/regularizacao" element={<Regularizacao />} />
 
-          {/* Rotas de Autenticação e Área dos Colaboradores */}
-          <Route path="/colaboradores" element={<AuthColaboradores />} />
+          {/* ================================================ */}
+          {/* ROTAS DE AUTENTICAÇÃO E ÁREA DOS COLABORADORES */}
+          {/* ================================================ */}
+          {/* 
+            A rota /colaboradores agora está protegida por RotaProtegidaColaborador
+            Isso impede que um admin logado faça login como colaborador
+          */}
+          <Route 
+            path="/colaboradores" 
+            element={
+              <RotaProtegidaColaborador>
+                <AuthColaboradores />
+              </RotaProtegidaColaborador>
+            } 
+          />
+          
           <Route path="/resetar-senha" element={<ResetarSenha />} />
-          <Route path="/area-colaborador" element={<AreaColaborador />} />
+          
+          {/* Área do Colaborador é protegida e só acessível para colaboradores */}
+          <Route 
+            path="/area-colaborador" 
+            element={
+              <RotaProtegidaColaboradorAutenticado>
+                <AreaColaborador />
+              </RotaProtegidaColaboradorAutenticado>
+            } 
+          />
 
-          {/* Rotas de Autenticação e Painel dos Administradores */}
-          <Route path="/admin-login" element={<AuthAdmins />} />
+          {/* ================================================ */}
+          {/* ROTAS DE AUTENTICAÇÃO E PAINEL DOS ADMINISTRADORES */}
+          {/* ================================================ */}
+          {/* 
+            A rota /admin-login agora está protegida por RotaProtegidaAdminAuth
+            Isso impede que um colaborador logado faça login como admin
+          */}
+          <Route 
+            path="/admin-login" 
+            element={
+              <RotaProtegidaAdminAuth>
+                <AuthAdmins />
+              </RotaProtegidaAdminAuth>
+            } 
+          />
           <Route path="/admin-resetar-senha" element={<AdminResetarSenha />} />
           
           {/* Rotas Secretas / Restritas de Admin */}
           <Route path="/admreg" element={<CadastroAdminSecreto />} />
+          
           <Route 
             path="/gerenciar-admins" 
             element={
@@ -125,6 +249,7 @@ function App() {
               </RotaProtegidaAdmin>
             } 
           />
+          
           <Route 
             path="/Admobras" 
             element={
@@ -134,7 +259,11 @@ function App() {
             } 
           />
 
+          {/* Rota Genérica */}
           <Route path="/subpagina" element={<Subpagina />} />
+
+          {/* Rota 404 - Redireciona para Home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Footer />
       </div>

@@ -11,6 +11,7 @@ export default function AuthAdmins({ onLoginSucesso }) {
   
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [mensagemSucesso, setMensagemSucesso] = useState('');
   const [erroLocal, setErroLocal] = useState('');
 
@@ -54,7 +55,7 @@ export default function AuthAdmins({ onLoginSucesso }) {
     }
   }
 
-  // Apenas Login de Administrador com validação da tabela profiles
+  // Login de Administrador com validação CRÍTICA da tabela profiles
   async function handleLogin(e) {
     e.preventDefault();
     setMensagemSucesso('');
@@ -70,7 +71,7 @@ export default function AuthAdmins({ onLoginSucesso }) {
 
       if (error) throw error;
 
-      // Validação se o perfil no banco é realmente Admin
+      // ⭐ VALIDAÇÃO CRÍTICA: Verifica se o perfil no banco é realmente Admin
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
@@ -78,8 +79,14 @@ export default function AuthAdmins({ onLoginSucesso }) {
         .single();
 
       if (profileError || profile?.role !== 'admin') {
+        // Se não é admin, faz logout e bloqueia o acesso
         await supabase.auth.signOut();
-        throw new Error('Acesso negado: Este usuário não possui privilégios de administrador.');
+        
+        const msgErro = profile?.role === 'colaborador'
+          ? 'Acesso negado. Colaboradores devem usar a área do colaborador em /colaboradores'
+          : 'Acesso negado: Este usuário não possui privilégios de administrador.';
+        
+        throw new Error(msgErro);
       }
 
       if (typeof toastSuccess === 'function') toastSuccess('Login de Administrador realizado!');
@@ -192,14 +199,35 @@ export default function AuthAdmins({ onLoginSucesso }) {
 
             <div>
               <S.Label htmlFor="senhaAdmin">Senha</S.Label>
-              <S.Input
-                id="senhaAdmin"
-                type="password"
-                required
-                placeholder="Sua senha"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-              />
+              <div style={{ position: 'relative' }}>
+                <S.Input
+                  id="senhaAdmin"
+                  type={mostrarSenha ? "text" : "password"}
+                  required
+                  placeholder="Sua senha"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  style={{ width: '100%', paddingRight: '75px', boxSizing: 'border-box' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarSenha(!mostrarSenha)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    color: '#555'
+                  }}
+                >
+                  {mostrarSenha ? 'Ocultar' : 'Mostrar'}
+                </button>
+              </div>
             </div>
 
             <S.Botao type="submit">
