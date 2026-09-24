@@ -9,7 +9,7 @@ const Footer = () => {
   return (
     <S.Container>
       <S.FooterEmbaixo>
-        {}
+        {/* Endereço e Logótipo */}
         <S.Endereco>
           <S.LogoFooter>
             <Link to="/" aria-label="Voltar para a página inicial da Start Obras">
@@ -62,9 +62,9 @@ const Footer = () => {
           </S.Social>
         </S.Endereco>
 
-        {}
+        {/* Links do Rodapé */}
         <S.FooterLinks>
-          {}
+          {/* Navegação */}
           <S.Mapasite>
             <S.FooterLabel>NAVEGAÇÃO</S.FooterLabel>
             <S.FooterMenu>
@@ -86,7 +86,7 @@ const Footer = () => {
             </S.FooterMenu>
           </S.Mapasite>
 
-          {}
+          {/* Serviços */}
           <S.Mapasite>
             <S.FooterLabel>SERVIÇOS</S.FooterLabel>
             <S.FooterMenu>
@@ -108,11 +108,11 @@ const Footer = () => {
             </S.FooterMenu>
           </S.Mapasite>
 
-          {}
+          {/* Obras */}
           <S.Mapasite>
             <S.FooterLabel>OBRAS E IMÓVEIS</S.FooterLabel>
             <S.FooterMenu>
-                  <li>
+              <li>
                 <Link to="/obras-andamento" title="Confira nossos projetos entregues">
                   Obras em Andamento
                 </Link>
@@ -122,14 +122,18 @@ const Footer = () => {
                   Obras Concluídas
                 </Link>
               </li>
-           
             </S.FooterMenu>
           </S.Mapasite>
 
-          {}
+          {/* Área Restrita */}
           <S.Mapasite>
             <S.FooterLabel>ÁREA RESTRITA</S.FooterLabel>
             <S.FooterMenu>
+              <li>
+                <Link to="/colaboradores" title="Acesso exclusivo para colaboradores">
+                  Área do Colaborador
+                </Link>
+              </li>
               <li>
                 <Link to="/Add" title="Acessar painel administrativo">
                   Painel ADM

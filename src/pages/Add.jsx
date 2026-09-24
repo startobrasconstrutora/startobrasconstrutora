@@ -1,5 +1,7 @@
 import * as S from './Add.styles.jsx'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabaseClient'
 
 import heroImg from "../assets/img/capacete.jpg"
 import AddObras from './Addobras.jsx'
@@ -14,8 +16,72 @@ import AddServicos from './AddServicos.jsx'
 import AdmServicos from './AdmServicos.jsx'
 
 function Add() {
+  const navigate = useNavigate()
   const [tela, setTela] = useState('')
+  const [usuario, setUsuario] = useState(null)
   const conteudoRef = useRef(null)
+
+  // Estados para alteração de senha
+  const [exibirMudarSenha, setExibirMudarSenha] = useState(false)
+  const [novaSenha, setNovaSenha] = useState('')
+  const [confirmarSenha, setConfirmarSenha] = useState('')
+  const [statusSenha, setStatusSenha] = useState({ tipo: '', mensagem: '' })
+  const [enviandoSenha, setEnviandoSenha] = useState(false)
+
+  useEffect(() => {
+    async function carregarUsuario() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        setUsuario(session.user)
+      }
+    }
+    carregarUsuario()
+  }, [])
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    navigate('/admin-login')
+  }
+
+  async function handleAlterarSenha(e) {
+    e.preventDefault()
+    setStatusSenha({ tipo: '', mensagem: '' })
+
+    if (!novaSenha || !confirmarSenha) {
+      setStatusSenha({ tipo: 'erro', mensagem: 'Preencha todos os campos.' })
+      return
+    }
+
+    if (novaSenha !== confirmarSenha) {
+      setStatusSenha({ tipo: 'erro', mensagem: 'As senhas não coincidem.' })
+      return
+    }
+
+    if (novaSenha.length < 6) {
+      setStatusSenha({ tipo: 'erro', mensagem: 'A senha deve ter pelo menos 6 caracteres.' })
+      return
+    }
+
+    setEnviandoSenha(true)
+
+    const { error } = await supabase.auth.updateUser({
+      password: novaSenha
+    })
+
+    setEnviandoSenha(false)
+
+    if (error) {
+      setStatusSenha({ tipo: 'erro', mensagem: 'Erro ao alterar a senha: ' + error.message })
+    } else {
+      setStatusSenha({ tipo: 'sucesso', mensagem: 'Senha alterada com sucesso!' })
+      setNovaSenha('')
+      setConfirmarSenha('')
+      setTimeout(() => {
+        setExibirMudarSenha(false)
+        setStatusSenha({ tipo: '', mensagem: '' })
+      }, 2000)
+    }
+  }
 
   function mudarTela(novaTela) {
     setTela(novaTela)
@@ -59,6 +125,57 @@ function Add() {
         </S.HeroImage>
         <S.HeroBadge>PAINEL ADM</S.HeroBadge>
       </S.HeroWrapper>
+
+      {/* Barra de identificação e ações da conta */}
+      {usuario && (
+        <S.UserHeaderContainer>
+          <S.UserHeaderBar>
+            <S.UserInfo>
+              <span className="label">Conectado como:</span>
+              <span className="email">{usuario.email}</span>
+            </S.UserInfo>
+
+            <S.UserActions>
+              <S.PasswordButton onClick={() => setExibirMudarSenha(!exibirMudarSenha)}>
+                🔑 {exibirMudarSenha ? 'CANCELAR' : 'ALTERAR SENHA'}
+              </S.PasswordButton>
+              <S.LogoutButton onClick={handleLogout}>
+                🚪 SAIR
+              </S.LogoutButton>
+            </S.UserActions>
+          </S.UserHeaderBar>
+
+          {/* Formulário Retrátil para Alteração de Senha */}
+          {exibirMudarSenha && (
+            <S.PasswordForm onSubmit={handleAlterarSenha}>
+              <S.PasswordFormTitle>Alterar Senha do Administrador</S.PasswordFormTitle>
+              <S.InputGroup>
+                <input
+                  type="password"
+                  placeholder="Nova senha (mínimo 6 caracteres)"
+                  value={novaSenha}
+                  onChange={(e) => setNovaSenha(e.target.value)}
+                />
+                <input
+                  type="password"
+                  placeholder="Confirme a nova senha"
+                  value={confirmarSenha}
+                  onChange={(e) => setConfirmarSenha(e.target.value)}
+                />
+                <button type="submit" disabled={enviandoSenha}>
+                  {enviandoSenha ? 'SALVANDO...' : 'SALVAR SENHA'}
+                </button>
+              </S.InputGroup>
+
+              {statusSenha.mensagem && (
+                <S.StatusMessage $tipo={statusSenha.tipo}>
+                  {statusSenha.mensagem}
+                </S.StatusMessage>
+              )}
+            </S.PasswordForm>
+          )}
+        </S.UserHeaderContainer>
+      )}
 
       <S.IntroSection>
         <S.IntroContent>

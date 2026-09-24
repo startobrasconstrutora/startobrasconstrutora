@@ -1,4 +1,7 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { supabase } from './supabaseClient'
+
 import './assets/globalstyle.css'
 import Home from './pages/home.jsx'
 import MenuPrincipal from './pages/menu.jsx'
@@ -20,6 +23,56 @@ import Construcao from './pages/Construcao.jsx'
 import Reformas from './pages/Reformas.jsx'
 import Regularizacao from './pages/Regularizacao.jsx'
 
+// Importação das rotas da Área do Colaborador
+import AuthColaboradores from './pages/AuthColaboradores.jsx'
+import ResetarSenha from './pages/ResetarSenha.jsx'
+import AreaColaborador from './pages/AreaColaborador.jsx'
+
+// Importação das rotas da Área de Administradores
+import AuthAdmins from './pages/AuthAdmins.jsx'
+import AdminResetarSenha from './pages/AdminResetarSenha.jsx' // <--- Certifique-se de que o arquivo existe nesta pasta
+import CadastroAdminSecreto from "./pages/CadastroAdminSecreto.jsx"
+
+// Componente para proteger rotas exclusivas de Administradores
+function RotaProtegidaAdmin({ children }) {
+  const [carregando, setCarregando] = useState(true)
+  const [eAdmin, setEAdmin] = useState(false)
+
+  useEffect(() => {
+    async function verificarPermissaoAdmin() {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session) {
+        setEAdmin(false)
+        setCarregando(false)
+        return
+      }
+
+      // Consulta a role na tabela profiles no Supabase
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
+
+      setEAdmin(profile?.role === 'admin')
+      setCarregando(false)
+    }
+
+    verificarPermissaoAdmin()
+  }, [])
+
+  if (carregando) {
+    return (
+      <div style={{ padding: '100px', textAlign: 'center', fontWeight: 'bold' }}>
+        Verificando permissões de acesso...
+      </div>
+    )
+  }
+
+  return eAdmin ? children : <Navigate to="/admin-login" replace />
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -36,15 +89,41 @@ function App() {
           <Route path="/obra/:codigo" element={<ConsultaObra />} />
           <Route path="/materia/:id" element={<Materia />} />
           <Route path="/obras-concluidas" element={<ObrasConcluidas />} />
-<Route path="/obras-andamento" element={<ObrasAndamento />} />
+          <Route path="/obras-andamento" element={<ObrasAndamento />} />
         
           <Route path="/servicos/construcao" element={<Construcao />} />
           <Route path="/servicos/reformas" element={<Reformas />} />
           <Route path="/servicos/regularizacao" element={<Regularizacao />} />
 
-       
-          <Route path="/Add" element={<Add />} />
-          <Route path="/Admobras" element={<Admobras />} />
+          {/* Rotas de Autenticação e Área dos Colaboradores */}
+          <Route path="/colaboradores" element={<AuthColaboradores />} />
+          <Route path="/resetar-senha" element={<ResetarSenha />} />
+          <Route path="/area-colaborador" element={<AreaColaborador />} />
+
+          {/* Rotas de Autenticação e Painel dos Administradores */}
+          <Route path="/admin-login" element={<AuthAdmins />} />
+          <Route path="/admin-resetar-senha" element={<AdminResetarSenha />} /> {/* <--- Adicionado aqui */}
+          
+          {/* Rota Oculta de Cadastro para Administradores */}
+          <Route path="/secret-admin-register-start2026" element={<CadastroAdminSecreto />} />
+
+          <Route 
+            path="/Add" 
+            element={
+              <RotaProtegidaAdmin>
+                <Add />
+              </RotaProtegidaAdmin>
+            } 
+          />
+          <Route 
+            path="/Admobras" 
+            element={
+              <RotaProtegidaAdmin>
+                <Admobras />
+              </RotaProtegidaAdmin>
+            } 
+          />
+
           <Route path="/subpagina" element={<Subpagina />} />
         </Routes>
         <Footer />
