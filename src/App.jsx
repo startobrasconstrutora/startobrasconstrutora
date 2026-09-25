@@ -34,14 +34,13 @@ import AuthAdmins from './pages/AuthAdmins.jsx'
 import AdminResetarSenha from './pages/AdminResetarSenha.jsx'
 import CadastroAdminSecreto from "./pages/CadastroAdminSecreto.jsx"
 import GerenciarAdmins from "./pages/GerenciarAdmins.jsx"
-import RotaProtegidaAdminAuth from './components/RotaProtegidaAdmin.jsx'
 
 // ========================================
-// COMPONENTE: Proteção de Rotas de Admin
+// COMPONENTE: Proteção de Painéis de Admin
 // ========================================
 /**
- * Protege rotas exclusivas de Administradores
- * Verifica se o usuário está logado e se tem role 'admin'
+ * Protege telas restritas do painel (gerenciamento, cadastros e obras)
+ * Verifica se o usuário está logado e se possui role 'admin'
  */
 function RotaProtegidaAdmin({ children }) {
   const [carregando, setCarregando] = useState(true)
@@ -50,7 +49,6 @@ function RotaProtegidaAdmin({ children }) {
   useEffect(() => {
     async function verificarPermissaoAdmin() {
       try {
-        // Verifica a sessão do Supabase
         const { data: { session } } = await supabase.auth.getSession()
 
         if (!session) {
@@ -59,7 +57,6 @@ function RotaProtegidaAdmin({ children }) {
           return
         }
 
-        // Consulta a role na tabela profiles no Supabase
         const { data: profile } = await supabase
           .from('profiles')
           .select('role')
@@ -98,67 +95,6 @@ function RotaProtegidaAdmin({ children }) {
 }
 
 // ========================================
-// COMPONENTE: Proteção de Rotas de Colaborador
-// ========================================
-/**
- * Protege rotas exclusivas de Colaboradores
- * Verifica se o usuário está logado e se tem role 'colaborador'
- */
-function RotaProtegidaColaboradorAutenticado({ children }) {
-  const [carregando, setCarregando] = useState(true)
-  const [eColaborador, setEColaborador] = useState(false)
-
-  useEffect(() => {
-    async function verificarPermissaoColaborador() {
-      try {
-        // Verifica a sessão do Supabase
-        const { data: { session } } = await supabase.auth.getSession()
-
-        if (!session) {
-          setEColaborador(false)
-          setCarregando(false)
-          return
-        }
-
-        // Consulta a role na tabela profiles no Supabase
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single()
-
-        setEColaborador(profile?.role === 'colaborador')
-        setCarregando(false)
-      } catch (error) {
-        console.error('Erro ao verificar permissão de colaborador:', error)
-        setEColaborador(false)
-        setCarregando(false)
-      }
-    }
-
-    verificarPermissaoColaborador()
-  }, [])
-
-  if (carregando) {
-    return (
-      <div style={{ 
-        padding: '100px', 
-        textAlign: 'center', 
-        fontWeight: 'bold',
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        Verificando acesso...
-      </div>
-    )
-  }
-
-  return eColaborador ? children : <Navigate to="/colaboradores" replace />
-}
-
-// ========================================
 // APLICAÇÃO PRINCIPAL
 // ========================================
 function App() {
@@ -185,12 +121,8 @@ function App() {
           <Route path="/servicos/regularizacao" element={<Regularizacao />} />
 
           {/* ================================================ */}
-          {/* ROTAS DE AUTENTICAÇÃO E ÁREA DOS COLABORADORES */}
+          {/* ROTAS DE AUTENTICAÇÃO E ÁREA DOS COLABORADORES   */}
           {/* ================================================ */}
-          {/* 
-            A rota /colaboradores agora está protegida por RotaProtegidaColaborador
-            Isso impede que um admin logado faça login como colaborador
-          */}
           <Route 
             path="/colaboradores" 
             element={
@@ -199,39 +131,22 @@ function App() {
               </RotaProtegidaColaborador>
             } 
           />
-          
           <Route path="/resetar-senha" element={<ResetarSenha />} />
           
-          {/* Área do Colaborador é protegida e só acessível para colaboradores */}
-          <Route 
-            path="/area-colaborador" 
-            element={
-              <RotaProtegidaColaboradorAutenticado>
-                <AreaColaborador />
-              </RotaProtegidaColaboradorAutenticado>
-            } 
-          />
+          {/* Rota da Área do Colaborador sem restrições/proteções */}
+          <Route path="/area-colaborador" element={<AreaColaborador />} />
 
           {/* ================================================ */}
-          {/* ROTAS DE AUTENTICAÇÃO E PAINEL DOS ADMINISTRADORES */}
+          {/* ROTAS DE AUTENTICAÇÃO DE ADMINISTRADORES (SEM PROTEÇÃO) */}
           {/* ================================================ */}
-          {/* 
-            A rota /admin-login agora está protegida por RotaProtegidaAdminAuth
-            Isso impede que um colaborador logado faça login como admin
-          */}
-          <Route 
-            path="/admin-login" 
-            element={
-              <RotaProtegidaAdminAuth>
-                <AuthAdmins />
-              </RotaProtegidaAdminAuth>
-            } 
-          />
+          <Route path="/admin-login" element={<AuthAdmins />} />
+          <Route path="/Admin" element={<AuthAdmins />} />
           <Route path="/admin-resetar-senha" element={<AdminResetarSenha />} />
-          
-          {/* Rotas Secretas / Restritas de Admin */}
           <Route path="/admreg" element={<CadastroAdminSecreto />} />
-          
+
+          {/* ================================================ */}
+          {/* PAINEL INTERNO DE ADMINISTRAÇÃO (PROTEGIDOS)     */}
+          {/* ================================================ */}
           <Route 
             path="/gerenciar-admins" 
             element={
@@ -249,7 +164,7 @@ function App() {
               </RotaProtegidaAdmin>
             } 
           />
-          
+
           <Route 
             path="/Admobras" 
             element={

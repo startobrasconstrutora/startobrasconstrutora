@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 export const Page = styled.main`
   display: flex;
@@ -55,6 +55,76 @@ export const HeroBadge = styled.div`
   white-space: nowrap;
 `;
 
+export const UserHeaderContainer = styled.div`
+  width: min(1200px, 92%);
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+export const UserHeaderBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1.2rem;
+  background: #f9f8f6;
+  border: 1px solid #e6e3da;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 0.8rem;
+    text-align: center;
+  }
+`;
+
+export const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: clamp(0.85rem, 1.2vw, 0.95rem);
+
+  .label {
+    color: #666;
+  }
+
+  .email {
+    font-weight: 700;
+    color: #1e1e1e;
+  }
+`;
+
+export const UserActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+
+  @media (max-width: 640px) {
+    width: 100%;
+    justify-content: center;
+  }
+`;
+
+export const LogoutButton = styled.button`
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #c62828;
+    color: #ffffff;
+    border-color: #c62828;
+  }
+`;
+
 export const IntroSection = styled.section`
   width: 100%;
   display: flex;
@@ -63,90 +133,15 @@ export const IntroSection = styled.section`
 `;
 
 export const IntroContent = styled.div`
-  max-width: 820px;
+  max-width: 780px;
   text-align: center;
-`;
 
-export const UserBar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #f9f8f6;
-  border: 1px solid #e6e3da;
-  padding: 1rem 1.5rem;
-  border-radius: 10px;
-  margin-bottom: 1.5rem;
-  gap: 1rem;
-
-  @media (max-width: 600px) {
-    flex-direction: column;
-    text-align: center;
-  }
-`;
-
-export const UserInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-
-  .avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: #ffb83c;
+  p {
     color: #1e1e1e;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 1.2rem;
+    font-size: clamp(0.85rem, 1vw, 0.95rem);
+    line-height: 1.8;
+    margin-bottom: 1.4rem;
   }
-
-  .detalhes {
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-
-    strong {
-      font-size: 0.95rem;
-      color: #1e1e1e;
-    }
-    span {
-      font-size: 0.8rem;
-      color: #666;
-    }
-  }
-
-  @media (max-width: 600px) {
-    flex-direction: column;
-    .detalhes {
-      text-align: center;
-    }
-  }
-`;
-
-export const BotaoSair = styled.button`
-  background: transparent;
-  border: 2px solid #dc2626;
-  color: #dc2626;
-  padding: 0.5rem 1.2rem;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: #dc2626;
-    color: #ffffff;
-  }
-`;
-
-export const IntroText = styled.p`
-  color: #1e1e1e;
-  font-size: clamp(0.85rem, 1vw, 0.95rem);
-  line-height: 1.8;
-  margin: 0;
 `;
 
 export const ToggleWrapper = styled.div`
@@ -208,49 +203,10 @@ export const ToggleGroupTitle = styled.h3`
 export const ToggleGroupDesc = styled.p`
   margin: 0;
   color: #1e1e1e;
-  opacity: 0.75;
+  opacity: 0.65;
   text-align: left;
-  font-size: clamp(0.75rem, 1.5vw, 0.82rem);
+  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
   line-height: 1.6;
-`;
-
-export const ToggleGroupButtons = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 0.4rem;
-`;
-
-export const ToggleButton = styled.button`
-  border: 2px solid #ffb83c;
-  background: ${(props) => (props.$ativo ? "#ffb83c" : "transparent")};
-  color: #1e1e1e;
-  font-family: inherit;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
-  padding: 0.7rem 1.4rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
-  white-space: nowrap;
-
-  &:hover:not(:disabled) {
-    background: #ffb83c;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
-  }
-
-  &:disabled {
-    cursor: default;
-    opacity: 0.8;
-  }
-
-  @media (max-width: 640px) {
-    padding: 0.65rem 1.2rem;
-    font-size: 0.75rem;
-  }
 `;
 
 export const DevSection = styled.div`
@@ -258,54 +214,6 @@ export const DevSection = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px 1.5rem 60px;
+  padding-bottom: 40px;
   scroll-margin-top: 100px;
-`;
-
-export const SecaoAvisos = styled.section`
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 1.5rem clamp(2rem, 4vw, 3rem);
-`;
-
-export const AvisosCard = styled.div`
-  background: #f9f8f6;
-  border: 1px solid #e6e3da;
-  border-radius: 10px;
-  padding: 1.5rem;
-
-  h2 {
-    font-size: clamp(0.95rem, 2vw, 1.1rem);
-    color: #1e1e1e;
-    margin-top: 0;
-    margin-bottom: 1rem;
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    padding-bottom: 0.6rem;
-    border-bottom: 2px solid #ffb83c;
-  }
-`;
-
-export const ItemAviso = styled.div`
-  padding: 0.8rem 0;
-  border-bottom: 1px solid #e6e3da;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  .data {
-    font-size: 0.75rem;
-    color: #ffb83c;
-    font-weight: 700;
-  }
-
-  .texto {
-    font-size: 0.85rem;
-    color: #1e1e1e;
-    margin-top: 4px;
-    line-height: 1.5;
-  }
 `;

@@ -1,11 +1,25 @@
 import React from 'react'
 import * as S from './footer.styles.jsx'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../supabaseClient'
 import logo from '../assets/img/logob.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInstagram, faFacebook, faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 
 const Footer = () => {
+  const navigate = useNavigate();
+
+  // Função exclusiva para limpar a sessão ao ir para a Área do Colaborador
+  const handleLogoffAreaColaborador = async (e) => {
+    e.preventDefault();
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Erro ao encerrar sessão:', error);
+    }
+    navigate('/area-colaborador');
+  };
+
   return (
     <S.Container>
       <S.FooterEmbaixo>
@@ -113,7 +127,7 @@ const Footer = () => {
             <S.FooterLabel>OBRAS E IMÓVEIS</S.FooterLabel>
             <S.FooterMenu>
               <li>
-                <Link to="/obras-andamento" title="Confira nossos projetos entregues">
+                <Link to="/obras-andamento" title="Confira nossos projetos em andamento">
                   Obras em Andamento
                 </Link>
               </li>
@@ -130,12 +144,13 @@ const Footer = () => {
             <S.FooterLabel>ÁREA RESTRITA</S.FooterLabel>
             <S.FooterMenu>
               <li>
-                <Link to="/colaboradores" title="Acesso exclusivo para colaboradores">
+                {/* Único link com logoff automático ao clicar */}
+                <a href="/area-colaborador" onClick={handleLogoffAreaColaborador} title="Acesso direto à Área do Colaborador">
                   Área do Colaborador
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/Add" title="Acessar painel administrativo">
+                <Link to="/Admin" title="Acessar painel administrativo">
                   Painel ADM
                 </Link>
               </li>
