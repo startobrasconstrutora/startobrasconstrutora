@@ -5,9 +5,7 @@ import { toastSuccess, toastError, showLoading, hideLoading } from '../utils/ale
 import heroImg from "../assets/img/capacete.jpg";
 import * as S from './AuthColaboradores.styles';
 
-/**
- * CadastroAdminSecreto.jsx (Com tratamento robusto de carregamento e botão de atualizar)
- */
+
 
 export default function CadastroAdminSecreto() {
   const navigate = useNavigate();
