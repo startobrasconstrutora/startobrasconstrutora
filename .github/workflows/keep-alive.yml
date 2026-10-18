@@ -1,0 +1,15 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Executa toda segunda e quinta-feira às 08:00 UTC
+    - cron: '0 8 * * 1,4'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send HTTP request to keep alive
+        run: |
+          curl -I "${{ secrets.SUPABASE_URL }}"
